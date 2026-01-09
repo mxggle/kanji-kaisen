@@ -11,12 +11,17 @@ export function Header() {
                 <div className="flex items-center gap-4">
                     <Link href="/" className="font-bold text-xl tracking-tighter text-white flex items-center gap-2">
                         <span className="text-[var(--n2)]">Kanji</span>
-                        <span className="text-[var(--accent)]">Heatmap</span>
+                        <span className="text-[var(--accent)]">Kaisen</span>
                     </Link>
 
-                    <button className="hidden md:flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/5">
-                        Explore Kanji
-                    </button>
+                    <nav className="hidden md:flex items-center gap-1 ml-4">
+                        <Link href="/" className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white rounded-md hover:bg-white/5 transition-colors">
+                            Path
+                        </Link>
+                        <Link href="/heatmap" className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white rounded-md hover:bg-white/5 transition-colors">
+                            Heatmap
+                        </Link>
+                    </nav>
                 </div>
 
                 {/* Center: Search Bar (Desktop) */}
