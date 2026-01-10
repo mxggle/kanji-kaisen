@@ -88,9 +88,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 {categoryCheckpoints.map((checkpoint, index) => {
                     const isCompleted = !!completedCheckpoints[checkpoint.id];
 
-                    // Global check:
-                    const globalIndex = CHECKPOINTS.findIndex(c => c.id === checkpoint.id);
-                    const isUnlocked = globalIndex === 0 || !!completedCheckpoints[CHECKPOINTS[globalIndex - 1].id];
+                    // Category-specific check: first checkpoint in category is always unlocked,
+                    // subsequent ones require the previous checkpoint in THIS category to be completed
+                    const isUnlocked = index === 0 || !!completedCheckpoints[categoryCheckpoints[index - 1].id];
 
                     return (
                         <RadicalCard

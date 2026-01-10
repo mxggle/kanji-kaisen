@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${notoSansJP.variable} font-sans antialiased pt-16 md:pt-14`}
+        className={`${inter.variable} ${notoSansJP.variable} font-sans antialiased`}
       >
         <Header />
         <main className="min-h-screen">
