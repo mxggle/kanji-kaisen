@@ -41,13 +41,21 @@ Expected kanji: ${expectedKanji}
 
 Please analyze this handwritten attempt and provide constructive feedback in the following JSON format:
 {
-  "isRecognizable": boolean (can you identify this as ${expectedKanji}?),
-  "confidence": number (0-100, how well does it match ${expectedKanji}?),
+  "isRecognizable": boolean (does the drawn kanji MATCH ${expectedKanji}? Return false if it's a different kanji or unrecognizable),
+  "confidence": number (0-100, how well does it match ${expectedKanji}? If it's a different kanji, return 0),
   "strokeOrderIssues": string[] (specific stroke order problems, or empty array if correct),
   "strokeFormIssues": string[] (issues with individual stroke shapes/directions),
   "shapeIssues": string[] (overall shape, balance, proportion problems),
   "suggestions": string[] (2-3 specific, actionable tips for improvement)
 }
+
+IMPORTANT RULES:
+1. If the student drew a DIFFERENT kanji than ${expectedKanji}, set isRecognizable to false and confidence to 0.
+2. When the kanji is WRONG or doesn't match, you MUST still provide helpful suggestions. For example:
+   - If they drew a different kanji, tell them which kanji it looks like and how ${expectedKanji} differs
+   - Describe the key features of ${expectedKanji} they should focus on
+   - Give specific guidance on what strokes or shapes to change
+3. NEVER return empty arrays for suggestions when isRecognizable is false - always help them understand what went wrong!
 
 Be encouraging and specific. Focus on what would help them improve most.
 Return ONLY valid JSON, no other text.`;
