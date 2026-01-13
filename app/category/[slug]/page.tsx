@@ -5,8 +5,9 @@ import { useEffect, useState, use } from "react";
 import { CHECKPOINTS, getCategoryFromSlug, CategoryName } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { RadicalCard } from "@/components/Path/RadicalCard";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { LearningModal } from "@/components/Learning/LearningModal";
+import { CategoryStoryModal } from "@/components/Story/CategoryStoryModal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -30,6 +31,7 @@ const THEME_COLORS: Record<string, string> = {
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { hearts, streak, completedCheckpoints, checkStreak } = useProgressStore();
     const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
+    const [showCategoryStory, setShowCategoryStory] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [slug, setSlug] = useState<string>("");
 
@@ -63,10 +65,23 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 <Link href="/" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
-                <div>
+                <div className="flex-1">
                     <h1 className={`text-3xl font-bold ${themeClass.split(' ')[0]}`}>{categoryName}</h1>
                     <p className="text-white/40">{categoryCheckpoints.length} Radicals</p>
                 </div>
+                <button
+                    onClick={() => setShowCategoryStory(true)}
+                    className={`
+                        flex items-center gap-2 px-4 py-2 rounded-xl
+                        bg-white/5 hover:bg-white/10 transition-all duration-200
+                        ${themeClass.split(' ')[0]} border ${themeClass.split(' ')[1]}
+                        hover:scale-105 active:scale-95
+                    `}
+                    title="Learn about this category"
+                >
+                    <BookOpen size={18} />
+                    <span className="text-sm font-medium hidden sm:inline">About</span>
+                </button>
             </div>
 
             {/* Path */}
@@ -74,9 +89,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 {categoryCheckpoints.map((checkpoint, index) => {
                     const isCompleted = !!completedCheckpoints[checkpoint.id];
 
-                    // Category-specific check: first checkpoint in category is always unlocked,
-                    // subsequent ones require the previous checkpoint in THIS category to be completed
-                    const isUnlocked = index === 0 || !!completedCheckpoints[categoryCheckpoints[index - 1].id];
+                    // All checkpoints unlocked for now
+                    const isUnlocked = true;
 
                     return (
                         <RadicalCard
@@ -96,6 +110,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 <LearningModal
                     checkpointId={activeCheckpointId}
                     onClose={() => setActiveCheckpointId(null)}
+                />
+            )}
+
+            {/* Category Story Modal */}
+            {showCategoryStory && categoryName && (
+                <CategoryStoryModal
+                    category={categoryName}
+                    onClose={() => setShowCategoryStory(false)}
+                    themeClass={themeClass}
                 />
             )}
         </main>
