@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         // Remove data URL prefix to get base64 string
         const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `You are an expert Japanese kanji teacher analyzing a student's handwritten kanji.
 
