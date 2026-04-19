@@ -1,9 +1,9 @@
 import { KanjiCanvas, KanjiCanvasRef } from "./KanjiCanvas";
-import { KanjiInfoDisplay } from "./KanjiInfoDisplay";
 import { KanjiReadingHeader } from "./KanjiReadingHeader";
 import { KanjiData } from "@/types/kanji";
-import { Trash2, Undo2, Eye, EyeOff, CheckCircle, Sparkles, ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
+import { Trash2, Eye, EyeOff, CheckCircle, Sparkles, ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 interface AIFeedback {
     isRecognizable: boolean;
@@ -14,13 +14,33 @@ interface AIFeedback {
     suggestions: string[];
 }
 
+type AudioContextConstructor = typeof AudioContext & {
+    new(): AudioContext;
+};
+
+interface WindowWithWebkitAudioContext extends Window {
+    webkitAudioContext?: AudioContextConstructor;
+}
+
 interface PhaseChallengeProps {
     data: KanjiData;
     onSuccess: () => void;
     onFail: () => void;
+    checkpointId: string;
+    checkpointTitle: string;
+    category: string;
+    kanjiIndex: number;
 }
 
-export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps) {
+export function PhaseChallenge({
+    data,
+    onSuccess,
+    onFail,
+    checkpointId,
+    checkpointTitle,
+    category,
+    kanjiIndex,
+}: PhaseChallengeProps) {
     const [status, setStatus] = useState<"drawing" | "checking" | "success" | "fail">("drawing");
     const [showPeek, setShowPeek] = useState(false);
     const [showGuide, setShowGuide] = useState(true);
@@ -46,6 +66,13 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
     }, []);
 
     const handleCheck = async () => {
+        trackEvent("challenge_submitted", {
+            checkpoint_id: checkpointId,
+            checkpoint_title: checkpointTitle,
+            category,
+            kanji: data.char,
+            kanji_index: kanjiIndex,
+        });
         setStatus("checking");
         setShowFeedbackOverlay(false);
 
@@ -82,10 +109,27 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
 
                 // Check if correct based on AI confidence
                 if (feedback.isRecognizable && feedback.confidence >= 60) {
+                    trackEvent("challenge_passed", {
+                        checkpoint_id: checkpointId,
+                        checkpoint_title: checkpointTitle,
+                        category,
+                        kanji: data.char,
+                        kanji_index: kanjiIndex,
+                        confidence: Math.round(feedback.confidence),
+                    });
                     setStatus("success");
                     playSuccessSound();
                     // Don't auto-progress - let user click next themselves
                 } else {
+                    trackEvent("challenge_failed", {
+                        checkpoint_id: checkpointId,
+                        checkpoint_title: checkpointTitle,
+                        category,
+                        kanji: data.char,
+                        kanji_index: kanjiIndex,
+                        confidence: Math.round(feedback.confidence),
+                        recognizable: feedback.isRecognizable,
+                    });
                     setStatus("fail");
                     playFailSound();
                     onFail(); // Lose a heart when user gets wrong answer
@@ -96,6 +140,14 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
                 }
             } else {
                 // If no feedback, fail
+                trackEvent("challenge_failed", {
+                    checkpoint_id: checkpointId,
+                    checkpoint_title: checkpointTitle,
+                    category,
+                    kanji: data.char,
+                    kanji_index: kanjiIndex,
+                    failure_reason: "missing_feedback",
+                });
                 setStatus("fail");
                 onFail();
                 setShowFeedbackOverlay(true);
@@ -105,6 +157,14 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
             }
         } catch (error) {
             console.error("Failed to analyze kanji:", error);
+            trackEvent("challenge_failed", {
+                checkpoint_id: checkpointId,
+                checkpoint_title: checkpointTitle,
+                category,
+                kanji: data.char,
+                kanji_index: kanjiIndex,
+                failure_reason: "request_error",
+            });
             setStatus("fail");
             onFail();
             setShowFeedbackOverlay(true);
@@ -115,6 +175,14 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
     };
 
     const handleClear = () => {
+        trackEvent("challenge_canvas_cleared", {
+            checkpoint_id: checkpointId,
+            checkpoint_title: checkpointTitle,
+            category,
+            kanji: data.char,
+            kanji_index: kanjiIndex,
+            status,
+        });
         canvasRef.current?.clear();
         setStatus("drawing");
         setAiFeedback(null);
@@ -123,19 +191,24 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
         setShowJumpBackHint(false);
     };
 
-    const handleUndo = () => {
-        // KanjiCanvas doesn't have undo in challenge mode, just use clear
-        canvasRef.current?.clear();
-    };
-
     const handlePeek = () => {
+        trackEvent("challenge_peek_used", {
+            checkpoint_id: checkpointId,
+            checkpoint_title: checkpointTitle,
+            category,
+            kanji: data.char,
+            kanji_index: kanjiIndex,
+        });
         setShowPeek(true);
     };
 
     // Simple audio feedback using Web Audio
     const playSuccessSound = () => {
         try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioCtor = window.AudioContext || (window as WindowWithWebkitAudioContext).webkitAudioContext;
+            if (!AudioCtor) return;
+
+            const audioContext = new AudioCtor();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -151,14 +224,17 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
 
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.4);
-        } catch (e) {
+        } catch {
             console.log("Audio not available");
         }
     };
 
     const playFailSound = () => {
         try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioCtor = window.AudioContext || (window as WindowWithWebkitAudioContext).webkitAudioContext;
+            if (!AudioCtor) return;
+
+            const audioContext = new AudioCtor();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -172,7 +248,7 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
 
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.3);
-        } catch (e) {
+        } catch {
             console.log("Audio not available");
         }
     };
@@ -401,6 +477,13 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
                         <button
                             onClick={() => {
                                 // User manually proceeds to next kanji
+                                trackEvent("challenge_continue_clicked", {
+                                    checkpoint_id: checkpointId,
+                                    checkpoint_title: checkpointTitle,
+                                    category,
+                                    kanji: data.char,
+                                    kanji_index: kanjiIndex,
+                                });
                                 onSuccess();
                             }}
                             className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl flex items-center justify-center gap-2 hover:from-green-600 hover:to-emerald-600 transition-all font-bold text-lg shadow-lg shadow-green-500/20 active:scale-[0.98]"
@@ -409,6 +492,13 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
                         </button>
                         <button
                             onClick={() => {
+                                trackEvent("challenge_practice_again_clicked", {
+                                    checkpoint_id: checkpointId,
+                                    checkpoint_title: checkpointTitle,
+                                    category,
+                                    kanji: data.char,
+                                    kanji_index: kanjiIndex,
+                                });
                                 setStatus("drawing");
                                 setAiFeedback(null);
                                 setShowAIFeedback(false);
@@ -426,6 +516,13 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
                     <div className="w-full max-w-md space-y-3">
                         <button
                             onClick={() => {
+                                trackEvent("challenge_retry_clicked", {
+                                    checkpoint_id: checkpointId,
+                                    checkpoint_title: checkpointTitle,
+                                    category,
+                                    kanji: data.char,
+                                    kanji_index: kanjiIndex,
+                                });
                                 setStatus("drawing");
                                 setAiFeedback(null);
                                 setShowAIFeedback(false);
@@ -438,6 +535,13 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
                         </button>
                         <button
                             onClick={() => {
+                                trackEvent("challenge_skipped", {
+                                    checkpoint_id: checkpointId,
+                                    checkpoint_title: checkpointTitle,
+                                    category,
+                                    kanji: data.char,
+                                    kanji_index: kanjiIndex,
+                                });
                                 onSuccess(); // Move to next kanji (heart already lost)
                             }}
                             className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm"
@@ -452,4 +556,3 @@ export function PhaseChallenge({ data, onSuccess, onFail }: PhaseChallengeProps)
         </div>
     );
 }
-

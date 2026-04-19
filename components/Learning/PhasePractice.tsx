@@ -1,5 +1,4 @@
 import { KanjiCanvas, KanjiCanvasRef } from "./KanjiCanvas";
-import { KanjiInfoDisplay } from "./KanjiInfoDisplay";
 import { KanjiReadingHeader } from "./KanjiReadingHeader";
 import { KanjiData } from "@/types/kanji";
 import { ArrowRight, Trash2, Lightbulb } from "lucide-react";
@@ -72,7 +71,7 @@ export function PhasePractice({ data, onNext }: PhasePracticeProps) {
                     onClick={onNext}
                     className="w-full py-4 bg-[var(--accent)] text-black font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:bg-[#1eeeee] transition-colors shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all"
                 >
-                    I'm Ready <ArrowRight />
+                    I&apos;m Ready <ArrowRight />
                 </button>
             </div>
 
