@@ -204,11 +204,7 @@ function main() {
         const CHAR_OVERRIDES = {
             'kome': '米', // Rice
             'kuro': '黒', // Black
-            'ki': '木',   // Tree
-            'hi': '火',   // Fire
-            'mizu': '水', // Water (generic) - though sanzui uses 氵. 
-            // If we merged sanzui -> mizu, we might force water. 
-            // But we didn't merge sanzui.
+            'mizu': '水', // Water (generic)
         };
 
         if (CHAR_OVERRIDES[finalName]) {
