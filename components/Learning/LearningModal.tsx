@@ -3,7 +3,7 @@
 import { Checkpoint, CHECKPOINTS, getNextCheckpointId } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { KANJI_DATA } from "@/lib/data";
-import { X, Heart } from "lucide-react";
+import { X, Heart, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -106,12 +106,23 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     }
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col h-[100dvh]">
+        <div className="fixed inset-0 z-[100] bg-black backdrop-blur-md flex flex-col w-full h-full">
             {/* Top Bar */}
             <div className="flex items-center justify-between p-2 max-w-3xl mx-auto w-full">
-                <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-                    <X size={20} />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+                        <X size={20} />
+                    </button>
+                    <a 
+                        href="https://kanjikaisen.featurebase.app/" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="p-2 bg-white/5 rounded-full hover:bg-white/20 text-zinc-400 hover:text-white transition-colors"
+                        title="Give Feedback or Report a Bug"
+                    >
+                        <MessageSquare size={18} />
+                    </a>
+                </div>
 
                 <div className="flex flex-col items-center">
                     <span className="text-sm text-zinc-400 font-medium">
@@ -164,6 +175,19 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                         )}
                     </motion.div>
                 </AnimatePresence>
+            </div>
+
+            {/* Bottom Form/Feedback Link */}
+            <div className="py-2 text-center pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+                <a 
+                    href="https://kanjikaisen.featurebase.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                    <MessageSquare size={12} />
+                    Have feedback or found a bug?
+                </a>
             </div>
         </div>
     );
