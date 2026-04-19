@@ -1,55 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { CHECKPOINTS, CATEGORIES } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { CategoryCard } from "@/components/Path/CategoryCard";
-import { Heart, Flame } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
+
+function subscribeHydration() {
+    return () => {};
+}
 
 export default function LearnPage() {
-    const { hearts, streak, completedCheckpoints, unlockedLevels } = useProgressStore();
-    const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
+    const { hearts, streak, completedCheckpoints, unlockedLevels, checkStreak } = useProgressStore();
+    const hasTrackedPageView = useRef(false);
 
-    // Hydration fix for zustand persist
-    const [mounted, setMounted] = useState(false);
-    const { checkStreak } = useProgressStore();
+    const mounted = useSyncExternalStore(subscribeHydration, () => true, () => false);
 
     useEffect(() => {
-        setMounted(true);
         checkStreak();
     }, [checkStreak]);
 
+    useEffect(() => {
+        if (!mounted || hasTrackedPageView.current) return;
+
+        hasTrackedPageView.current = true;
+        trackEvent("learn_page_viewed", {
+            hearts,
+            streak,
+            unlocked_levels: unlockedLevels.length,
+            completed_checkpoints: Object.keys(completedCheckpoints).length,
+        });
+    }, [mounted, hearts, streak, unlockedLevels.length, completedCheckpoints]);
+
     if (!mounted) return null;
 
-    const handleCheckpointClick = (id: string) => {
-        setActiveCheckpointId(id);
-    };
-
-    const handleCloseModal = () => {
-        setActiveCheckpointId(null);
-    };
-
-    // Group Checkpoints
-    const categories = [
-        "Nature & Elements",
-        "Human Body & People",
-        "Action & Movement",
-        "Structures & Home",
-        "Animals & Wildlife",
-        "Tools & Weapons",
-        "Communication & Thought",
-        "Textiles, Plants & Food",
-        "States & Attributes",
-        "Time & Sequence",
-        "Others"
-    ];
-    const groupedCheckpoints: Record<string, typeof CHECKPOINTS> = {};
     return (
         <main className="min-h-screen bg-black text-white pb-20 relative overflow-y-auto pt-24 custom-scrollbar">
             {/* Category Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
                 {CATEGORIES.map((category) => {
-                    const categoryCheckpoints = CHECKPOINTS.filter(c => (c as any).category === category);
+                    const categoryCheckpoints = CHECKPOINTS.filter(c => c.category === category);
                     const completedCount = categoryCheckpoints.filter(c => completedCheckpoints[c.id]).length;
 
                     return (

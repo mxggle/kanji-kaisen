@@ -1,4 +1,7 @@
+"use client";
+
 import { Globe, Mail, Heart, Github, MessageSquare } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
@@ -23,6 +26,7 @@ export function Footer() {
                             href="https://kanjikaisen.featurebase.app/"
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => trackEvent("feedback_clicked", { source: "footer_card" })}
                             className="inline-flex items-center justify-center w-full px-6 py-3 bg-accent hover:bg-[#1eeeee] text-black font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-cyan-500/20"
                         >
                             Give Feedback

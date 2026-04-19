@@ -1,11 +1,12 @@
 "use client";
 
-import { Checkpoint, CHECKPOINTS, getNextCheckpointId } from "@/lib/checkpoints";
+import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { KANJI_DATA } from "@/lib/data";
 import { X, Heart, MessageSquare } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { trackEvent } from "@/lib/analytics";
 
 import { PhaseInfo } from "./PhaseInfo";
 import { PhasePractice } from "./PhasePractice";
@@ -29,6 +30,10 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [phase, setPhase] = useState<Phase>("info");
     const [isCompleted, setIsCompleted] = useState(false);
+    const hasTrackedOpen = useRef(false);
+    const hasTrackedOutOfHearts = useRef(false);
+    const trackedPhaseViews = useRef(new Set<string>());
+    const previousHearts = useRef(hearts);
 
     // Derived
     const currentChar = checkpoint?.kanji[currentIndex];
@@ -44,6 +49,74 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
         };
     }, []);
 
+    useEffect(() => {
+        if (!checkpoint || hasTrackedOpen.current) return;
+
+        hasTrackedOpen.current = true;
+        trackEvent("learning_modal_opened", {
+            checkpoint_id: checkpoint.id,
+            checkpoint_title: checkpoint.title,
+            category: checkpoint.category,
+            kanji_count: checkpoint.kanji.length,
+            hearts,
+        });
+    }, [checkpoint, hearts]);
+
+    useEffect(() => {
+        if (!checkpoint || !currentChar) return;
+
+        const key = `${checkpoint.id}:${currentChar}:${phase}`;
+        if (trackedPhaseViews.current.has(key)) return;
+
+        trackedPhaseViews.current.add(key);
+        trackEvent("learning_phase_viewed", {
+            checkpoint_id: checkpoint.id,
+            checkpoint_title: checkpoint.title,
+            category: checkpoint.category,
+            kanji: currentChar,
+            kanji_index: currentIndex + 1,
+            phase,
+            hearts,
+        });
+
+        if (phase === "practice") {
+            trackEvent("practice_started", {
+                checkpoint_id: checkpoint.id,
+                checkpoint_title: checkpoint.title,
+                category: checkpoint.category,
+                kanji: currentChar,
+                kanji_index: currentIndex + 1,
+            });
+        }
+    }, [checkpoint, currentChar, currentIndex, phase, hearts]);
+
+    useEffect(() => {
+        if (!checkpoint) return;
+
+        if (hearts < previousHearts.current) {
+            trackEvent("heart_lost", {
+                checkpoint_id: checkpoint.id,
+                checkpoint_title: checkpoint.title,
+                category: checkpoint.category,
+                kanji: currentChar,
+                hearts_remaining: hearts,
+            });
+        }
+
+        previousHearts.current = hearts;
+    }, [checkpoint, currentChar, hearts]);
+
+    useEffect(() => {
+        if (!checkpoint || hearts > 0 || hasTrackedOutOfHearts.current) return;
+
+        hasTrackedOutOfHearts.current = true;
+        trackEvent("out_of_hearts", {
+            checkpoint_id: checkpoint.id,
+            checkpoint_title: checkpoint.title,
+            category: checkpoint.category,
+        });
+    }, [checkpoint, hearts]);
+
     // Handlers
     const handleNextPhase = () => {
         if (phase === "info") setPhase("practice");
@@ -51,13 +124,22 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     };
 
     const handleChallengeSuccess = () => {
+        if (!checkpoint) return;
+
         // Advance to next Kanji or Finish
-        if (checkpoint && currentIndex < checkpoint.kanji.length - 1) {
+        if (currentIndex < checkpoint.kanji.length - 1) {
             setCurrentIndex(prev => prev + 1);
             setPhase("info");
         } else {
             // Checkpoint Complete!
             completeCheckpoint(checkpointId);
+            trackEvent("checkpoint_completed", {
+                checkpoint_id: checkpoint.id,
+                checkpoint_title: checkpoint.title,
+                category: checkpoint.category,
+                kanji_count: checkpoint.kanji.length,
+                hearts_remaining: hearts,
+            });
             setIsCompleted(true);
         }
     };
@@ -96,7 +178,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                 <div className="bg-zinc-900 border border-[var(--n5)] p-8 rounded-2xl text-center max-w-sm w-full animate-in zoom-in-50 duration-300">
                     <div className="text-6xl mb-4">🎉</div>
                     <h2 className="text-2xl font-bold mb-2 text-[var(--n5)]">Checkpoint Mastered!</h2>
-                    <p className="text-zinc-400 mb-6">You've learned {checkpoint.kanji.length} new kanji.</p>
+                    <p className="text-zinc-400 mb-6">You&apos;ve learned {checkpoint.kanji.length} new kanji.</p>
                     <button onClick={onClose} className="w-full py-3 bg-[var(--n5)] text-black font-bold rounded-lg hover:opacity-90">
                         Continue Path
                     </button>
@@ -117,6 +199,12 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                         href="https://kanjikaisen.featurebase.app/" 
                         target="_blank" 
                         rel="noopener noreferrer" 
+                        onClick={() => trackEvent("feedback_clicked", {
+                            source: "learning_modal_topbar",
+                            checkpoint_id: checkpoint.id,
+                            checkpoint_title: checkpoint.title,
+                            category: checkpoint.category,
+                        })}
                         className="p-2 bg-white/5 rounded-full hover:bg-white/20 text-zinc-400 hover:text-white transition-colors"
                         title="Give Feedback or Report a Bug"
                     >
@@ -171,6 +259,10 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                                 data={currentData}
                                 onSuccess={handleChallengeSuccess}
                                 onFail={handleChallengeFail}
+                                checkpointId={checkpoint.id}
+                                checkpointTitle={checkpoint.title}
+                                category={checkpoint.category}
+                                kanjiIndex={currentIndex + 1}
                             />
                         )}
                     </motion.div>
@@ -183,6 +275,12 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                     href="https://kanjikaisen.featurebase.app/" 
                     target="_blank" 
                     rel="noopener noreferrer" 
+                    onClick={() => trackEvent("feedback_clicked", {
+                        source: "learning_modal_footer",
+                        checkpoint_id: checkpoint.id,
+                        checkpoint_title: checkpoint.title,
+                        category: checkpoint.category,
+                    })}
                     className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                     <MessageSquare size={12} />

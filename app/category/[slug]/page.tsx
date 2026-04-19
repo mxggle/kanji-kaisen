@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { CHECKPOINTS, getCategoryFromSlug, CategoryName } from "@/lib/checkpoints";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { CHECKPOINTS, getCategoryFromSlug } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { RadicalCard } from "@/components/Path/RadicalCard";
 import { ArrowLeft, BookOpen } from "lucide-react";
@@ -10,6 +10,7 @@ import { LearningModal } from "@/components/Learning/LearningModal";
 import { CategoryStoryModal } from "@/components/Story/CategoryStoryModal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { trackEvent } from "@/lib/analytics";
 
 // Use distinct themes mapping again matching CategorySection...
 // Ideally we should export this theme map to share between components.
@@ -28,33 +29,59 @@ const THEME_COLORS: Record<string, string> = {
     "Others": "text-zinc-400 border-zinc-800/50 bg-zinc-950/20",
 };
 
+function subscribeHydration() {
+    return () => {};
+}
+
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { hearts, streak, completedCheckpoints, checkStreak } = useProgressStore();
     const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
     const [showCategoryStory, setShowCategoryStory] = useState(false);
-    const [mounted, setMounted] = useState(false);
     const [slug, setSlug] = useState<string>("");
+    const hasTrackedCategoryView = useRef(false);
+    const mounted = useSyncExternalStore(subscribeHydration, () => true, () => false);
 
     useEffect(() => {
         params.then(p => setSlug(p.slug));
     }, [params]);
 
     useEffect(() => {
-        setMounted(true);
         checkStreak();
     }, [checkStreak]);
 
-    if (!mounted || !slug) return null;
-
     const categoryName = getCategoryFromSlug(slug);
-    if (!categoryName) return notFound();
-
-    const themeClass = THEME_COLORS[categoryName] || THEME_COLORS["Others"];
+    const themeClass = categoryName ? (THEME_COLORS[categoryName] || THEME_COLORS["Others"]) : THEME_COLORS["Others"];
 
     // Filter Checkpoints
-    const categoryCheckpoints = CHECKPOINTS.filter(c => (c as any).category === categoryName);
+    const categoryCheckpoints = useMemo(() => {
+        if (!categoryName) return [];
+        return CHECKPOINTS.filter(c => c.category === categoryName);
+    }, [categoryName]);
+
+    useEffect(() => {
+        if (!mounted || !categoryName || hasTrackedCategoryView.current) return;
+
+        hasTrackedCategoryView.current = true;
+        trackEvent("category_page_viewed", {
+            category: categoryName,
+            checkpoint_count: categoryCheckpoints.length,
+            completed_checkpoints: categoryCheckpoints.filter(c => completedCheckpoints[c.id]).length,
+            hearts,
+            streak,
+        });
+    }, [mounted, categoryName, categoryCheckpoints, completedCheckpoints, hearts, streak]);
+
+    if (!mounted || !slug) return null;
+    if (!categoryName) return notFound();
 
     const handleCheckpointClick = (id: string) => {
+        const checkpoint = categoryCheckpoints.find(item => item.id === id);
+        trackEvent("checkpoint_opened", {
+            checkpoint_id: id,
+            checkpoint_title: checkpoint?.title,
+            category: categoryName,
+            kanji_count: checkpoint?.kanji.length,
+        });
         setActiveCheckpointId(id);
     };
 
@@ -70,7 +97,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     <p className="text-white/40">{categoryCheckpoints.length} Radicals</p>
                 </div>
                 <button
-                    onClick={() => setShowCategoryStory(true)}
+                    onClick={() => {
+                        trackEvent("category_story_opened", {
+                            category: categoryName,
+                        });
+                        setShowCategoryStory(true);
+                    }}
                     className={`
                         flex items-center gap-2 px-4 py-2 rounded-xl
                         bg-white/5 hover:bg-white/10 transition-all duration-200
@@ -86,7 +118,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
             {/* Path */}
             <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
-                {categoryCheckpoints.map((checkpoint, index) => {
+                {categoryCheckpoints.map((checkpoint) => {
                     const isCompleted = !!completedCheckpoints[checkpoint.id];
 
                     // All checkpoints unlocked for now

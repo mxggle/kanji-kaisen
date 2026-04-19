@@ -1,5 +1,4 @@
 import { KanjiCanvas, KanjiCanvasRef } from "./KanjiCanvas";
-import { KanjiInfoDisplay } from "./KanjiInfoDisplay";
 import { KanjiReadingHeader } from "./KanjiReadingHeader";
 import { KanjiData } from "@/types/kanji";
 import { ArrowRight, Play } from "lucide-react";
