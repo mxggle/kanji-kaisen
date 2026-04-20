@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-// @ts-ignore
 import { KanjiWriter, KanjiVGParser } from "kanji-recognizer";
 import { Trash2, Play, Lightbulb } from "lucide-react";
 
@@ -11,20 +10,22 @@ interface StrokeLearningProps {
 
 export function StrokeLearning({ kanji }: StrokeLearningProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const writerRef = useRef<any>(null);
+    const writerRef = useRef<KanjiWriter | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        const container = containerRef.current;
+
         async function initWriter() {
-            if (!containerRef.current) return;
+            if (!container) return;
 
             try {
                 setIsLoading(true);
                 setError(null);
 
                 // Clear previous content
-                containerRef.current.innerHTML = '';
+                container.innerHTML = '';
 
                 // Convert char to unicode hex for KanjiVG (e.g. "日" -> "65e5")
                 const unicode = kanji.charCodeAt(0).toString(16).padStart(5, '0');
@@ -38,8 +39,6 @@ export function StrokeLearning({ kanji }: StrokeLearningProps) {
 
                 const svgText = await response.text();
 
-                // Parse SVG
-                // @ts-ignore
                 const data = KanjiVGParser.parse(svgText);
 
                 if (!data) {
@@ -50,9 +49,7 @@ export function StrokeLearning({ kanji }: StrokeLearningProps) {
                 // The library expects (elementId, data, options)
                 // We need to ensure the container has an ID
                 const containerId = "kanji-writer-container";
-                if (containerRef.current) {
-                    containerRef.current.id = containerId;
-                }
+                container.id = containerId;
 
                 writerRef.current = new KanjiWriter(
                     containerId,
@@ -81,8 +78,8 @@ export function StrokeLearning({ kanji }: StrokeLearningProps) {
 
         return () => {
             // Cleanup
-            if (containerRef.current) {
-                containerRef.current.innerHTML = '';
+            if (container) {
+                container.innerHTML = '';
             }
             writerRef.current = null;
         };

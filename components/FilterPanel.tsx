@@ -15,6 +15,11 @@ interface FilterPanelProps {
 }
 
 const JLPT_LEVELS: JLPTRank[] = ["N5", "N4", "N3", "N2", "N1"];
+const SORT_OPTIONS: Array<{ id: FilterPanelProps["sortBy"]; label: string }> = [
+    { id: "frequency", label: "Frequency" },
+    { id: "stroke", label: "Stroke Count" },
+    { id: "jlpt", label: "JLPT Level" },
+];
 
 export function FilterPanel({
     selectedLevels,
@@ -93,14 +98,10 @@ export function FilterPanel({
                 <div className="mb-8">
                     <h3 className="text-sm font-medium text-white/70 mb-4 uppercase tracking-wider">Sort By</h3>
                     <div className="grid grid-cols-1 gap-2">
-                        {[
-                            { id: 'frequency', label: 'Frequency' },
-                            { id: 'stroke', label: 'Stroke Count' },
-                            { id: 'jlpt', label: 'JLPT Level' }
-                        ].map((option) => (
+                        {SORT_OPTIONS.map((option) => (
                             <button
                                 key={option.id}
-                                onClick={() => onSortChange(option.id as any)}
+                                onClick={() => onSortChange(option.id)}
                                 className={cn(
                                     "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all",
                                     sortBy === option.id

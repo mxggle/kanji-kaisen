@@ -35,27 +35,6 @@ function toTitleCase(str: string): string {
     });
 }
 
-function getLevel(kanjiList: any[]): string {
-    const grades = kanjiList.map(k => k.grade).filter(g => g !== null && g !== undefined) as number[];
-    if (grades.length === 0) return "General";
-    const min = Math.min(...grades);
-
-    // Simple mapping logic
-    // Grade 1-6 are elementary. 
-    // We can just return "Grade N" or map to N5-N1 roughly.
-    // N5 ~ Grade 1
-    // N4 ~ Grade 2
-    // N3 ~ Grade 3-4
-    // N2 ~ Grade 5-6
-    // N1 ~ Secondary school +
-
-    if (min === 1) return "N5 (Grade 1)";
-    if (min === 2) return "N4 (Grade 2)";
-    if (min <= 4) return "N3 (Grade 3-4)";
-    if (min <= 6) return "N2 (Grade 5-6)";
-    return "N1";
-}
-
 import CATEGORY_MAP_RAW from './radical-category-map.json';
 
 const CATEGORY_MAP = CATEGORY_MAP_RAW as Record<string, string>;
@@ -89,6 +68,11 @@ export function getCategorySlug(category: string): string {
 
 export function getCategoryFromSlug(slug: string): string | undefined {
     return CATEGORIES.find(c => getCategorySlug(c) === slug);
+}
+
+function getCategorySortIndex(category: string): number {
+    const index = CATEGORIES.findIndex((value) => value === category);
+    return index === -1 ? CATEGORIES.length : index;
 }
 
 const MAX_ITEMS = 10;
@@ -128,7 +112,6 @@ export const CHECKPOINTS: Checkpoint[] = Object.entries(KANJI_DATA)
 
         const category = getCategory(name);
         const baseTitle = `${toTitleCase(name.replace(/_/g, ' '))} Radical`;
-        let relativeIndex = 0;
 
         // 2. Process levels in order
         return LEVEL_ORDER.flatMap(level => {
@@ -139,7 +122,7 @@ export const CHECKPOINTS: Checkpoint[] = Object.entries(KANJI_DATA)
             kanjiInLevel.sort((a, b) => a.stroke - b.stroke);
 
             // Chunk if necessary
-            const chunks = [];
+            const chunks: typeof data.kanji[] = [];
             for (let i = 0; i < kanjiInLevel.length; i += MAX_ITEMS) {
                 chunks.push(kanjiInLevel.slice(i, i + MAX_ITEMS));
             }
@@ -170,8 +153,8 @@ export const CHECKPOINTS: Checkpoint[] = Object.entries(KANJI_DATA)
         });
     })
     .sort((a, b) => {
-        const catA = CATEGORIES.indexOf(a.category as any);
-        const catB = CATEGORIES.indexOf(b.category as any);
+        const catA = getCategorySortIndex(a.category);
+        const catB = getCategorySortIndex(b.category);
         if (catA !== catB) return catA - catB;
 
         // Secondary Sort: JLPT Level (N5 -> N1)

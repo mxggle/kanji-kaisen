@@ -85,7 +85,7 @@ Return ONLY valid JSON, no other text.`;
             } else {
                 feedback = JSON.parse(text);
             }
-        } catch (parseError) {
+        } catch {
             console.error("Failed to parse Gemini response:", text);
             return NextResponse.json(
                 {

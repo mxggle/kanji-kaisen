@@ -2,11 +2,13 @@
 
 import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
+import { useSettingsStore } from "@/lib/settings-store";
 import { KANJI_DATA } from "@/lib/data";
 import { X, Heart, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { trackEvent } from "@/lib/analytics";
+import { isHandwritingSkipped } from "@/lib/handwriting-preferences";
 
 import { PhaseInfo } from "./PhaseInfo";
 import { PhasePractice } from "./PhasePractice";
@@ -26,6 +28,11 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
 
     // Store
     const { hearts, loseHeart, completeCheckpoint } = useProgressStore();
+    const {
+        skipHandwritingGlobally,
+        skipHandwritingTodayDate,
+        setSkipHandwritingForToday,
+    } = useSettingsStore();
 
     // Local State
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,6 +46,10 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     // Derived
     const currentChar = checkpoint?.kanji[currentIndex];
     const currentData = KANJI_DATA.find(k => k.char === currentChar);
+    const shouldSkipHandwriting = isHandwritingSkipped({
+        skipHandwritingGlobally,
+        skipHandwritingTodayDate,
+    });
 
     // Disable body scroll when modal is open
     useEffect(() => {
@@ -140,9 +151,32 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
 
     // Handlers
     const handleNextPhase = () => {
-        if (phase === "info") setPhase("quiz");
-        else if (phase === "quiz") setPhase("practice");
-        else if (phase === "practice") setPhase("challenge");
+        if (phase === "info") {
+            setPhase("quiz");
+            return;
+        }
+
+        if (phase === "quiz") {
+            if (shouldSkipHandwriting) {
+                trackEvent("handwriting_auto_skipped", {
+                    checkpoint_id: checkpoint?.id,
+                    checkpoint_title: checkpoint?.title,
+                    category: checkpoint?.category,
+                    kanji: currentChar,
+                    kanji_index: currentIndex + 1,
+                    reason: skipHandwritingGlobally ? "global" : "today",
+                });
+                handleChallengeSuccess();
+                return;
+            }
+
+            setPhase("practice");
+            return;
+        }
+
+        if (phase === "practice") {
+            setPhase("challenge");
+        }
     };
 
     const handleChallengeSuccess = () => {
@@ -173,7 +207,13 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     };
 
     const handlePhaseChange = (newPhase: Phase) => {
+        if (shouldSkipHandwriting && (newPhase === "practice" || newPhase === "challenge")) return;
         setPhase(newPhase);
+    };
+
+    const handleSkipHandwritingForToday = () => {
+        setSkipHandwritingForToday();
+        handleChallengeSuccess();
     };
 
     if (!checkpoint || !currentChar || !currentData) return null;
@@ -259,7 +299,11 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-md mx-auto">
                 {/* Phase Navigator */}
-                <PhaseNavigator currentPhase={phase} onPhaseChange={handlePhaseChange} />
+                <PhaseNavigator
+                    currentPhase={phase}
+                    onPhaseChange={handlePhaseChange}
+                    skipHandwriting={shouldSkipHandwriting}
+                />
 
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -284,7 +328,16 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                             />
                         )}
                         {phase === "practice" && (
-                            <PhasePractice data={currentData} onNext={handleNextPhase} />
+                            <PhasePractice
+                                data={currentData}
+                                onNext={handleNextPhase}
+                                onSkipForToday={handleSkipHandwritingForToday}
+                                showSkipForToday={!shouldSkipHandwriting}
+                                checkpointId={checkpoint.id}
+                                checkpointTitle={checkpoint.title}
+                                category={checkpoint.category}
+                                kanjiIndex={currentIndex + 1}
+                            />
                         )}
                         {phase === "challenge" && (
                             <PhaseChallenge

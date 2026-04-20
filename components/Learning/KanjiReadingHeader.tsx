@@ -4,7 +4,6 @@ import { KanjiData } from "@/types/kanji";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-// @ts-ignore - wanakana types might trigger issues if not fully set up
 import { toRomaji } from "wanakana";
 
 interface KanjiReadingHeaderProps {

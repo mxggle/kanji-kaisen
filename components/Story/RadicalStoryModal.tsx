@@ -134,7 +134,7 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                             <h3 className="text-lg font-semibold text-white">The Story</h3>
                         </div>
                         <p className="text-white/80 leading-relaxed text-lg italic">
-                            "{story.story}"
+                            &ldquo;{story.story}&rdquo;
                         </p>
                     </section>
 
