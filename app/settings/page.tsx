@@ -6,6 +6,7 @@ import { ArrowLeft, RotateCcw, Settings2, MessageSquare, ArrowRight } from "luci
 import { useSettingsStore } from "@/lib/settings-store";
 import { useProgressStore } from "@/lib/store";
 import { isDailyHandwritingSkipActive } from "@/lib/handwriting-preferences";
+import { trackEvent } from "@/lib/analytics";
 
 function subscribeHydration() {
     return () => { };
