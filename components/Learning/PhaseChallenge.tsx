@@ -73,6 +73,13 @@ export function PhaseChallenge({
             kanji: data.char,
             kanji_index: kanjiIndex,
         });
+        trackEvent("handwriting_submitted", {
+            checkpoint_id: checkpointId,
+            checkpoint_title: checkpointTitle,
+            category,
+            kanji: data.char,
+            kanji_index: kanjiIndex,
+        });
         setStatus("checking");
         setShowFeedbackOverlay(false);
 
@@ -200,6 +207,18 @@ export function PhaseChallenge({
             kanji_index: kanjiIndex,
         });
         setShowPeek(true);
+    };
+
+    const handleSkipHandwriting = (source: "drawing" | "fail") => {
+        trackEvent("handwriting_skipped", {
+            checkpoint_id: checkpointId,
+            checkpoint_title: checkpointTitle,
+            category,
+            kanji: data.char,
+            kanji_index: kanjiIndex,
+            source,
+        });
+        onSuccess();
     };
 
     // Simple audio feedback using Web Audio
@@ -462,13 +481,21 @@ export function PhaseChallenge({
             <div className="sticky bottom-0 left-0 right-0 w-[calc(100%+2rem)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black via-black/95 to-transparent pt-6 -mx-4 mt-auto z-40">
                 {/* Check button - prominent */}
                 {status === "drawing" && (
-                    <button
-                        onClick={handleCheck}
-                        className="w-full max-w-md py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl flex items-center justify-center gap-2 hover:from-cyan-600 hover:to-blue-600 transition-all font-bold text-lg shadow-lg shadow-blue-500/20 active:scale-[0.98]"
-                    >
-                        <CheckCircle size={24} />
-                        Check Answer
-                    </button>
+                    <div className="w-full max-w-md space-y-3">
+                        <button
+                            onClick={handleCheck}
+                            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl flex items-center justify-center gap-2 hover:from-cyan-600 hover:to-blue-600 transition-all font-bold text-lg shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                        >
+                            <CheckCircle size={24} />
+                            Check Answer
+                        </button>
+                        <button
+                            onClick={() => handleSkipHandwriting("drawing")}
+                            className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm"
+                        >
+                            Skip Handwriting
+                        </button>
+                    </div>
                 )}
 
                 {/* Action buttons after check */}
@@ -534,16 +561,7 @@ export function PhaseChallenge({
                             Try Again
                         </button>
                         <button
-                            onClick={() => {
-                                trackEvent("challenge_skipped", {
-                                    checkpoint_id: checkpointId,
-                                    checkpoint_title: checkpointTitle,
-                                    category,
-                                    kanji: data.char,
-                                    kanji_index: kanjiIndex,
-                                });
-                                onSuccess(); // Move to next kanji (heart already lost)
-                            }}
+                            onClick={() => handleSkipHandwriting("fail")}
                             className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm"
                         >
                             Skip to Next
