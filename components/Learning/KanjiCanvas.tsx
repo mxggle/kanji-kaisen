@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
-// @ts-ignore
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { KanjiWriter, KanjiVGParser } from "kanji-recognizer";
 
 interface KanjiCanvasProps {
@@ -20,9 +19,9 @@ export interface KanjiCanvasRef {
 }
 
 export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
-    ({ kanji, mode, onComplete, onMistake, animateOnLoad }, ref) => {
+    ({ kanji, mode, onComplete, animateOnLoad }, ref) => {
         const containerRef = useRef<HTMLDivElement>(null);
-        const writerRef = useRef<any>(null);
+        const writerRef = useRef<KanjiWriter | null>(null);
         const [isLoading, setIsLoading] = useState(true);
         const [error, setError] = useState<string | null>(null);
         const [isInitialized, setIsInitialized] = useState(false);
@@ -92,11 +91,11 @@ export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
                     containerRef.current.innerHTML = '';
                     setIsInitialized(false); // Reset initialization flag
 
-                    const id = `kanji-canvas-${Math.random().toString(36).substr(2, 9)}`;
+                    const id = `kanji-canvas-${unicode}-${mode}`;
                     containerRef.current.id = id;
 
                     // Base options
-                    const options: any = {
+                    const options: Record<string, unknown> = {
                         width: 300,
                         height: 300,
                         strokeColor: "#333",

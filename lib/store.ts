@@ -14,17 +14,22 @@ interface UserProgressState {
     restoreHearts: () => void;
     completeCheckpoint: (id: string) => void;
     checkStreak: () => void;
+    resetProgress: () => void;
 }
+
+const INITIAL_PROGRESS_STATE = {
+    hearts: 10,
+    maxHearts: 10,
+    streak: 0,
+    lastLoginDate: null,
+    completedCheckpoints: {} as Record<string, boolean>,
+    unlockedLevels: ['N5'],
+};
 
 export const useProgressStore = create<UserProgressState>()(
     persist(
         (set, get) => ({
-            hearts: 10,
-            maxHearts: 10,
-            streak: 0,
-            lastLoginDate: null,
-            completedCheckpoints: {},
-            unlockedLevels: ['N5'],
+            ...INITIAL_PROGRESS_STATE,
 
             loseHeart: () => set((state) => ({
                 hearts: Math.max(0, state.hearts - 1)
@@ -58,17 +63,33 @@ export const useProgressStore = create<UserProgressState>()(
                     // Break streak (or new user)
                     set({ streak: 1, lastLoginDate: today });
                 }
-            }
+            },
+
+            resetProgress: () => set({ ...INITIAL_PROGRESS_STATE }),
         }),
         {
             name: 'kanji-path-storage',
-            version: 1,
-            migrate: (persistedState: any, version) => {
-                if (version === 0) {
-                    persistedState.hearts = 10;
-                    persistedState.maxHearts = 10;
+            version: 2,
+            migrate: (persistedState: unknown, version) => {
+                if (!persistedState || typeof persistedState !== 'object') {
+                    return { ...INITIAL_PROGRESS_STATE };
                 }
-                return persistedState;
+
+                const state = persistedState as Partial<UserProgressState>;
+
+                if (version < 1) {
+                    state.hearts = 10;
+                    state.maxHearts = 10;
+                }
+
+                if (version < 2 && typeof state.unlockedLevels === 'undefined') {
+                    state.unlockedLevels = ['N5'];
+                }
+
+                return {
+                    ...INITIAL_PROGRESS_STATE,
+                    ...state,
+                };
             },
         }
     )

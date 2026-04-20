@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCategorySlug } from '@/lib/checkpoints';
 import { Checkpoint } from '@/lib/checkpoints';
 import {
+    type LucideIcon,
     TreeDeciduous, Users, Footprints, Home, Bird,
     Sword, MessageCircle, Wheat, Activity, Clock, Box, BookOpen
 } from 'lucide-react';
@@ -16,7 +17,7 @@ interface CategoryCardProps {
     completedCount: number;
 }
 
-const THEME_STYLES: Record<string, { bg: string, border: string, title: string, icon: any, elements: string[], radicals: string[] }> = {
+const THEME_STYLES: Record<string, { bg: string, border: string, title: string, icon: LucideIcon, elements: string[], radicals: string[] }> = {
     "Nature & Elements": {
         bg: "bg-emerald-950/40 hover:bg-emerald-950/60",
         border: "border-emerald-800/50",
@@ -133,6 +134,7 @@ export function CategoryCard({ title, checkpoints, completedCount }: CategoryCar
             `}>
                     {/* Background Image Layer */}
                     <div className="absolute inset-0 pointer-events-none overflow-hidden mix-blend-overlay">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={`/images/categories/${slug}.png`}
                             alt=""

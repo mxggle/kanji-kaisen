@@ -19,15 +19,6 @@ export function KanjiCard({ data, maxFreq }: KanjiCardProps) {
         return Math.max(0, Math.min(1, intensity));
     }, [data.frequency, maxFreq]);
 
-    // Determine border color based on JLPT
-    const borderColorClass = {
-        N1: "border-[var(--n1)]",
-        N2: "border-[var(--n2)]",
-        N3: "border-[var(--n3)]",
-        N4: "border-[var(--n4)]",
-        N5: "border-[var(--n5)]",
-    }[data.jlpt];
-
     return (
         <Link
             href={`/kanji/${data.char}`}

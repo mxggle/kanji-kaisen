@@ -1,6 +1,7 @@
 interface PhaseNavigatorProps {
     currentPhase: "info" | "quiz" | "practice" | "challenge";
     onPhaseChange: (phase: "info" | "quiz" | "practice" | "challenge") => void;
+    skipHandwriting?: boolean;
 }
 
 const PHASES = [
@@ -10,12 +11,16 @@ const PHASES = [
     { id: "challenge" as const, label: "Challenge", number: 4 },
 ];
 
-export function PhaseNavigator({ currentPhase, onPhaseChange }: PhaseNavigatorProps) {
+export function PhaseNavigator({ currentPhase, onPhaseChange, skipHandwriting = false }: PhaseNavigatorProps) {
+    const visiblePhases = skipHandwriting
+        ? PHASES.filter((phase) => phase.id === "info" || phase.id === "quiz")
+        : PHASES;
+
     return (
         <div className="flex items-center justify-center gap-2 mb-2">
-            {PHASES.map((phase, index) => {
+            {visiblePhases.map((phase, index) => {
                 const isActive = currentPhase === phase.id;
-                const isPast = PHASES.findIndex(p => p.id === currentPhase) > index;
+                const isPast = visiblePhases.findIndex((p) => p.id === currentPhase) > index;
 
                 return (
                     <button
