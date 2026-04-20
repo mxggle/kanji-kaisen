@@ -10,6 +10,7 @@ import { trackEvent } from "@/lib/analytics";
 
 import { PhaseInfo } from "./PhaseInfo";
 import { PhasePractice } from "./PhasePractice";
+import { PhaseQuiz } from "./PhaseQuiz";
 import { PhaseChallenge } from "./PhaseChallenge";
 import { PhaseNavigator } from "./PhaseNavigator";
 
@@ -18,7 +19,7 @@ interface LearningModalProps {
     onClose: () => void;
 }
 
-type Phase = "info" | "practice" | "challenge";
+type Phase = "info" | "quiz" | "practice" | "challenge";
 
 export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     const checkpoint = CHECKPOINTS.find(c => c.id === checkpointId);
@@ -79,8 +80,28 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
             hearts,
         });
 
+        if (phase === "quiz") {
+            trackEvent("quiz_started", {
+                checkpoint_id: checkpoint.id,
+                checkpoint_title: checkpoint.title,
+                category: checkpoint.category,
+                kanji: currentChar,
+                kanji_index: currentIndex + 1,
+            });
+        }
+
         if (phase === "practice") {
             trackEvent("practice_started", {
+                checkpoint_id: checkpoint.id,
+                checkpoint_title: checkpoint.title,
+                category: checkpoint.category,
+                kanji: currentChar,
+                kanji_index: currentIndex + 1,
+            });
+        }
+
+        if (phase === "challenge") {
+            trackEvent("handwriting_started", {
                 checkpoint_id: checkpoint.id,
                 checkpoint_title: checkpoint.title,
                 category: checkpoint.category,
@@ -119,7 +140,8 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
 
     // Handlers
     const handleNextPhase = () => {
-        if (phase === "info") setPhase("practice");
+        if (phase === "info") setPhase("quiz");
+        else if (phase === "quiz") setPhase("practice");
         else if (phase === "practice") setPhase("challenge");
     };
 
@@ -250,6 +272,16 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                     >
                         {phase === "info" && (
                             <PhaseInfo data={currentData} onNext={handleNextPhase} />
+                        )}
+                        {phase === "quiz" && (
+                            <PhaseQuiz
+                                data={currentData}
+                                onNext={handleNextPhase}
+                                checkpointId={checkpoint.id}
+                                checkpointTitle={checkpoint.title}
+                                category={checkpoint.category}
+                                kanjiIndex={currentIndex + 1}
+                            />
                         )}
                         {phase === "practice" && (
                             <PhasePractice data={currentData} onNext={handleNextPhase} />

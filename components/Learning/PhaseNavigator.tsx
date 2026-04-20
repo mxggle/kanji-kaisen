@@ -1,12 +1,13 @@
 interface PhaseNavigatorProps {
-    currentPhase: "info" | "practice" | "challenge";
-    onPhaseChange: (phase: "info" | "practice" | "challenge") => void;
+    currentPhase: "info" | "quiz" | "practice" | "challenge";
+    onPhaseChange: (phase: "info" | "quiz" | "practice" | "challenge") => void;
 }
 
 const PHASES = [
     { id: "info" as const, label: "Memorize", number: 1 },
-    { id: "practice" as const, label: "Trace", number: 2 },
-    { id: "challenge" as const, label: "Challenge", number: 3 },
+    { id: "quiz" as const, label: "Quiz", number: 2 },
+    { id: "practice" as const, label: "Trace", number: 3 },
+    { id: "challenge" as const, label: "Challenge", number: 4 },
 ];
 
 export function PhaseNavigator({ currentPhase, onPhaseChange }: PhaseNavigatorProps) {
