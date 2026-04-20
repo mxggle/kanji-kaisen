@@ -7,10 +7,19 @@
 ## Key Features
 
 - 🖌️ **AI Stroke Recognition**: Practice writing Kanji directly on screen with real-time feedback on your stroke accuracy.
+- 🧩 **Interactive Quizzes**: Test your semantic knowledge with context-aware multiple-choice questions using smart distractor generation.
 - 🎮 **Gamified Progression**: Earn hearts, build streaks, and unlock new levels as you improve.
 - 🌋 **Elemental Categories**: Master Kanji grouped by thematic elements like Nature, Fire, Water, and more.
 - ⚔️ **Challenge Mode**: Test your memory and precision without guides to prove your mastery.
 - 📉 **Spaced Repetition**: Efficiently review characters just as you're about to forget them.
+
+## Learning Flow
+
+Master each Kanji through a structured four-phase process:
+1. **Memorize**: Study the character's meaning, readings, and stroke order.
+2. **Quiz**: Verify your understanding with smart multiple-choice questions.
+3. **Trace**: Practice the muscle memory with guided stroke-by-stroke tracing.
+4. **Challenge**: Prove your mastery by drawing the character from memory with AI evaluation.
 
 <table style="border-collapse: collapse; border: none;">
   <tr style="border: none;">
@@ -61,3 +70,9 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 Harry Sui

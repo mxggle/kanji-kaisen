@@ -1,7 +1,9 @@
 {
   "name": "kanji-kaisen",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
+  "author": "Harry Sui <muggle6594@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

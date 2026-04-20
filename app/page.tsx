@@ -3,7 +3,51 @@
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Flame, BookOpen, Brain, Sparkles, Droplets, Laptop, Sword, Mountain } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+
+interface FloatingParticle {
+  char: string;
+  startX: number;
+  startY: number;
+  endY: number;
+  duration: number;
+  delay: number;
+  size: number;
+  opacity: number;
+  rotateStart: number;
+  rotateEnd: number;
+}
+
+const KANJI_CHARS = [
+  "水", "火", "木", "土", "山", "川", "日", "月", "風", "雨",
+  "人", "心", "力", "手", "目", "口", "大", "小", "中", "氵"
+];
+
+function seededUnit(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+}
+
+function createFloatingParticles(count: number): FloatingParticle[] {
+  return Array.from({ length: count }, (_, index) => {
+    const seed = index + 1;
+
+    return {
+      char: KANJI_CHARS[Math.floor(seededUnit(seed) * KANJI_CHARS.length)],
+      startX: seededUnit(seed + 1) * 100,
+      startY: 100 + seededUnit(seed + 2) * 20,
+      endY: -20 - seededUnit(seed + 3) * 20,
+      duration: 20 + seededUnit(seed + 4) * 15,
+      delay: seededUnit(seed + 5) * 10,
+      size: 1.5 + seededUnit(seed + 6) * 2,
+      opacity: 0.2 + seededUnit(seed + 7) * 0.3,
+      rotateStart: seededUnit(seed + 8) * 360,
+      rotateEnd: seededUnit(seed + 9) * 360 + 180,
+    };
+  });
+}
+
+const FLOATING_PARTICLES = createFloatingParticles(30);
 
 // Floating Kanji Background Animation - Disabled on mobile for performance
 function FloatingKanji() {
@@ -23,27 +67,6 @@ function FloatingKanji() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const kanjiChars = [
-    "水", "火", "木", "土", "山", "川", "日", "月", "風", "雨",
-    "人", "心", "力", "手", "目", "口", "大", "小", "中", "氵"
-  ];
-
-  // Memoize particles to prevent re-rendering and blinking
-  const particles = useMemo(() => {
-    return Array.from({ length: 30 }).map(() => ({
-      char: kanjiChars[Math.floor(Math.random() * kanjiChars.length)],
-      startX: Math.random() * 100,
-      startY: 100 + Math.random() * 20,
-      endY: -20 - Math.random() * 20,
-      duration: 20 + Math.random() * 15,
-      delay: Math.random() * 10,
-      size: 1.5 + Math.random() * 2,
-      opacity: 0.2 + Math.random() * 0.3,
-      rotateStart: Math.random() * 360,
-      rotateEnd: Math.random() * 360 + 180,
-    }));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Don't render floating kanji on mobile devices for performance
   if (isMobile) {
     return null;
@@ -51,7 +74,7 @@ function FloatingKanji() {
 
   return (
     <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-      {particles.map((particle, i) => {
+      {FLOATING_PARTICLES.map((particle, i) => {
         const char = particle.char;
         const startX = particle.startX;
         const startY = particle.startY; // Start below viewport
@@ -290,7 +313,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold mb-3 text-purple-200">Stories</h3>
               <p className="text-gray-400 leading-relaxed text-sm">
-                Every kanji has an origin tale. Learn <span className="text-white">mnemonic stories</span> that connect the character's shape to its meaning, making memorization effortless.
+                Every kanji has an origin tale. Learn <span className="text-white">mnemonic stories</span> that connect the character&apos;s shape to its meaning, making memorization effortless.
               </p>
             </div>
 
@@ -328,7 +351,25 @@ export default function LandingPage() {
           <p className="text-gray-400">Everything you need to master the written language.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <FeatureCard
+            icon={<Brain className="w-8 h-8 text-pink-400" />}
+            title="Real-time AI Sensei"
+            desc="Draw directly on the screen. Our AI analyzes your stroke order, balance, and form in real-time with detailed feedback."
+            color="hover:border-pink-500/50 hover:bg-pink-500/5"
+          />
+          <FeatureCard
+            icon={<Sword className="w-8 h-8 text-cyan-400" />}
+            title="Interactive Quizzes"
+            desc="Test your semantic knowledge with context-aware quizzes featuring smart distractor generation."
+            color="hover:border-cyan-500/50 hover:bg-cyan-500/5"
+          />
+          <FeatureCard
+            icon={<Laptop className="w-8 h-8 text-blue-400" />}
+            title="Progress Dashboard"
+            desc="Visualize your mastery with interactive grids and heatmaps. Track every character you've conquered."
+            color="hover:border-blue-500/50 hover:bg-blue-500/5"
+          />
           <FeatureCard
             icon={<Flame className="w-8 h-8 text-orange-400" />}
             title="Elemental Mastery"
@@ -336,34 +377,16 @@ export default function LandingPage() {
             color="hover:border-orange-500/50 hover:bg-orange-500/5"
           />
           <FeatureCard
-            icon={<Brain className="w-8 h-8 text-pink-400" />}
-            title="AI Sensei"
-            desc="Draw directly on the screen. Our AI analyzes your stroke order and balance in real-time."
-            color="hover:border-pink-500/50 hover:bg-pink-500/5"
-          />
-          <FeatureCard
             icon={<BookOpen className="w-8 h-8 text-emerald-400" />}
             title="Mnemonic Stories"
-            desc="Forget rote memorization. Learn the origin stories that make each character unforgettable."
+            desc="Learn the origin stories that make each character unforgettable. Connect shapes to meaning."
             color="hover:border-emerald-500/50 hover:bg-emerald-500/5"
-          />
-          <FeatureCard
-            icon={<Sword className="w-8 h-8 text-cyan-400" />}
-            title="Gamified Progress"
-            desc="Earn XP, unlock paths, and maintain streaks. Learning becomes an RPG adventure."
-            color="hover:border-cyan-500/50 hover:bg-cyan-500/5"
           />
           <FeatureCard
             icon={<Mountain className="w-8 h-8 text-purple-400" />}
             title="Spaced Repetition"
-            desc="Review at the perfect moment. The system optimizes your learning intervals."
+            desc="Review at the perfect moment. Our SRS algorithm optimizes your learning intervals for long-term retention."
             color="hover:border-purple-500/50 hover:bg-purple-500/5"
-          />
-          <FeatureCard
-            icon={<Laptop className="w-8 h-8 text-yellow-400" />}
-            title="Cross-Platform"
-            desc="Sync your progress across all devices. Study anywhere, anytime."
-            color="hover:border-yellow-500/50 hover:bg-yellow-500/5"
           />
         </div>
       </section>
@@ -388,7 +411,14 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, desc, color }: any) {
+interface FeatureCardProps {
+  icon: ReactNode;
+  title: string;
+  desc: string;
+  color: string;
+}
+
+function FeatureCard({ icon, title, desc, color }: FeatureCardProps) {
   return (
     <motion.div
       whileHover={{ y: -5 }}
