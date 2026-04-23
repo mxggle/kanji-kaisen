@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AuthSyncBootstrap } from "@/components/Auth/AuthSyncBootstrap";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${notoSansJP.variable} font-sans antialiased flex flex-col min-h-screen`}
       >
+        <AuthSyncBootstrap />
         <Header />
         <main className="flex-1">
           {children}

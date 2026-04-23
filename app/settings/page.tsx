@@ -7,6 +7,7 @@ import { useSettingsStore } from "@/lib/settings-store";
 import { useProgressStore } from "@/lib/store";
 import { isDailyHandwritingSkipActive } from "@/lib/handwriting-preferences";
 import { trackEvent } from "@/lib/analytics";
+import { AccountPanel } from "@/components/Auth/AccountPanel";
 
 function subscribeHydration() {
     return () => { };
@@ -115,6 +116,8 @@ export default function SettingsPage() {
                         </p>
                     </div>
                 </div>
+
+                <AccountPanel />
 
                 <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 md:p-5">
                     <h2 className="text-base font-semibold mb-1">Learning</h2>

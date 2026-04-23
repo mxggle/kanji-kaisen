@@ -6,7 +6,7 @@ export type TargetJlpt = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 export type LearningMode = 'standard' | 'light';
 export type DailyGoalMinutes = 5 | 10 | 20;
 
-interface SettingsState {
+export interface SettingsState {
     skipHandwritingGlobally: boolean;
     skipHandwritingTodayDate: string | null;
     soundEnabled: boolean;
@@ -28,7 +28,7 @@ interface SettingsState {
     resetSettings: () => void;
 }
 
-const INITIAL_SETTINGS_STATE = {
+export const INITIAL_SETTINGS_STATE = {
     skipHandwritingGlobally: false,
     skipHandwritingTodayDate: null,
     soundEnabled: true,
