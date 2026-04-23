@@ -58,10 +58,10 @@ export const useProgressStore = create<UserProgressState>()(
 
                 if (lastLoginDate === yesterdayString) {
                     // Contine streak
-                    set({ streak: streak + 1, lastLoginDate: today });
+                    set({ streak: streak + 1, lastLoginDate: today, hearts: get().maxHearts });
                 } else {
                     // Break streak (or new user)
-                    set({ streak: 1, lastLoginDate: today });
+                    set({ streak: 1, lastLoginDate: today, hearts: get().maxHearts });
                 }
             },
 
