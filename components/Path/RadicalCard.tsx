@@ -31,9 +31,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
 
     return (
         <>
-            <button
-                onClick={handleCardClick}
-                disabled={isLocked}
+            <div
                 className={cn(
                     "relative w-full max-w-2xl h-32 rounded-3xl overflow-hidden border transition-all duration-300 group text-left",
                     "hover:scale-[1.02] active:scale-[0.98]",
@@ -42,7 +40,13 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                         : `${themeClass} backdrop-blur-sm border-opacity-50 hover:border-opacity-100`
                 )}
             >
-
+                <button
+                    type="button"
+                    onClick={handleCardClick}
+                    disabled={isLocked}
+                    className="absolute inset-0 z-10 disabled:cursor-not-allowed"
+                    aria-label={`Open ${checkpoint.title}`}
+                />
 
                 {/* Background Watermark Image (The Radical itself) */}
                 <div className={cn(
@@ -54,7 +58,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                 </div>
 
                 {/* Content Container */}
-                <div className="relative h-full px-8 py-6 flex items-center justify-between z-10">
+                <div className="relative h-full px-8 py-6 flex items-center justify-between z-20 pointer-events-none">
                     <div className="flex flex-col h-full justify-center">
                         <div className="flex items-center gap-3 mb-2">
                             {/* Icon/Status */}
@@ -96,15 +100,17 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                         {/* Info Button */}
                         {!isLocked && (
                             <button
+                                type="button"
                                 onClick={handleInfoClick}
                                 className={cn(
                                     "p-3 rounded-xl bg-white/10 hover:bg-white/20",
                                     isCompleted ? "text-amber-500" : themeClass.split(' ')[0],
                                     "transition-all duration-200",
                                     "opacity-60 group-hover:opacity-100",
-                                    "hover:scale-110 active:scale-95"
+                                    "hover:scale-110 active:scale-95 pointer-events-auto"
                                 )}
                                 title="Learn about this radical"
+                                aria-label={`Learn about ${checkpoint.radical}`}
                             >
                                 <BookOpen size={24} />
                             </button>
@@ -128,7 +134,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                 {isCompleted && (
                     <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 animate-shimmer bg-[length:200%_100%]" />
                 )}
-            </button>
+            </div>
 
             {/* Story Modal */}
             {showStory && (
@@ -141,4 +147,3 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
         </>
     );
 }
-

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface UserProgressState {
+export interface UserProgressState {
     hearts: number;
     maxHearts: number;
     streak: number;
@@ -17,7 +17,7 @@ interface UserProgressState {
     resetProgress: () => void;
 }
 
-const INITIAL_PROGRESS_STATE = {
+export const INITIAL_PROGRESS_STATE = {
     hearts: 10,
     maxHearts: 10,
     streak: 0,
@@ -58,10 +58,10 @@ export const useProgressStore = create<UserProgressState>()(
 
                 if (lastLoginDate === yesterdayString) {
                     // Contine streak
-                    set({ streak: streak + 1, lastLoginDate: today });
+                    set({ streak: streak + 1, lastLoginDate: today, hearts: get().maxHearts });
                 } else {
                     // Break streak (or new user)
-                    set({ streak: 1, lastLoginDate: today });
+                    set({ streak: 1, lastLoginDate: today, hearts: get().maxHearts });
                 }
             },
 

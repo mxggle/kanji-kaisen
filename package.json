@@ -1,6 +1,6 @@
 {
   "name": "kanji-kaisen",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": false,
   "author": "Harry Sui <muggle6594@gmail.com>",
   "license": "MIT",
@@ -8,10 +8,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --test \"lib/**/*.test.mjs\" \"components/**/*.test.mjs\""
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.104.1",
     "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.25.0",

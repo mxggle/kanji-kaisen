@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bebas_Neue } from "next/font/google";
-import { Heart, Flame, Settings } from "lucide-react";
+import { Heart, Flame, Settings, UserRound } from "lucide-react";
 import { useProgressStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth-store";
+import { useSyncStatusStore } from "@/lib/sync/sync-engine";
 
 const bebasNeue = Bebas_Neue({
     weight: "400",
@@ -13,6 +15,8 @@ const bebasNeue = Bebas_Neue({
 
 export function Header() {
     const { hearts, streak } = useProgressStore();
+    const user = useAuthStore((state) => state.user);
+    const syncStatus = useSyncStatusStore((state) => state.status);
     const pathname = usePathname();
 
     const isHomePage = pathname === "/";
@@ -51,6 +55,23 @@ export function Header() {
                             <Flame size={16} fill="currentColor" />
                             <span className="font-bold text-sm md:text-base leading-none">{streak}</span>
                         </div>
+
+                        <div className="h-4 w-px bg-white/15" />
+
+                        <Link
+                            href="/settings#account"
+                            aria-label={user ? "Open account sync settings" : "Sign in or sync account"}
+                            className={`flex items-center gap-1.5 px-1.5 ${
+                                user
+                                    ? syncStatus === "error"
+                                        ? "text-amber-400"
+                                        : "text-cyan-300"
+                                    : "text-white/45"
+                            } hover:text-white transition-colors`}
+                            title={user ? user.email ?? "Signed in" : "Not signed in"}
+                        >
+                            <UserRound size={15} />
+                        </Link>
 
                         <div className="h-4 w-px bg-white/15" />
 

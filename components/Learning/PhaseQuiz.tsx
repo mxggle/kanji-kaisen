@@ -5,11 +5,16 @@ import { CHECKPOINTS } from "@/lib/checkpoints";
 import { trackEvent } from "@/lib/analytics";
 import { ArrowRight, CircleHelp } from "lucide-react";
 import { useMemo, useState } from "react";
-import { canSelectQuizMeaning, getLockedQuizMeaning } from "./phaseQuizState";
+import {
+    canSelectQuizMeaning,
+    getLockedQuizMeaning,
+    shouldLoseHeartForQuizSelection,
+} from "./phaseQuizState";
 
 interface PhaseQuizProps {
     data: KanjiData;
     onNext: () => void;
+    onFail: () => void;
     checkpointId: string;
     checkpointTitle: string;
     category: string;
@@ -128,6 +133,7 @@ function buildOptions(target: KanjiData, category: string): string[] {
 export function PhaseQuiz({
     data,
     onNext,
+    onFail,
     checkpointId,
     checkpointTitle,
     category,
@@ -145,7 +151,17 @@ export function PhaseQuiz({
         if (!canSelectQuizMeaning(selectedMeaning)) return;
 
         const lockedMeaning = getLockedQuizMeaning(selectedMeaning, meaning);
+        const shouldLoseHeart = shouldLoseHeartForQuizSelection(
+            selectedMeaning,
+            lockedMeaning,
+            data.meaning
+        );
+
         setSelectedMeaning(lockedMeaning);
+        if (shouldLoseHeart) {
+            onFail();
+        }
+
         trackEvent("quiz_answered", {
             checkpoint_id: checkpointId,
             checkpoint_title: checkpointTitle,

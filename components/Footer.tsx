@@ -73,7 +73,7 @@ export function Footer() {
                     {/* Meta info */}
                     <div className="flex flex-col items-center space-y-1 pt-2">
                         <div className="text-[10px] text-gray-700">
-                            © {currentYear} Kanji Kaisen • Version 1.0.0
+                            © {currentYear} Kanji Kaisen • Version 1.1.0
                         </div>
                         <div className="text-[10px] text-gray-800">
                             Built with Next.js • Powered by AI

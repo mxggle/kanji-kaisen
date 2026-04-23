@@ -321,6 +321,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                             <PhaseQuiz
                                 data={currentData}
                                 onNext={handleNextPhase}
+                                onFail={handleChallengeFail}
                                 checkpointId={checkpoint.id}
                                 checkpointTitle={checkpoint.title}
                                 category={checkpoint.category}
