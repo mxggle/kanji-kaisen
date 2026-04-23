@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-04-24
+
+### Added
+- Supabase email magic-link login with account and sync controls in Settings.
+- Automatic local-to-cloud migration for existing browser progress and settings.
+- Debounced progress/settings sync after login, backed by a Supabase `user_app_state` table with RLS policies.
+- Account status entry point in the header.
+
+### Fixed
+- Wrong quiz answers now deduct hearts on the first incorrect selection.
+- Radical cards no longer render nested buttons, resolving hydration warnings.
+- Header account icon now links to the account sync panel.
+
+### Changed
+- Added a project test script covering learning state helpers and Supabase sync merge behavior.
+- Footer version display updated to 1.1.0.
+
+---
+
 ## [1.0.0] - 2026-01-16
 
 ### Added
