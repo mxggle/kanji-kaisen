@@ -58,18 +58,20 @@ export function Header() {
 
                         <div className="h-4 w-px bg-white/15" />
 
-                        <div
+                        <Link
+                            href="/settings#account"
+                            aria-label={user ? "Open account sync settings" : "Sign in or sync account"}
                             className={`flex items-center gap-1.5 px-1.5 ${
                                 user
                                     ? syncStatus === "error"
                                         ? "text-amber-400"
                                         : "text-cyan-300"
                                     : "text-white/45"
-                            }`}
+                            } hover:text-white transition-colors`}
                             title={user ? user.email ?? "Signed in" : "Not signed in"}
                         >
                             <UserRound size={15} />
-                        </div>
+                        </Link>
 
                         <div className="h-4 w-px bg-white/15" />
 

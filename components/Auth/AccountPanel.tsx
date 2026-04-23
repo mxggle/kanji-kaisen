@@ -27,7 +27,7 @@ export function AccountPanel() {
     };
 
     return (
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 md:p-5">
+        <section id="account" className="scroll-mt-24 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 md:p-5">
             <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
                     <Cloud size={20} />
