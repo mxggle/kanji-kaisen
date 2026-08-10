@@ -1,7 +1,7 @@
 import { KanjiCanvas, KanjiCanvasRef } from "./KanjiCanvas";
 import { KanjiReadingHeader } from "./KanjiReadingHeader";
 import { KanjiData } from "@/types/kanji";
-import { Trash2, Eye, EyeOff, CheckCircle, Sparkles, ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
+import { Trash2, Eye, EyeOff, CheckCircle, ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
 
@@ -296,37 +296,36 @@ export function PhaseChallenge({
                 aiFeedback.strokeFormIssues.length > 0 ||
                 aiFeedback.shapeIssues.length > 0
             ) && (
-                    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-br from-purple-900/95 to-blue-900/95 border-t border-purple-500/30 backdrop-blur-lg shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-500">
-                        <div className="max-w-2xl mx-auto">
+                    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <div>
                             {/* Drawer Header - Clickable */}
                             <button
                                 onClick={() => setIsDrawerExpanded(!isDrawerExpanded)}
-                                className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                                className="w-full flex items-center justify-between border-b border-zinc-800 px-4 py-3 text-left hover:bg-zinc-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-zinc-500"
                             >
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-purple-400" />
-                                    <h3 className="text-lg font-bold text-white">AI Feedback</h3>
-                                    <span className="text-xs text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                                <div className="flex items-center gap-2.5">
+                                    <h3 className="text-base font-semibold tracking-tight text-white">AI Feedback</h3>
+                                    <span className="rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-300">
                                         {aiFeedback.confidence.toFixed(0)}%
                                     </span>
                                 </div>
                                 {isDrawerExpanded ? (
-                                    <ChevronDown className="w-5 h-5 text-purple-400" />
+                                    <ChevronDown className="w-5 h-5 text-zinc-400" />
                                 ) : (
-                                    <ChevronUp className="w-5 h-5 text-purple-400" />
+                                    <ChevronUp className="w-5 h-5 text-zinc-400" />
                                 )}
                             </button>
 
                             {/* Drawer Content - Collapsible */}
                             {isDrawerExpanded && (
-                                <div className="px-4 pb-4 space-y-3 max-h-[50vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="max-h-[50vh] space-y-3 overflow-y-auto px-4 pb-3 pt-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                     {/* Suggestions - Most Important */}
                                     {aiFeedback.suggestions && aiFeedback.suggestions.length > 0 && (
-                                        <div className="space-y-1.5">
-                                            <p className="text-xs font-semibold text-purple-300">💡 Tips:</p>
-                                            <ul className="space-y-1">
+                                        <div className="border-l-2 border-zinc-600 pl-3">
+                                            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Suggestion</p>
+                                            <ul className="space-y-1 text-sm leading-5 text-white/90">
                                                 {aiFeedback.suggestions.slice(0, 3).map((suggestion, idx) => (
-                                                    <li key={idx} className="text-xs text-white/90 pl-3 border-l-2 border-purple-400/50">
+                                                    <li key={idx}>
                                                         {suggestion}
                                                     </li>
                                                 ))}
@@ -334,33 +333,33 @@ export function PhaseChallenge({
                                         </div>
                                     )}
 
-                                    {/* Issues - Compact Grid */}
+                                    {/* Issues - Compact List */}
                                     <div className="grid gap-2">
                                         {aiFeedback.strokeOrderIssues && aiFeedback.strokeOrderIssues.length > 0 && (
-                                            <div className="bg-orange-500/10 rounded-lg p-2">
-                                                <p className="text-xs font-semibold text-orange-300 mb-1">⚠️ Order</p>
-                                                <p className="text-xs text-white/80">{aiFeedback.strokeOrderIssues[0]}</p>
+                                            <div className="rounded-md border border-zinc-800 bg-zinc-900/80 px-3 py-2">
+                                                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Order</p>
+                                                <p className="text-xs leading-5 text-white/80">{aiFeedback.strokeOrderIssues[0]}</p>
                                             </div>
                                         )}
 
                                         {aiFeedback.strokeFormIssues && aiFeedback.strokeFormIssues.length > 0 && (
-                                            <div className="bg-yellow-500/10 rounded-lg p-2">
-                                                <p className="text-xs font-semibold text-yellow-300 mb-1">✏️ Form</p>
-                                                <p className="text-xs text-white/80">{aiFeedback.strokeFormIssues[0]}</p>
+                                            <div className="rounded-md border border-zinc-800 bg-zinc-900/80 px-3 py-2">
+                                                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Form</p>
+                                                <p className="text-xs leading-5 text-white/80">{aiFeedback.strokeFormIssues[0]}</p>
                                             </div>
                                         )}
 
                                         {aiFeedback.shapeIssues && aiFeedback.shapeIssues.length > 0 && (
-                                            <div className="bg-blue-500/10 rounded-lg p-2">
-                                                <p className="text-xs font-semibold text-blue-300 mb-1">📐 Shape</p>
-                                                <p className="text-xs text-white/80">{aiFeedback.shapeIssues[0]}</p>
+                                            <div className="rounded-md border border-zinc-800 bg-zinc-900/80 px-3 py-2">
+                                                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Shape</p>
+                                                <p className="text-xs leading-5 text-white/80">{aiFeedback.shapeIssues[0]}</p>
                                             </div>
                                         )}
                                     </div>
 
                                     <button
                                         onClick={() => setShowAIFeedback(false)}
-                                        className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs rounded-lg transition-colors"
+                                        className="ml-auto block rounded-md border border-zinc-700 bg-transparent px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
                                     >
                                         Dismiss
                                     </button>

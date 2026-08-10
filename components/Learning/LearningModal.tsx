@@ -297,7 +297,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-md mx-auto">
+            <div className="hide-scrollbar flex-1 overflow-y-auto overflow-x-hidden p-4 w-full max-w-md mx-auto">
                 {/* Phase Navigator */}
                 <PhaseNavigator
                     currentPhase={phase}
