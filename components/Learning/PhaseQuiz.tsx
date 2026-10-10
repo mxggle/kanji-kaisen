@@ -190,7 +190,7 @@ export function PhaseQuiz({
     return (
         <div className="flex flex-col items-center w-full animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="mb-2 w-full flex justify-center relative z-50">
-                <KanjiReadingHeader data={data} />
+                <KanjiReadingHeader data={data} hideMeaning={selectedMeaning === null} />
             </div>
 
             <div className="w-full bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 mb-4">
