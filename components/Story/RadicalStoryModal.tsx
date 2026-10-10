@@ -3,15 +3,16 @@
 import { X, Sparkles, MapPin, BookOpen, PenTool } from "lucide-react";
 import { getRadicalStory, getRadicalStoryByChar, RadicalStory } from "@/lib/story-loader";
 import { useEffect } from "react";
+import type { CategoryTheme } from "@/lib/category-theme";
 
 interface RadicalStoryModalProps {
     radicalKey?: string;
     radicalChar?: string;
     onClose: () => void;
-    themeClass: string;
+    theme: CategoryTheme;
 }
 
-export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass }: RadicalStoryModalProps) {
+export function RadicalStoryModal({ radicalKey, radicalChar, onClose, theme }: RadicalStoryModalProps) {
     // Get story by key or by character
     let story: RadicalStory | undefined;
     if (radicalKey) {
@@ -38,7 +39,7 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                 />
                 <div className={`
                     relative w-full max-w-md p-8 text-center
-                    bg-zinc-900/95 rounded-3xl border ${themeClass.split(' ')[1]}
+                    bg-zinc-900/95 rounded-3xl border ${theme.border}
                 `}>
                     <div className="text-6xl font-serif mb-4">{radicalChar}</div>
                     <p className="text-white/60 mb-6">
@@ -55,10 +56,6 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
         );
     }
 
-    // Extract the color from themeClass for styling
-    const colorClass = themeClass.split(' ')[0]; // e.g., "text-emerald-400"
-    const bgColorClass = colorClass.replace('text-', 'bg-').replace('-400', '-500');
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -70,13 +67,13 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
             {/* Modal Content */}
             <div className={`
                 relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
-                bg-zinc-900/95 rounded-3xl border ${themeClass.split(' ')[1]}
+                bg-zinc-900/95 rounded-3xl border ${theme.border}
                 shadow-2xl custom-scrollbar
             `}>
                 {/* Hero Section with Large Radical */}
                 <div className={`
                     relative py-12 px-6 text-center overflow-hidden
-                    bg-gradient-to-b ${themeClass.split(' ')[2]} to-transparent
+                    bg-gradient-to-b ${theme.heroFrom} to-transparent
                 `}>
                     {/* Background watermark */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
@@ -101,7 +98,7 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                         `}>
                             <span className="text-7xl font-serif text-white">{story.char}</span>
                         </div>
-                        <h1 className={`text-3xl font-bold ${colorClass} mb-2`}>
+                        <h1 className={`text-3xl font-bold ${theme.text} mb-2`}>
                             {story.name}
                         </h1>
                         <p className="text-white/60 text-lg">
@@ -115,7 +112,7 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                     {/* Origin Story */}
                     <section>
                         <div className="flex items-center gap-2 mb-3">
-                            <BookOpen size={18} className={colorClass} />
+                            <BookOpen size={18} className={theme.text} />
                             <h3 className="text-lg font-semibold text-white">Origin</h3>
                         </div>
                         <p className="text-white/70 leading-relaxed">
@@ -127,10 +124,10 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                     <section className={`
                         p-5 rounded-2xl border
                         bg-gradient-to-br from-white/5 to-transparent
-                        ${themeClass.split(' ')[1]}
+                        ${theme.border}
                     `}>
                         <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className={colorClass} />
+                            <Sparkles size={18} className={theme.text} />
                             <h3 className="text-lg font-semibold text-white">The Story</h3>
                         </div>
                         <p className="text-white/80 leading-relaxed text-lg italic">
@@ -142,9 +139,9 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                     <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
                         <div className={`
                             w-10 h-10 rounded-xl flex items-center justify-center
-                            ${bgColorClass} flex-shrink-0
+                            ${theme.solid} flex-shrink-0
                         `}>
-                            <MapPin size={20} className="text-white" />
+                            <MapPin size={20} />
                         </div>
                         <div>
                             <h4 className="text-white font-medium mb-1">Where It Appears</h4>
@@ -158,9 +155,9 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                     <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
                         <div className={`
                             w-10 h-10 rounded-xl flex items-center justify-center
-                            ${bgColorClass} flex-shrink-0
+                            ${theme.solid} flex-shrink-0
                         `}>
-                            <PenTool size={20} className="text-white" />
+                            <PenTool size={20} />
                         </div>
                         <div>
                             <h4 className="text-white font-medium mb-1">Its Power</h4>
@@ -202,14 +199,14 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                                         >
                                             <div className={`
                                             w-14 h-14 rounded-xl flex items-center justify-center
-                                            bg-black/30 border ${themeClass.split(' ')[1]}
+                                            bg-black/30 border ${theme.border}
                                             flex-shrink-0
                                         `}>
                                                 <span className="text-3xl font-serif text-white">{example.char}</span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`font-bold ${colorClass}`}>
+                                                    <span className={`font-bold ${theme.text}`}>
                                                         {example.char}
                                                     </span>
                                                     <span className="text-white/60">•</span>
@@ -234,7 +231,7 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                         onClick={onClose}
                         className={`
                             w-full py-3 rounded-xl font-medium
-                            ${bgColorClass} text-white
+                            ${theme.solid}
                             hover:opacity-90 transition-opacity
                         `}
                     >

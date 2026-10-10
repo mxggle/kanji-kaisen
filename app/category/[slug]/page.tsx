@@ -11,23 +11,7 @@ import { CategoryStoryModal } from "@/components/Story/CategoryStoryModal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
-
-// Use distinct themes mapping again matching CategorySection...
-// Ideally we should export this theme map to share between components.
-// For now, I'll inline a simplified version or reuse logic.
-const THEME_COLORS: Record<string, string> = {
-    "Nature & Elements": "text-emerald-400 border-emerald-800/50 bg-emerald-950/20",
-    "Human Body & People": "text-blue-400 border-blue-800/50 bg-blue-950/20",
-    "Action & Movement": "text-red-400 border-red-800/50 bg-red-950/20",
-    "Structures & Home": "text-stone-400 border-stone-800/50 bg-stone-950/20",
-    "Animals & Wildlife": "text-amber-400 border-amber-800/50 bg-amber-950/20",
-    "Tools & Weapons": "text-slate-400 border-slate-800/50 bg-slate-950/20",
-    "Communication & Thought": "text-purple-400 border-purple-800/50 bg-purple-950/20",
-    "Textiles, Plants & Food": "text-lime-400 border-lime-800/50 bg-lime-950/20",
-    "States & Attributes": "text-pink-400 border-pink-800/50 bg-pink-950/20",
-    "Time & Sequence": "text-indigo-400 border-indigo-800/50 bg-indigo-950/20",
-    "Others": "text-zinc-400 border-zinc-800/50 bg-zinc-950/20",
-};
+import { getCategoryTheme } from "@/lib/category-theme";
 
 function subscribeHydration() {
     return () => {};
@@ -50,7 +34,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     }, [checkStreak]);
 
     const categoryName = getCategoryFromSlug(slug);
-    const themeClass = categoryName ? (THEME_COLORS[categoryName] || THEME_COLORS["Others"]) : THEME_COLORS["Others"];
+    const theme = getCategoryTheme(categoryName);
 
     // Filter Checkpoints
     const categoryCheckpoints = useMemo(() => {
@@ -93,7 +77,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     <ArrowLeft size={24} />
                 </Link>
                 <div className="flex-1">
-                    <h1 className={`text-3xl font-bold ${themeClass.split(' ')[0]}`}>{categoryName}</h1>
+                    <h1 className={`text-3xl font-bold ${theme.text}`}>{categoryName}</h1>
                     <p className="text-white/40">{categoryCheckpoints.length} Radicals</p>
                 </div>
                 <button
@@ -106,7 +90,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     className={`
                         flex items-center gap-2 px-4 py-2 rounded-xl
                         bg-white/5 hover:bg-white/10 transition-all duration-200
-                        ${themeClass.split(' ')[0]} border ${themeClass.split(' ')[1]}
+                        ${theme.text} border ${theme.border}
                         hover:scale-105 active:scale-95
                     `}
                     title="Learn about this category"
@@ -131,7 +115,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                             isLocked={!isUnlocked}
                             isCompleted={isCompleted}
                             onClick={() => handleCheckpointClick(checkpoint.id)}
-                            themeClass={themeClass}
+                            theme={theme}
                         />
                     );
                 })}
@@ -151,7 +135,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 <CategoryStoryModal
                     category={categoryName}
                     onClose={() => setShowCategoryStory(false)}
-                    themeClass={themeClass}
+                    theme={theme}
                 />
             )}
         </main>
