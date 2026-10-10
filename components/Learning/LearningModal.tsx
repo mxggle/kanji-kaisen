@@ -1,9 +1,9 @@
 "use client";
 
 import { CHECKPOINTS } from "@/lib/checkpoints";
+import { getLessonKanjiData } from "@/lib/lesson-data";
 import { useProgressStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/settings-store";
-import { KANJI_DATA } from "@/lib/data";
 import { X, Heart, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -45,7 +45,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
 
     // Derived
     const currentChar = checkpoint?.kanji[currentIndex];
-    const currentData = KANJI_DATA.find(k => k.char === currentChar);
+    const currentData = currentChar ? getLessonKanjiData(currentChar) : undefined;
     const shouldSkipHandwriting = isHandwritingSkipped({
         skipHandwritingGlobally,
         skipHandwritingTodayDate,
@@ -216,7 +216,23 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
         handleChallengeSuccess();
     };
 
-    if (!checkpoint || !currentChar || !currentData) return null;
+    if (!checkpoint || !currentChar || !currentData) {
+        return (
+            <div role="alertdialog" aria-modal="true" className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl text-center max-w-sm w-full">
+                    <h2 className="text-2xl font-bold mb-2">Lesson unavailable</h2>
+                    <p className="text-zinc-400 mb-6">
+                        {currentChar
+                            ? `We couldn't load the data for ${currentChar}.`
+                            : "We couldn't load this lesson."}
+                    </p>
+                    <button onClick={onClose} className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-zinc-200">
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (hearts <= 0) {
         return (

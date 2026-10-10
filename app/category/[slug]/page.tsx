@@ -140,6 +140,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             {/* Learning Modal */}
             {activeCheckpointId && (
                 <LearningModal
+                    key={activeCheckpointId}
                     checkpointId={activeCheckpointId}
                     onClose={() => setActiveCheckpointId(null)}
                 />

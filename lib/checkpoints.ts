@@ -16,7 +16,7 @@ interface KanjiAliveData {
     };
 }
 
-const KANJI_DATA = KANJI_DATA_RAW as KanjiAliveData;
+export const KANJI_DATA = KANJI_DATA_RAW as KanjiAliveData;
 
 export interface Checkpoint {
     id: string;
@@ -88,7 +88,7 @@ function romanize(num: number): string {
 }
 
 // Helper to map Grade to JLPT Level (Approximate)
-function getJLPTLevel(grade: number | null): string {
+export function getJLPTLevel(grade: number | null): string {
     if (grade === 1) return "N5";
     if (grade === 2) return "N4";
     if (grade === 3 || grade === 4) return "N3";
