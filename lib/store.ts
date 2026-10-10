@@ -8,6 +8,7 @@ export interface UserProgressState {
     lastLoginDate: string | null;
     completedCheckpoints: Record<string, boolean>; // checkpointId -> true
     unlockedLevels: string[];
+    progressResetAt: string | null;
 
     // Actions
     loseHeart: () => void;
@@ -24,6 +25,7 @@ export const INITIAL_PROGRESS_STATE = {
     lastLoginDate: null,
     completedCheckpoints: {} as Record<string, boolean>,
     unlockedLevels: ['N5'],
+    progressResetAt: null as string | null,
 };
 
 export const useProgressStore = create<UserProgressState>()(
@@ -65,7 +67,10 @@ export const useProgressStore = create<UserProgressState>()(
                 }
             },
 
-            resetProgress: () => set({ ...INITIAL_PROGRESS_STATE }),
+            resetProgress: () => set({
+                ...INITIAL_PROGRESS_STATE,
+                progressResetAt: new Date().toISOString(),
+            }),
         }),
         {
             name: 'kanji-path-storage',
