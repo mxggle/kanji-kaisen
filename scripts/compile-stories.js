@@ -51,7 +51,8 @@ function compileStories() {
 
     categories.forEach(category => {
         try {
-            const fileName = category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-');
+            // Same slug rules as getCategorySlug in lib/checkpoints.ts
+            const fileName = category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-').replace(/,/g, '');
             const filePath = path.join(__dirname, '../lib/stories/categories', `${fileName}.md`);
 
             if (fs.existsSync(filePath)) {
@@ -80,6 +81,8 @@ function compileStories() {
                     commonPatterns,
                     icon: data.icon || '📚'
                 };
+            } else {
+                console.warn(`⚠️  No story file for category "${category}" (${filePath})`);
             }
         } catch (error) {
             console.error(`Error loading category ${category}:`, error);
