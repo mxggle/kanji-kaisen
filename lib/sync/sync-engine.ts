@@ -35,22 +35,25 @@ const MAX_RETRY_MS = 60_000;
 
 // Settings edited while signed in stay "dirty" until uploaded, even across reloads,
 // so an offline edit is not replaced by the older remote settings on the next load.
-const SETTINGS_DIRTY_KEY = "kanji-kaisen-settings-dirty";
+// The marker is per user so one account's pending edit never wins another account's merge.
+function settingsDirtyKey(userId: string) {
+    return `kanji-kaisen-settings-dirty:${userId}`;
+}
 
-function readSettingsDirtyMarker(): string | null {
+function readSettingsDirtyMarker(userId: string): string | null {
     try {
-        return window.localStorage.getItem(SETTINGS_DIRTY_KEY);
+        return window.localStorage.getItem(settingsDirtyKey(userId));
     } catch {
         return null;
     }
 }
 
-function writeSettingsDirtyMarker(value: string | null) {
+function writeSettingsDirtyMarker(userId: string, value: string | null) {
     try {
         if (value) {
-            window.localStorage.setItem(SETTINGS_DIRTY_KEY, value);
+            window.localStorage.setItem(settingsDirtyKey(userId), value);
         } else {
-            window.localStorage.removeItem(SETTINGS_DIRTY_KEY);
+            window.localStorage.removeItem(settingsDirtyKey(userId));
         }
     } catch {
         // Storage can be unavailable (private mode); the marker is only an optimization.
@@ -94,7 +97,7 @@ export function startDebouncedSync(userId: string) {
     let stopped = false;
     let initialSynced = false;
     let applyingRemoteSnapshot = false;
-    let progressChangeCount = 0;
+    let heartsChangeCount = 0;
     let inFlight = false;
     let pendingRun = false;
     let debounceId: ReturnType<typeof setTimeout> | null = null;
@@ -110,11 +113,11 @@ export function startDebouncedSync(userId: string) {
         // Read local state after the fetch so changes made while it was in flight are kept.
         const local = getLocalSnapshot();
         const remote = row ? sanitizeRemoteSnapshot(row, local) : null;
-        const settingsMarker = readSettingsDirtyMarker();
-        const progressChangesAtStart = progressChangeCount;
+        const settingsMarker = readSettingsDirtyMarker(userId);
+        const heartsChangesAtStart = heartsChangeCount;
 
         let hearts: MergeOptions["hearts"] = "max";
-        if (initialSynced) hearts = progressChangeCount > 0 ? "local" : "remote";
+        if (initialSynced) hearts = heartsChangeCount > 0 ? "local" : "remote";
 
         const merged = mergeSnapshots(local, remote, {
             preferLocalSettings: settingsMarker !== null || !row?.migrated_at,
@@ -135,9 +138,9 @@ export function startDebouncedSync(userId: string) {
         }
 
         // Only clear markers that were not bumped by changes made during the upload.
-        progressChangeCount -= progressChangesAtStart;
-        if (settingsMarker !== null && readSettingsDirtyMarker() === settingsMarker) {
-            writeSettingsDirtyMarker(null);
+        heartsChangeCount -= heartsChangesAtStart;
+        if (settingsMarker !== null && readSettingsDirtyMarker(userId) === settingsMarker) {
+            writeSettingsDirtyMarker(userId, null);
         }
     };
 
@@ -187,14 +190,15 @@ export function startDebouncedSync(userId: string) {
         debounceId = setTimeout(run, DEBOUNCE_MS);
     };
 
-    const unsubscribeProgress = useProgressStore.subscribe(() => {
+    const unsubscribeProgress = useProgressStore.subscribe((state, previous) => {
         if (applyingRemoteSnapshot || stopped) return;
-        progressChangeCount += 1;
+        // Only a change to hearts on this device makes local hearts win the next merge.
+        if (state.hearts !== previous.hearts) heartsChangeCount += 1;
         scheduleSync();
     });
     const unsubscribeSettings = useSettingsStore.subscribe(() => {
         if (applyingRemoteSnapshot || stopped) return;
-        writeSettingsDirtyMarker(String(Date.now()));
+        writeSettingsDirtyMarker(userId, String(Date.now()));
         scheduleSync();
     });
 
