@@ -5,6 +5,7 @@ import { CHECKPOINTS } from "@/lib/checkpoints";
 import { trackEvent } from "@/lib/analytics";
 import { ArrowRight, CircleHelp } from "lucide-react";
 import { useMemo, useState } from "react";
+import { buildQuizOptions } from "./quizDistractors";
 import {
     canSelectQuizMeaning,
     getLockedQuizMeaning,
@@ -21,12 +22,6 @@ interface PhaseQuizProps {
     kanjiIndex: number;
 }
 
-interface DistractorCandidate {
-    char: string;
-    meaning: string;
-    score: number;
-}
-
 const CHAR_TO_CATEGORY: Record<string, string> = CHECKPOINTS.reduce<Record<string, string>>((acc, checkpoint) => {
     checkpoint.kanji.forEach((char) => {
         if (!acc[char]) {
@@ -35,100 +30,6 @@ const CHAR_TO_CATEGORY: Record<string, string> = CHECKPOINTS.reduce<Record<strin
     });
     return acc;
 }, {});
-
-function stableHash(input: string): number {
-    let hash = 0;
-    for (let i = 0; i < input.length; i += 1) {
-        hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-    }
-    return hash;
-}
-
-function tokenizeMeaning(meaning: string): Set<string> {
-    return new Set(
-        meaning
-            .toLowerCase()
-            .replace(/[^a-z0-9,\s/-]/g, " ")
-            .split(/[\s,/-]+/)
-            .map((t) => t.trim())
-            .filter((t) => t.length >= 2)
-    );
-}
-
-function overlapCount(a: Set<string>, b: Set<string>): number {
-    let count = 0;
-    a.forEach((token) => {
-        if (b.has(token)) count += 1;
-    });
-    return count;
-}
-
-function scoreDistractor(target: KanjiData, targetCategory: string, candidate: KanjiData): number {
-    const candidateCategory = CHAR_TO_CATEGORY[candidate.char] || "Others";
-    const targetTokens = tokenizeMeaning(target.meaning);
-    const candidateTokens = tokenizeMeaning(candidate.meaning);
-
-    let score = 0;
-
-    // 1) Same category: strongest signal for semantically similar context.
-    if (candidateCategory === targetCategory) score += 5;
-
-    // 2) Same JLPT level: similar difficulty band.
-    if (candidate.jlpt === target.jlpt) score += 3;
-
-    // 3) Similar stroke complexity: keeps options feeling from same "family".
-    const strokeDiff = Math.abs(candidate.strokeCount - target.strokeCount);
-    if (strokeDiff <= 2) score += 2;
-    else if (strokeDiff <= 4) score += 1;
-
-    // 4) Meaning token overlap: direct semantic closeness.
-    score += overlapCount(targetTokens, candidateTokens) * 4;
-
-    return score;
-}
-
-function buildOptions(target: KanjiData, category: string): string[] {
-    const ranked: DistractorCandidate[] = KANJI_DATA
-        .filter((k) => k.char !== target.char && k.meaning !== target.meaning)
-        .map((candidate) => ({
-            char: candidate.char,
-            meaning: candidate.meaning,
-            score: scoreDistractor(target, category, candidate),
-        }))
-        .sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return stableHash(a.meaning + a.char) - stableHash(b.meaning + b.char);
-        });
-
-    const chosen: string[] = [];
-    const used = new Set<string>();
-
-    // Priority pick: best-scoring unique meanings.
-    for (const item of ranked) {
-        if (!used.has(item.meaning)) {
-            chosen.push(item.meaning);
-            used.add(item.meaning);
-        }
-        if (chosen.length === 3) break;
-    }
-
-    // Safety fallback: if data is sparse, fill from the full pool.
-    if (chosen.length < 3) {
-        for (const fallback of KANJI_DATA) {
-            if (fallback.char === target.char || fallback.meaning === target.meaning) continue;
-            if (!used.has(fallback.meaning)) {
-                chosen.push(fallback.meaning);
-                used.add(fallback.meaning);
-            }
-            if (chosen.length === 3) break;
-        }
-    }
-
-    const options = [target.meaning, ...chosen];
-
-    // Stable order per kanji, but not always same position globally.
-    return options.sort((a, b) => stableHash(a + target.char) - stableHash(b + target.char));
-}
 
 export function PhaseQuiz({
     data,
@@ -142,7 +43,7 @@ export function PhaseQuiz({
     const [selectedMeaning, setSelectedMeaning] = useState<string | null>(null);
 
     const options = useMemo(() => {
-        return buildOptions(data, category);
+        return buildQuizOptions(data, category, KANJI_DATA, CHAR_TO_CATEGORY);
     }, [data, category]);
 
     const isCorrect = selectedMeaning === data.meaning;
