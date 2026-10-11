@@ -9,9 +9,11 @@ import { toRomaji } from "wanakana";
 interface KanjiReadingHeaderProps {
     data: KanjiData;
     className?: string;
+    // Hides the English meaning, e.g. while the quiz is asking for it.
+    hideMeaning?: boolean;
 }
 
-export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps) {
+export function KanjiReadingHeader({ data, className, hideMeaning = false }: KanjiReadingHeaderProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     // Truncate meaning logic
@@ -27,20 +29,24 @@ export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps)
                     "flex items-center gap-4 bg-zinc-900/80 backdrop-blur-md px-5 py-2 rounded-full border shadow-lg text-sm max-w-full transition-all duration-200 cursor-pointer hover:bg-zinc-800/80 hover:border-white/20 active:scale-95 whitespace-nowrap",
                     isOpen ? "border-white/30 bg-zinc-800/90" : "border-white/10"
                 )}
-                aria-label={isOpen ? "Hide details" : "Show detailed readings and meanings"}
+                aria-label={isOpen ? "Hide details" : hideMeaning ? "Show detailed readings" : "Show detailed readings and meanings"}
                 aria-expanded={isOpen}
             >
                 {/* Meaning Section */}
-                <div className="flex flex-col items-start gap-0.5 truncate max-w-[120px] sm:max-w-[160px]">
-                    <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold flex-shrink-0">
-                        Meaning
-                    </span>
-                    <span className="font-bold text-white tracking-wide truncate w-full" title={data.meaning}>
-                        {displayMeanings}{hasMoreMeanings ? "..." : ""}
-                    </span>
-                </div>
+                {!hideMeaning && (
+                    <>
+                        <div className="flex flex-col items-start gap-0.5 truncate max-w-[120px] sm:max-w-[160px]">
+                            <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold flex-shrink-0">
+                                Meaning
+                            </span>
+                            <span className="font-bold text-white tracking-wide truncate w-full" title={data.meaning}>
+                                {displayMeanings}{hasMoreMeanings ? "..." : ""}
+                            </span>
+                        </div>
 
-                <div className="w-px h-8 bg-white/10 flex-shrink-0" />
+                        <div className="w-px h-8 bg-white/10 flex-shrink-0" />
+                    </>
+                )}
 
                 {/* Primary Readings Section */}
                 <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
@@ -75,16 +81,20 @@ export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps)
             )}>
                 <div className="flex flex-col gap-4 text-left">
                     {/* Full Meaning Section in Popover */}
-                    <div>
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-1">
-                            Full Meaning
-                        </span>
-                        <p className="text-white text-sm font-medium leading-relaxed">
-                            {data.meaning}
-                        </p>
-                    </div>
+                    {!hideMeaning && (
+                        <>
+                            <div>
+                                <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-1">
+                                    Full Meaning
+                                </span>
+                                <p className="text-white text-sm font-medium leading-relaxed">
+                                    {data.meaning}
+                                </p>
+                            </div>
 
-                    <div className="h-px bg-white/10 my-1" />
+                            <div className="h-px bg-white/10 my-1" />
+                        </>
+                    )}
 
                     {data.onyomi.length > 0 && (
                         <div>

@@ -5,16 +5,17 @@ import { Checkpoint } from "@/lib/checkpoints";
 import { Lock, Check, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RadicalStoryModal } from "@/components/Story/RadicalStoryModal";
+import type { CategoryTheme } from "@/lib/category-theme";
 
 interface RadicalCardProps {
     checkpoint: Checkpoint;
     isLocked: boolean;
     isCompleted: boolean;
     onClick: () => void;
-    themeClass: string; // "text-emerald-400 border-emerald-800/50 bg-emerald-950/20"
+    theme: CategoryTheme;
 }
 
-export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeClass }: RadicalCardProps) {
+export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, theme }: RadicalCardProps) {
     const [showStory, setShowStory] = useState(false);
 
     const handleInfoClick = (e: React.MouseEvent) => {
@@ -37,7 +38,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                     "hover:scale-[1.02] active:scale-[0.98]",
                     isLocked
                         ? "bg-zinc-900/50 border-zinc-800 cursor-not-allowed opacity-60"
-                        : `${themeClass} backdrop-blur-sm border-opacity-50 hover:border-opacity-100`
+                        : `${theme.text} ${theme.border} ${theme.surface} backdrop-blur-sm`
                 )}
             >
                 <button
@@ -69,7 +70,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                                     <Check size={14} strokeWidth={3} />
                                 </div>
                             ) : (
-                                <div className={cn("w-2 h-2 rounded-full", themeClass.split(' ')[0].replace('text-', 'bg-'))} />
+                                <div className={cn("w-2 h-2 rounded-full", theme.accent)} />
                             )}
 
                             <span className={cn(
@@ -104,7 +105,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                                 onClick={handleInfoClick}
                                 className={cn(
                                     "p-3 rounded-xl bg-white/10 hover:bg-white/20",
-                                    isCompleted ? "text-amber-500" : themeClass.split(' ')[0],
+                                    isCompleted ? "text-amber-500" : theme.text,
                                     "transition-all duration-200",
                                     "opacity-60 group-hover:opacity-100",
                                     "hover:scale-110 active:scale-95 pointer-events-auto"
@@ -141,7 +142,7 @@ export function RadicalCard({ checkpoint, isLocked, isCompleted, onClick, themeC
                 <RadicalStoryModal
                     radicalChar={checkpoint.radical}
                     onClose={() => setShowStory(false)}
-                    themeClass={themeClass}
+                    theme={theme}
                 />
             )}
         </>

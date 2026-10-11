@@ -16,6 +16,7 @@ export interface KanjiCanvasRef {
     clear: () => void;
     hint: () => void;
     getCanvasImage: () => Promise<string | null>;
+    hasStrokes: () => boolean;
 }
 
 export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
@@ -31,6 +32,7 @@ export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
             animate: () => writerRef.current?.animate(),
             clear: () => writerRef.current?.clear(),
             hint: () => writerRef.current?.hint(),
+            hasStrokes: () => (writerRef.current?.userStrokes?.length ?? 0) > 0,
             getCanvasImage: async () => {
                 try {
                     // Check if writer is initialized

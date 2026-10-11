@@ -20,6 +20,7 @@ function pickProgressSnapshot(state: UserProgressState): ProgressSnapshot {
         lastLoginDate: state.lastLoginDate,
         completedCheckpoints: state.completedCheckpoints,
         unlockedLevels: state.unlockedLevels,
+        progressResetAt: state.progressResetAt,
     };
 }
 

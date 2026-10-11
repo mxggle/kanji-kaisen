@@ -4,11 +4,12 @@ import { X, BookOpen, Sparkles, Lightbulb, ArrowRight } from "lucide-react";
 import { getCategoryStory, getAllRadicalStories } from "@/lib/story-loader";
 import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useEffect } from "react";
+import type { CategoryTheme } from "@/lib/category-theme";
 
 interface CategoryStoryModalProps {
     category: string;
     onClose: () => void;
-    themeClass: string;
+    theme: CategoryTheme;
 }
 
 // Theme icon mapping
@@ -25,7 +26,7 @@ const THEME_ICONS: Record<string, string> = {
     "Time & Sequence": "⏰"
 };
 
-export function CategoryStoryModal({ category, onClose, themeClass }: CategoryStoryModalProps) {
+export function CategoryStoryModal({ category, onClose, theme }: CategoryStoryModalProps) {
     const story = getCategoryStory(category);
     const icon = THEME_ICONS[category] || "📚";
 
@@ -50,10 +51,6 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
         );
     });
 
-    // Extract the color from themeClass for styling
-    const colorClass = themeClass.split(' ')[0]; // e.g., "text-emerald-400"
-    const bgColorClass = colorClass.replace('text-', 'bg-').replace('-400', '-500');
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -65,7 +62,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
             {/* Modal Content */}
             <div className={`
                 relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
-                bg-zinc-900/95 rounded-3xl border ${themeClass.split(' ')[1]}
+                bg-zinc-900/95 rounded-3xl border ${theme.border}
                 shadow-2xl custom-scrollbar
             `}>
                 {/* Header */}
@@ -86,7 +83,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                                 <p className="text-white/40 text-sm uppercase tracking-widest mb-1">
                                     Category Guide
                                 </p>
-                                <h2 className={`text-2xl font-bold ${colorClass}`}>
+                                <h2 className={`text-2xl font-bold ${theme.text}`}>
                                     {story.title}
                                 </h2>
                             </div>
@@ -105,7 +102,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                     {/* Description */}
                     <section>
                         <div className="flex items-center gap-2 mb-3">
-                            <BookOpen size={18} className={colorClass} />
+                            <BookOpen size={18} className={theme.text} />
                             <h3 className="text-lg font-semibold text-white">About This Category</h3>
                         </div>
                         <p className="text-white/70 leading-relaxed">
@@ -117,10 +114,10 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                     <section className={`
                         p-5 rounded-2xl border
                         bg-gradient-to-br from-white/5 to-transparent
-                        ${themeClass.split(' ')[1]}
+                        ${theme.border}
                     `}>
                         <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className={colorClass} />
+                            <Sparkles size={18} className={theme.text} />
                             <h3 className="text-lg font-semibold text-white">Why This Matters</h3>
                         </div>
                         <p className="text-white/70 leading-relaxed">
@@ -131,7 +128,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                     {/* Common Patterns */}
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <ArrowRight size={18} className={colorClass} />
+                            <ArrowRight size={18} className={theme.text} />
                             <h3 className="text-lg font-semibold text-white">Common Patterns</h3>
                         </div>
                         <div className="space-y-3">
@@ -142,7 +139,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                                 >
                                     <div className={`
                                         w-6 h-6 rounded-full flex items-center justify-center
-                                        ${bgColorClass} text-white text-xs font-bold
+                                        ${theme.solid} text-xs font-bold
                                         flex-shrink-0 mt-0.5
                                     `}>
                                         {index + 1}
@@ -173,7 +170,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                     {categoryRadicals.length > 0 && (
                         <section>
                             <div className="flex items-center gap-2 mb-4">
-                                <span className={`text-xl ${colorClass}`}>部</span>
+                                <span className={`text-xl ${theme.text}`}>部</span>
                                 <h3 className="text-lg font-semibold text-white">Featured Radicals</h3>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -182,7 +179,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                                         key={radical.key}
                                         className={`
                                             p-4 rounded-xl border bg-white/5
-                                            ${themeClass.split(' ')[1]}
+                                            ${theme.border}
                                             hover:bg-white/10 transition-colors
                                         `}
                                     >
@@ -202,7 +199,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                         onClick={onClose}
                         className={`
                             w-full py-3 rounded-xl font-medium
-                            ${bgColorClass} text-white
+                            ${theme.solid}
                             hover:opacity-90 transition-opacity
                         `}
                     >

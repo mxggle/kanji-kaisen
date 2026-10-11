@@ -4,15 +4,7 @@ import { KanjiData } from "@/types/kanji";
 import { Trash2, Eye, EyeOff, CheckCircle, ChevronDown, ChevronUp, ArrowUp } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
-
-interface AIFeedback {
-    isRecognizable: boolean;
-    confidence: number;
-    strokeOrderIssues: string[];
-    strokeFormIssues: string[];
-    shapeIssues: string[];
-    suggestions: string[];
-}
+import { normalizeFeedback, type KanjiFeedback as AIFeedback } from "@/lib/kanji-feedback";
 
 type AudioContextConstructor = typeof AudioContext & {
     new(): AudioContext;
@@ -49,7 +41,16 @@ export function PhaseChallenge({
     const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
     const [isDrawerExpanded, setIsDrawerExpanded] = useState(true);
     const [showJumpBackHint, setShowJumpBackHint] = useState(false);
+    const [notice, setNotice] = useState<string | null>(null);
     const canvasRef = useRef<KanjiCanvasRef>(null);
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // Auto-hide peek after 1 second
     useEffect(() => {
@@ -66,6 +67,11 @@ export function PhaseChallenge({
     }, []);
 
     const handleCheck = async () => {
+        if (!canvasRef.current?.hasStrokes()) {
+            setNotice("Draw the kanji on the canvas first.");
+            return;
+        }
+
         trackEvent("challenge_submitted", {
             checkpoint_id: checkpointId,
             checkpoint_title: checkpointTitle,
@@ -80,18 +86,32 @@ export function PhaseChallenge({
             kanji: data.char,
             kanji_index: kanjiIndex,
         });
+        setNotice(null);
         setStatus("checking");
         setShowFeedbackOverlay(false);
 
+        // Infrastructure problems never cost a heart: the drawing stays so the user can retry or skip.
+        const handleCheckUnavailable = (reason: string, message: string) => {
+            trackEvent("challenge_check_unavailable", {
+                checkpoint_id: checkpointId,
+                checkpoint_title: checkpointTitle,
+                category,
+                kanji: data.char,
+                kanji_index: kanjiIndex,
+                reason,
+            });
+            setStatus("drawing");
+            setNotice(message);
+        };
+
+        let feedback: AIFeedback | null = null;
         try {
             // Get canvas image using the writer's exportImage API
             const imageData = await canvasRef.current?.getCanvasImage();
+            if (!isMountedRef.current) return;
 
             if (!imageData) {
-                console.error("PhaseChallenge: No canvas image available");
-                // Show user-friendly error message
-                alert("Please draw some strokes on the canvas before checking.");
-                setStatus("drawing");
+                handleCheckUnavailable("export_failed", "Couldn't read your drawing. Please try again.");
                 return;
             }
 
@@ -105,79 +125,76 @@ export function PhaseChallenge({
                     expectedKanji: data.char,
                 }),
             });
+            if (!isMountedRef.current) return;
 
-            const result = await response.json();
+            if (response.status === 503) {
+                handleCheckUnavailable(
+                    "service_unavailable",
+                    "Handwriting checking is unavailable right now. No heart lost. You can skip this step."
+                );
+                return;
+            }
 
-            if (result.feedback) {
-                const feedback = result.feedback;
-                setAiFeedback(feedback);
-                setShowAIFeedback(true);
-                setShowFeedbackOverlay(true);
+            if (response.status === 429) {
+                handleCheckUnavailable(
+                    "rate_limited",
+                    "Too many checks in a row. Wait a moment and try again. No heart lost."
+                );
+                return;
+            }
 
-                // Check if correct based on AI confidence
-                if (feedback.isRecognizable && feedback.confidence >= 60) {
-                    trackEvent("challenge_passed", {
-                        checkpoint_id: checkpointId,
-                        checkpoint_title: checkpointTitle,
-                        category,
-                        kanji: data.char,
-                        kanji_index: kanjiIndex,
-                        confidence: Math.round(feedback.confidence),
-                    });
-                    setStatus("success");
-                    playSuccessSound();
-                    // Don't auto-progress - let user click next themselves
-                } else {
-                    trackEvent("challenge_failed", {
-                        checkpoint_id: checkpointId,
-                        checkpoint_title: checkpointTitle,
-                        category,
-                        kanji: data.char,
-                        kanji_index: kanjiIndex,
-                        confidence: Math.round(feedback.confidence),
-                        recognizable: feedback.isRecognizable,
-                    });
-                    setStatus("fail");
-                    playFailSound();
-                    onFail(); // Lose a heart when user gets wrong answer
-                    setShowJumpBackHint(true); // Show hint to jump back
-                    // Auto-hide hint after 5 seconds
-                    setTimeout(() => setShowJumpBackHint(false), 5000);
-                    // User can try again or move on manually
-                }
-            } else {
-                // If no feedback, fail
-                trackEvent("challenge_failed", {
-                    checkpoint_id: checkpointId,
-                    checkpoint_title: checkpointTitle,
-                    category,
-                    kanji: data.char,
-                    kanji_index: kanjiIndex,
-                    failure_reason: "missing_feedback",
-                });
-                setStatus("fail");
-                onFail();
-                setShowFeedbackOverlay(true);
-                // setTimeout(() => {
-                //     setStatus("drawing");
-                // }, 2000);
+            if (response.ok) {
+                const result = await response.json();
+                feedback = normalizeFeedback(result?.feedback);
             }
         } catch (error) {
             console.error("Failed to analyze kanji:", error);
+        }
+
+        if (!isMountedRef.current) return;
+
+        if (!feedback) {
+            handleCheckUnavailable(
+                "request_error",
+                "Couldn't check your drawing. No heart lost. Please try again."
+            );
+            return;
+        }
+
+        setAiFeedback(feedback);
+        setShowAIFeedback(true);
+        setShowFeedbackOverlay(true);
+
+        // Check if correct based on AI confidence
+        if (feedback.isRecognizable && feedback.confidence >= 60) {
+            trackEvent("challenge_passed", {
+                checkpoint_id: checkpointId,
+                checkpoint_title: checkpointTitle,
+                category,
+                kanji: data.char,
+                kanji_index: kanjiIndex,
+                confidence: Math.round(feedback.confidence),
+            });
+            setStatus("success");
+            playSuccessSound();
+            // Don't auto-progress - let user click next themselves
+        } else {
             trackEvent("challenge_failed", {
                 checkpoint_id: checkpointId,
                 checkpoint_title: checkpointTitle,
                 category,
                 kanji: data.char,
                 kanji_index: kanjiIndex,
-                failure_reason: "request_error",
+                confidence: Math.round(feedback.confidence),
+                recognizable: feedback.isRecognizable,
             });
             setStatus("fail");
-            onFail();
-            setShowFeedbackOverlay(true);
-            // setTimeout(() => {
-            //     setStatus("drawing");
-            // }, 2000);
+            playFailSound();
+            onFail(); // Lose a heart when user gets wrong answer
+            setShowJumpBackHint(true); // Show hint to jump back
+            // Auto-hide hint after 5 seconds
+            setTimeout(() => setShowJumpBackHint(false), 5000);
+            // User can try again or move on manually
         }
     };
 
@@ -196,6 +213,7 @@ export function PhaseChallenge({
         setShowAIFeedback(false);
         setShowFeedbackOverlay(false);
         setShowJumpBackHint(false);
+        setNotice(null);
     };
 
     const handlePeek = () => {
@@ -481,6 +499,11 @@ export function PhaseChallenge({
                 {/* Check button - prominent */}
                 {status === "drawing" && (
                     <div className="w-full max-w-md space-y-3">
+                        {notice && (
+                            <p role="status" className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-center text-sm text-amber-200">
+                                {notice}
+                            </p>
+                        )}
                         <button
                             onClick={handleCheck}
                             className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl flex items-center justify-center gap-2 hover:from-cyan-600 hover:to-blue-600 transition-all font-bold text-lg shadow-lg shadow-blue-500/20 active:scale-[0.98]"

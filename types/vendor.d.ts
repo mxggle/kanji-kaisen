@@ -12,6 +12,7 @@ declare module "kanji-recognizer" {
         destroy?(): void;
         exportImage?(options?: ExportImageOptions): Promise<string | null>;
         onComplete?: () => void;
+        userStrokes?: unknown[];
     }
 
     export const KanjiVGParser: {

@@ -9,6 +9,8 @@ export interface ProgressSnapshot {
     lastLoginDate: string | null;
     completedCheckpoints: CompletedCheckpoints;
     unlockedLevels: string[];
+    // Set when the user resets progress; the side with the newer reset wins a merge.
+    progressResetAt: string | null;
 }
 
 export interface SettingsSnapshot {
@@ -38,4 +40,6 @@ export interface RemoteAppStateRow {
 
 export interface MergeOptions {
     preferLocalSettings: boolean;
+    // "max" keeps the larger count, "local"/"remote" take that side's hearts.
+    hearts?: "max" | "local" | "remote";
 }
