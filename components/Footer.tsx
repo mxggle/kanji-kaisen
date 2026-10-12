@@ -45,6 +45,12 @@ export function Footer() {
                             <span className="text-sm">GitHub</span>
                         </a>
                         <a
+                            href="https://nihongo.day/"
+                            className="flex items-center space-x-2 text-gray-500 hover:text-white transition-colors duration-200"
+                        >
+                            <span className="text-sm">More tools · nihongo.day</span>
+                        </a>
+                        <a
                             href="https://harrysui.me"
                             target="_blank"
                             rel="noopener noreferrer"
