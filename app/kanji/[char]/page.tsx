@@ -3,16 +3,33 @@ import { StrokeLearning } from "@/components/StrokeLearning";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 
 interface PageProps {
     params: Promise<{ char: string }>;
 }
 
-export default async function KanjiPage({ params }: PageProps) {
-    const { char } = await params;
-    const decodedChar = decodeURIComponent(char);
+function findKanji(char: string) {
+    return KANJI_DATA.find(k => k.char === decodeURIComponent(char));
+}
 
-    const kanji = KANJI_DATA.find(k => k.char === decodedChar);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const kanji = findKanji((await params).char);
+    if (!kanji) return {};
+    const readings = [...kanji.onyomi, ...kanji.kunyomi].join(", ");
+    const title = `${kanji.char} — meaning, readings and stroke order (${kanji.jlpt})`;
+    const description = `${kanji.char} means "${kanji.meaning}". Readings: ${readings}. ${kanji.strokeCount} strokes, JLPT ${kanji.jlpt}. Practice writing it with stroke-by-stroke feedback.`;
+    const path = `/kanji/${encodeURIComponent(kanji.char)}`;
+    return {
+        title,
+        description,
+        alternates: { canonical: path },
+        openGraph: { title, description, url: path },
+    };
+}
+
+export default async function KanjiPage({ params }: PageProps) {
+    const kanji = findKanji((await params).char);
 
     if (!kanji) {
         notFound();
