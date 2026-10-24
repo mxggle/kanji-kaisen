@@ -93,7 +93,7 @@ export default function SettingsPage() {
             return;
         }
 
-        router.push("/learn");
+        router.push("/practice");
     };
 
     return (

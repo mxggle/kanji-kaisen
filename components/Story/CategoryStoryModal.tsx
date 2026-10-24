@@ -1,9 +1,10 @@
 "use client";
 
-import { X, BookOpen, Sparkles, Lightbulb, ArrowRight } from "lucide-react";
+import { X } from "lucide-react";
 import { getCategoryStory, getAllRadicalStories } from "@/lib/story-loader";
 import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useEffect } from "react";
+import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
 
 interface CategoryStoryModalProps {
     category: string;
@@ -102,72 +103,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
 
                 {/* Body */}
                 <div className="p-6 pt-2 space-y-8">
-                    {/* Description */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-3">
-                            <BookOpen size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">About This Category</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.description}
-                        </p>
-                    </section>
-
-                    {/* Why It Matters */}
-                    <section className={`
-                        p-5 rounded-2xl border
-                        bg-gradient-to-br from-white/5 to-transparent
-                        ${themeClass.split(' ')[1]}
-                    `}>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">Why This Matters</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.whyItMatters}
-                        </p>
-                    </section>
-
-                    {/* Common Patterns */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <ArrowRight size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">Common Patterns</h3>
-                        </div>
-                        <div className="space-y-3">
-                            {story.commonPatterns.map((pattern, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-start gap-3 p-3 rounded-xl bg-white/5"
-                                >
-                                    <div className={`
-                                        w-6 h-6 rounded-full flex items-center justify-center
-                                        ${bgColorClass} text-white text-xs font-bold
-                                        flex-shrink-0 mt-0.5
-                                    `}>
-                                        {index + 1}
-                                    </div>
-                                    <p className="text-white/70 text-sm leading-relaxed">
-                                        {pattern}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Learning Tip */}
-                    <section className={`
-                        p-5 rounded-2xl
-                        bg-amber-500/10 border border-amber-500/30
-                    `}>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Lightbulb size={18} className="text-amber-400" />
-                            <h3 className="text-lg font-semibold text-amber-400">Learning Tip</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.learningTip}
-                        </p>
-                    </section>
+                    <CategoryStoryContent story={story} themeClass={themeClass} />
 
                     {/* Featured Radicals */}
                     {categoryRadicals.length > 0 && (
