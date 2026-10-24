@@ -169,7 +169,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Save screenshots to the scratchpad, not the repo.
   - Check that redirects work and that no large JSON landed in `.next/static`.
 - [x] **W.3 Independent review.** Spawn a fresh review subagent on the full diff against `main`, briefed on the goals but not on your conclusions. It should look at correctness, classic-flow regressions, SSR/SEO gaps, client bundle size and accessibility basics. Verify its findings and fix the real ones.
-- [ ] **W.4 Final report and stop.** Append a "Final report" section to this file:
+- [x] **W.4 Final report and stop.** Append a "Final report" section to this file:
   - What shipped (routes and features).
   - Deviations.
   - Doubtful radical-story claims.
@@ -235,3 +235,64 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 W.2 — `pnpm build && pnpm start`, Playwright at 390 and 1280 px: all 16 listed pages (plus `/kanji/々`, `/practice/tools-weapons`, `/about`) return 200 with no console errors (Vercel's `/_vercel/insights/script.js` 404 is filtered: it only exists on Vercel) and no horizontal scroll. Home search ("mizu" → 水), mobile menu, save/status persistence, a full flashcard session, a full 20-card N5 quiz, radical and bogus decks, My list filters/undo, and the katana N4 checkpoint through 分 to completion all pass. `/learn` → `/practice` and `/heatmap` → `/browse` return 307. The only `.next/static` chunk containing example words is the practice-only Kanji alive JSON. Screenshots are in the session scratchpad.
 - 2026-10-24 W.3 — A fresh reviewer (briefed on goals only) found, and I verified and fixed: /browse showed stale filters after Back/Forward (it now derives filters from `useSearchParams`); radical keys with `_` (`hi_fire`, `ki_yellow`, `gen_darkness`) were dropped from `/browse` URLs; study shortcuts (1/2/arrows/digits) fired while typing in the header search; KanjiVG's 忄/刂 weren't mapped to the ⺖/⺉ radicals, so 21 kanji sat under 心 and 6 under 刀 (`SIDE_FORM_ALIASES` in the build script; risshinben now 31, rittou 24); root `twitter`/`openGraph` title, description and url leaked onto every page (root now sets only type/siteName/card; home, browse and practice set their own); "to eat" didn't find 食 (a leading to/a/an/the is now ignored for meanings), macron romaji ("ōkii") didn't match (both おう/おお spellings tried), and stem-only reading matches tied with whole readings (now 2 points lower); `/practice/bogus` returned 200 (new server layout with `generateStaticParams` + `dynamicParams = false` gives a real 404); practice pages nested `<main>` and shared the `/practice` canonical (outer element is now a `div`, layout canonical removed); undoing a My list removal reset `addedAt` (new `restore` action); a stale "79 N5 kanji" string; two `<h1>`s on an empty study deck. Regression run after the fixes: 30/30 page checks, 44/44 study checks and the katana checkpoint at both widths pass.
 - 2026-10-24 W.3 — Review points kept as decided: robots.txt still disallows `/search`, `/study`, `/my-list` and `/settings` alongside `noindex` because 1.9 asks for both (the reviewer prefers noindex alone, since disallowed pages' noindex is never crawled); 々 stays labelled N4 (see 0.2); story-only `*hen` radical pages stay indexable because their stories differ from the base radical even though the kanji grid is shared.
+
+## Final report
+
+_2026-10-24, branch `claude/zen-sagan-9123o5`. `pnpm lint` clean, `pnpm test` 80/80, `pnpm build` prerenders 2489 pages._
+
+### What shipped
+
+- **`/kanji/[char]`** for all 2223 kanji (SSG; raw and percent-encoded URLs): meanings, on/kun readings with romaji, JLPT/grade/strokes/frequency, server-inlined numbered KanjiVG diagram, animated stroke order with replay, "Try writing" (local, no scoring, no API), Kanji alive examples with irregular readings marked, radical chip + story summary, same-radical grid, theme link, prev/next, Save + Still learning/Known.
+- **`/radicals`, `/radical/[key]`** (230 radicals, grouped by theme; full stories, explained examples, kanji grid, prev/next, "Study these").
+- **`/categories`, `/category/[slug]`** (10 themes; story inline, radicals, kanji by JLPT, "Study this theme", "Practice this theme (classic)").
+- **`/browse`** with URL-synced JLPT/stroke/theme/radical filters and sorting, server-rendered first page, "Show more".
+- **Search**: `lib/atlas/search.ts` (kanji, meanings, kana, romaji incl. macrons), header and home dropdown, `/search?q=` (noindex).
+- **Home** rewritten: search-first hero, kanji of the day, JLPT counts, themes, featured radicals, stroke-count bands, truthful pitch.
+- **Study layer**: `lib/study-store.ts`, `/my-list` (status tabs, undo), `/study` (decks: list, still learning, JLPT, radical, theme; flashcards and meaning quiz; 20-card sessions; summary; no hearts or locks).
+- **Classic practice** moved to `/practice` (+ banner); `/learn` and `/heatmap` redirect. Hearts, the Out-of-Hearts gate and the header hearts/streak/account cluster are gone; store fields and Supabase sync are untouched. All 12 previously unfinishable checkpoints can be finished.
+- **Chrome & SEO**: header nav with mobile menu, footer links and credits, `/about` with licenses, `metadataBase`, title template, per-page metadata/canonicals/OG, `sitemap.xml` (static pages, 5 JLPT views, 10 themes, 230 radicals, 2223 kanji), `robots.txt`.
+- **Data**: `pnpm data:atlas` and `pnpm data:stories`; 15 radical stories corrected; Textiles story compiled; `public/kanjivg_backup` and `app/page-new.tsx` removed. Version 2.0.0 with README and CHANGELOG.
+- **Analytics**: `search_performed`, `kanji_viewed`, `radical_viewed`, `kanji_saved`, `kanji_status_changed`, `trace_used`, `study_started`, `study_completed`.
+
+### Deviations
+
+See the Deviations log above. The ones that matter most:
+- kanjiapi.dev and edrdg.org are blocked from the build environment, so the 11 added kanji came from `davidluzgouveia/kanji-data` (KANJIDIC-derived) and their **JLPT levels are editorial**; 々 got an N4 entry.
+- The atlas JSON holds `{ kanji, radicals }`; `lib/atlas/core.ts` is the pure, tested API and `lib/atlas/index.ts` the server-only binding; `allowImportingTsExtensions` was enabled for the Node test runner.
+- `/browse` ships all 2223 slim records in its RSC payload (~82 KB gzipped HTML).
+- Classic-practice pages stay client-rendered (moved unchanged); their ~1.4 MB of JSON is no longer prefetched from atlas pages.
+- robots.txt disallows the noindex pages as the plan asked; consider dropping the disallow lines so crawlers can see `noindex`.
+
+### Doubtful radical-story claims (left unchanged)
+
+- gonben / kuchi: the "sound waves" origin of 言 is stated as fact (Shuowen: 口 + 辛 phonetic; others read a tongue or reed pipe).
+- ukanmuri: "the dot is a chimney" (usually the roof ridge).
+- ito: "the top part is the cocoon" (Shuowen: a twisted silk skein).
+- kane: "smelting furnace with nuggets" (accounts conflict: 今 phonetic + 土, or a casting mould).
+- onna: "or seated at a loom" (standard: a kneeling woman with crossed arms).
+- ichi: 万 as "一 + a symbol for many" (万 is an old variant of 萬, a scorpion).
+- ninben: 体 = 亻 + 本 (historically a popular form standing for 體).
+- oogai: 顔 glossed vaguely, without 彦.
+- Data: some story examples sit outside their radical's Kanji alive group (案 under ukanmuri, 天 under ichi, 行 under gyouninben, 言 under kuchi), and 書 (radical 曰) is in the `hi` group.
+
+### Unassigned radicals
+
+28 of 2223 kanji have no radical (no Kanji alive group or story for their KanjiVG radical): 釈麻竜魅斉耐亀虚虐魔矛鬼虎虜魂鼓肇隷匿魁彗爽邑爵虞采麿々. Adding stories for 鬼, 虍, 麻 and 矛 would cover most of them.
+
+### What the owner must do
+
+1. **Set `NEXT_PUBLIC_SITE_URL`** in Vercel (Production) if the site uses a custom domain; otherwise canonicals, OG URLs, the sitemap and robots use `https://$VERCEL_PROJECT_PRODUCTION_URL`.
+2. **Submit `/sitemap.xml`** in Google Search Console once deployed.
+3. **Check the Vercel deploy** of this branch (2489 prerendered pages; the build takes longer than before).
+4. **Confirm the KANJIDIC2/EDRDG licence version** (the About page says CC BY-SA without a version because edrdg.org was unreachable from here).
+5. Optionally review the editorial JLPT levels for 分 誰 的 孝 可 身 頃 無 里 畑 坊 and 々 in `lib/kanji-db.json` (then run `pnpm data:atlas`).
+6. Decide whether to keep the robots.txt `Disallow` lines for the noindex pages.
+
+### Phase 3 candidates (decide from analytics)
+
+- SRS scheduling on top of My list (watch `study_completed` and `kanji_status_changed`).
+- A Chinese locale (watch traffic by country and `search_performed` queries in Chinese).
+- AI handwriting critique on kanji pages (watch `trace_used` completion rates).
+- Syncing My list to Supabase (watch My list sizes and returning users).
+- Radical stories for 鬼, 虍, 麻, 矛; per-kanji component breakdowns; example-word pages (JMdict) for long-tail search.
+- Server-render or slim down the classic practice pages if `/practice` keeps meaningful traffic.
