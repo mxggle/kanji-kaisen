@@ -26,9 +26,15 @@ export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
         const [error, setError] = useState<string | null>(null);
         const [isInitialized, setIsInitialized] = useState(false);
 
+        // The writer's animate() rejects if it is destroyed mid-animation
+        // (unmount or mode switch); that's expected, so swallow it.
+        const safeAnimate = () => {
+            Promise.resolve(writerRef.current?.animate()).catch(() => {});
+        };
+
         // Expose methods via ref
         useImperativeHandle(ref, () => ({
-            animate: () => writerRef.current?.animate(),
+            animate: safeAnimate,
             clear: () => writerRef.current?.clear(),
             hint: () => writerRef.current?.hint(),
             getCanvasImage: async () => {
@@ -149,9 +155,7 @@ export const KanjiCanvas = forwardRef<KanjiCanvasRef, KanjiCanvasProps>(
                     if (animateOnLoad && mode === "view") {
                         // Small delay to ensure DOM is ready
                         setTimeout(() => {
-                            if (writerRef.current?.animate) {
-                                writerRef.current.animate();
-                            }
+                            if (isMounted) safeAnimate();
                         }, 100);
                     }
 
