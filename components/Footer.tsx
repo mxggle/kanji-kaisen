@@ -91,7 +91,7 @@ export function Footer() {
                     {/* Meta info */}
                     <div className="flex flex-col items-center space-y-1 pt-2">
                         <div className="text-[10px] text-gray-700">
-                            © {currentYear} Kanji Kaisen • Version 1.1.0
+                            © {currentYear} Kanji Kaisen • Version 2.0.0
                         </div>
                         <div className="text-[10px] text-gray-600">
                             Stroke data © KanjiVG (CC BY-SA 3.0) • Examples © Kanji alive (CC BY 4.0) •{" "}

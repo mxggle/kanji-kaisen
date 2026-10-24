@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-10-24
+
+### Added
+- Kanji atlas: a statically generated page for every kanji (2,223) with readings and romaji, a numbered KanjiVG stroke diagram, animated stroke order, a "Try writing" canvas, Kanji alive example words, radical story summary, same-radical kanji and prev/next links.
+- Radical pages (`/radicals`, `/radical/[key]`) and theme pages (`/categories`, `/category/[slug]`), server-rendered.
+- Browse page with URL-synced filters (JLPT, strokes, theme, radical, sort) and kanji search by meaning, kana, romaji or character, with instant results in the header and on the home page.
+- My list (save kanji, still learning / known) and a Study page with flashcards and a meaning quiz over your list, a JLPT level, a radical or a theme.
+- About page with data credits and licenses; sitemap, robots, canonical URLs and Open Graph metadata.
+- Unified atlas dataset (`pnpm data:atlas`) and `lib/atlas` data API.
+
+### Changed
+- The home page is now search-first, and its copy only makes claims the site delivers.
+- The practice path moved to `/practice` (`/learn` redirects there) and is linked as "Practice (classic)".
+- Header navigation replaces the hearts/streak/account cluster; Settings now only holds classic-practice options and reset tools (the account panel is hidden; existing signed-in users keep syncing).
+- Classic practice no longer costs hearts: wrong answers and failed or errored AI checks are free, and there is no "Out of Hearts" lock.
+- 15 radical stories corrected (e.g. 言 and 戈 stories, stroke counts, positions, component glosses).
+
+### Fixed
+- 12 checkpoints could never be finished because 分, 誰, 的 and nine other kanji were missing from the kanji data; they were added, and the learning modal now offers Skip/Close instead of freezing the page when data is missing.
+- The Textiles, Plants & Food theme story was never compiled.
+
+### Removed
+- `/heatmap` (now `/browse`), the unused `app/page-new.tsx` and the duplicate `public/kanjivg_backup`.
+
+---
+
 ## [1.1.0] - 2026-04-24
 
 ### Added

@@ -1,78 +1,72 @@
 # Kanji Kaisen
 
-### Master Kanji with Cursed Energy
+### A kanji atlas: logic, not magic
 
-**Kanji Kaisen** is a gamified, interactive platform designed to make learning Japanese Kanji engaging and effective. Inspired by the intensity of battle, it combines spaced repetition with AI-powered stroke recognition to help you master characters through elemental mastery.
+**Kanji Kaisen** is a free, browse-first kanji reference. Every one of its 2,200+ kanji has its own page with stroke order, readings, example words and the radical it is built from, and every radical has a short story that links its shape to its meaning. An optional study layer lets you save kanji and review them with flashcards or a quiz — no hearts, streaks or lock-outs.
 
-## Key Features
+## Features
 
-- 🖌️ **AI Stroke Recognition**: Practice writing Kanji directly on screen with real-time feedback on your stroke accuracy.
-- 🧩 **Interactive Quizzes**: Test your semantic knowledge with context-aware multiple-choice questions using smart distractor generation.
-- 🎮 **Gamified Progression**: Earn hearts, build streaks, and unlock new levels as you improve.
-- 🌋 **Elemental Categories**: Master Kanji grouped by thematic elements like Nature, Fire, Water, and more.
-- ⚔️ **Challenge Mode**: Test your memory and precision without guides to prove your mastery.
-- 📉 **Spaced Repetition**: Efficiently review characters just as you're about to forget them.
+- 📖 **A page per kanji** — meanings, on/kun readings with romaji, JLPT level, school grade, stroke count and newspaper frequency; a numbered stroke diagram, an animated stroke order with replay, a "Try writing" canvas, example words (irregular readings marked), its radical and story, same-radical kanji and prev/next links.
+- 🧩 **Radicals** — 230 radical pages, grouped by theme, each with origin, story, typical position, how it changes meaning, explained example kanji and every kanji in the atlas that uses it.
+- 🌋 **Ten themes** — Nature & Elements, Human Body & People, Tools & Weapons and more, each with its story, radicals and kanji.
+- 🔎 **Search** — by kanji, English meaning, kana or romaji (`water`, `みず`, `mizu`, `水`), with instant results in the header.
+- 🗂️ **Browse** — filter by JLPT level, stroke range, theme or radical and sort by frequency, strokes or level; filters live in the URL.
+- ⭐ **My list & Study** — save kanji, mark them still learning or known, and study a deck (your list, a JLPT level, a radical or a theme) with flashcards or a meaning quiz. Stored in your browser.
+- 🥋 **Classic practice** — the original step-by-step path (memorize → quiz → trace → AI handwriting challenge) is still available at `/practice`.
 
-## Learning Flow
+## Routes
 
-Master each Kanji through a structured four-phase process:
-1. **Memorize**: Study the character's meaning, readings, and stroke order.
-2. **Quiz**: Verify your understanding with smart multiple-choice questions.
-3. **Trace**: Practice the muscle memory with guided stroke-by-stroke tracing.
-4. **Challenge**: Prove your mastery by drawing the character from memory with AI evaluation.
+| Route | What it is |
+|---|---|
+| `/` | Search-first home: kanji of the day, JLPT levels, themes, featured radicals, stroke counts |
+| `/kanji/[char]` | Kanji page (statically generated for every kanji) |
+| `/radicals`, `/radical/[key]` | Radical index and radical pages |
+| `/categories`, `/category/[slug]` | Theme index and theme pages |
+| `/browse` | Filterable kanji list (`?jlpt=N5&min=1&max=10&sort=strokes&theme=…&radical=…`) |
+| `/search?q=` | Full search results |
+| `/my-list`, `/study` | Saved kanji and study sessions |
+| `/practice`, `/practice/[slug]` | Classic practice path |
+| `/about` | About, data sources and licenses |
+| `/settings` | Classic-practice options and reset tools |
 
-<table style="border-collapse: collapse; border: none;">
-  <tr style="border: none;">
-    <td style="border: none; padding: 10px;" align="center">
-      <a href="https://github.com/user-attachments/assets/7710bb32-8a60-4d6f-9b04-6f72f7c26414" target="_blank">
-        <img src="https://github.com/user-attachments/assets/7710bb32-8a60-4d6f-9b04-6f72f7c26414" width="300" height="600" style="object-fit: cover; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-      </a>
-    </td>
-    <td style="border: none; padding: 10px;" align="center">
-      <a href="https://github.com/user-attachments/assets/c3d5b0e5-02cd-4ef3-8f48-ce72a95328b6" target="_blank">
-        <img src="https://github.com/user-attachments/assets/c3d5b0e5-02cd-4ef3-8f48-ce72a95328b6" width="300" height="600" style="object-fit: cover; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-      </a>
-    </td>
-  </tr>
-  <tr style="border: none;">
-    <td style="border: none; padding: 10px;" align="center">
-      <a href="https://github.com/user-attachments/assets/06f8e112-1b2c-4403-b1af-21f8a9f5f89b" target="_blank">
-        <img src="https://github.com/user-attachments/assets/608f2fe9-7b11-4baf-a499-f462e6707153" width="300" height="600" style="object-fit: cover; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-      </a>
-    </td>
-    <td style="border: none; padding: 10px;" align="center">
-      <a href="https://github.com/user-attachments/assets/1908a33b-037f-49bd-b54f-4a6667ac2632" target="_blank">
-        <img src="https://github.com/user-attachments/assets/1908a33b-037f-49bd-b54f-4a6667ac2632" width="300" height="600" style="object-fit: cover; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-      </a>
-    </td>
-  </tr>
-</table>
-## Tech Stack
+`/learn` redirects to `/practice` and `/heatmap` to `/browse`.
 
-- **Framework**: [Next.js 15](https://nextjs.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Recognition**: [Kanji Recognizer](https://github.com/mxggle/kanji-recognizer)
-- **AI/LLM**: Google Gemini (for content generation/feedback)
+## Data sources and credits
 
-## Getting Started
+- **[KanjiVG](https://kanjivg.tagaini.net)** by Ulrich Apel — stroke order SVGs (`public/kanjivg`), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **[Kanji alive](https://kanjialive.com)** — radical groups and example words, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **[KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project)** by the EDRDG, via [kanjiapi.dev](https://kanjiapi.dev) — meanings, readings, grades, frequency; used under the [EDRDG licence](https://www.edrdg.org/edrdg/licence.html) (CC BY-SA).
+- JLPT levels are unofficial community lists. Radical stories are original mnemonics written for this site.
 
-First, run the development server:
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev            # http://localhost:3000
+pnpm lint
+pnpm test           # node --test over lib/** and components/** *.test.mjs
+pnpm build && pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Data pipeline (outputs are committed):
+
+```bash
+pnpm data:stories   # lib/stories/**/*.md -> lib/compiled-stories.json
+pnpm data:atlas     # kanji-db + Kanji alive + stories + KanjiVG -> lib/atlas/kanji-atlas.json, public/data/search-index.json
+```
+
+The full atlas dataset is server-only (`lib/atlas/index.ts`); client components get props or the slim search index.
+
+### Environment
+
+Copy `.env.local.example` to `.env.local`. `NEXT_PUBLIC_SITE_URL` sets canonical URLs, the sitemap and robots (it falls back to Vercel's production URL). `GEMINI_API_KEY` is only needed for the classic practice handwriting challenge. Supabase variables enable the (hidden) account sync for existing users.
+
+## Tech stack
+
+Next.js 16 (App Router), React 19, Tailwind CSS 4, Zustand, [kanji-recognizer](https://github.com/mxggle/kanji-recognizer), wanakana, KanjiVG; Google Gemini for the classic handwriting challenge only.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The code is licensed under the MIT License — see [LICENSE](LICENSE). Data keeps its own licenses (above).
 
 Copyright (c) 2026 Harry Sui
