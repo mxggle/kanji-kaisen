@@ -1,7 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { Globe, Mail, Heart, Github, MessageSquare } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+
+const FOOTER_LINKS = [
+    { href: "/browse", label: "Browse" },
+    { href: "/radicals", label: "Radicals" },
+    { href: "/categories", label: "Themes" },
+    { href: "/practice", label: "Practice (classic)" },
+    { href: "/about", label: "About & credits" },
+];
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
@@ -32,6 +41,15 @@ export function Footer() {
                             Give Feedback
                         </a>
                     </div>
+
+                    {/* Site Links */}
+                    <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                        {FOOTER_LINKS.map((link) => (
+                            <Link key={link.href} href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                                {link.label}
+                            </Link>
+                        ))}
+                    </nav>
 
                     {/* Secondary Links */}
                     <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 pt-4">
@@ -75,8 +93,9 @@ export function Footer() {
                         <div className="text-[10px] text-gray-700">
                             © {currentYear} Kanji Kaisen • Version 1.1.0
                         </div>
-                        <div className="text-[10px] text-gray-800">
-                            Built with Next.js • Powered by AI
+                        <div className="text-[10px] text-gray-600">
+                            Stroke data © KanjiVG (CC BY-SA 3.0) • Examples © Kanji alive (CC BY 4.0) •{" "}
+                            <Link href="/about" className="underline hover:text-gray-400">Credits</Link>
                         </div>
                     </div>
                 </div>
