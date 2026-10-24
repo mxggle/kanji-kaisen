@@ -16,6 +16,8 @@ import { ReadingList } from "@/components/Atlas/kanji/ReadingList";
 import { ExampleList } from "@/components/Atlas/kanji/ExampleList";
 import { StrokeOrderPanel } from "@/components/Atlas/kanji/StrokeOrderPanel";
 import { firstSentences, truncate } from "@/components/Atlas/kanji/summary";
+import { StudyControls } from "@/components/Atlas/kanji/StudyControls";
+import { TrackEvent } from "@/components/Atlas/TrackEvent";
 
 // Every kanji is prerendered; unknown chars 404. Percent-encoded URLs map to
 // the same prerendered pages (Next normalizes the encoding).
@@ -100,8 +102,8 @@ export default async function KanjiPage({ params }: PageProps) {
                             </StatBadge>
                         )}
                     </div>
-                    {/* Task 2.2: Save toggle and "Still learning / Known" switch go here. */}
-                    <div data-slot="study-controls" />
+                    <StudyControls char={kanji.char} />
+                    <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
                 </div>
             </header>
 

@@ -4,6 +4,7 @@ import searchIndexData from "@/public/data/search-index.json";
 import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
 import { JlptBadge } from "@/components/Atlas/JlptBadge";
 import { SearchBox } from "@/components/Search/SearchBox";
+import { TrackEvent } from "@/components/Atlas/TrackEvent";
 import { searchKanji, type SearchIndexEntry, type SearchResult } from "@/lib/atlas/search";
 import { formatReading } from "@/lib/atlas/readings";
 import { browsePath, kanjiPath, searchPath } from "@/lib/atlas/paths";
@@ -37,6 +38,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     return (
         <PageShell>
+            {q && <TrackEvent name="search_performed" properties={{ query: q, result_count: results.length, source: "search_page" }} />}
             <Breadcrumbs items={[{ href: "/", label: "Home" }, { label: "Search" }]} />
             <h1 className="text-3xl font-bold mb-2">{q ? <>Results for “{q}”</> : "Search kanji"}</h1>
             <p className="text-white/60 mb-6 text-sm">

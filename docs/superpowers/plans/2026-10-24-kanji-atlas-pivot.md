@@ -83,7 +83,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
 
 ### Phase 1 — The atlas
 
-- [ ] **1.1 Kanji detail page `/kanji/[char]`.**
+- [x] **1.1 Kanji detail page `/kanji/[char]`.**
   - Render every kanji with `generateStaticParams`. Make sure both raw and percent-encoded URLs resolve.
   - Content:
     - Big character, meanings, JLPT/grade/strokes/frequency badges.
@@ -97,15 +97,15 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
     - A slot for the save/status controls added in 2.2.
   - Handle kanji with no SVG, examples or radical gracefully.
   - Replace the wrong "Back to Dashboard → /" link.
-- [ ] **1.2 Radicals.**
+- [x] **1.2 Radicals.**
   - `/radicals`: every radical that has a story or kanji, grouped by theme, showing char, name, meaning and kanji count.
   - `/radical/[key]`: char, name, meaning, origin, story, position, how it changes meaning, example kanji with explanations (link the ones that exist), full kanji grid sorted by JLPT then frequency, theme link and prev/next radical.
-- [ ] **1.3 Move classic practice.**
+- [x] **1.3 Move classic practice.**
   - Move `app/learn/page.tsx` → `app/practice/page.tsx` and the practice version of `app/category/[slug]/page.tsx` → `app/practice/[slug]/page.tsx`.
   - Update internal links (`CategoryCard`, settings back button, and so on) and add the `/learn` redirect.
   - Add a slim "Classic practice mode" banner linking back to the atlas.
   - Checkpoint IDs and stored progress must keep working.
-- [ ] **1.4 Themes.**
+- [x] **1.4 Themes.**
   - `/categories`: 10 cards that reuse the `CategoryCard` look and `public/images/categories/*.png`, without progress bars.
   - `/category/[slug]`, server-rendered: the theme story inline (the `CategoryStoryModal` content), radical cards linking to `/radical/[key]`, the theme's kanji grid, and a "Practice this theme (classic)" link to `/practice/[slug]`.
 - [x] **1.5 Browse `/browse`.**
@@ -113,15 +113,15 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Filters sync to query params (for example `/browse?jlpt=N5`).
   - The first paint is server-rendered. Keep it fast on mobile with 2211 cards (pagination or progressive rendering).
   - Add the `/heatmap` redirect.
-- [ ] **1.6 Search.**
+- [x] **1.6 Search.**
   - `lib/atlas/search.ts` is a pure, unit-tested function. It matches kanji characters in the query, English meanings (exact > word-prefix > substring), kana readings (katakana/hiragana normalized, KANJIDIC `.`/`-` stripped) and romaji (wanakana). Results are ranked by match quality, then frequency.
   - Instant results dropdown in the header and on the home page, using the slim index. Enter goes to `/search?q=`.
-- [ ] **1.7 Home page rewrite (`app/page.tsx`).**
+- [x] **1.7 Home page rewrite (`app/page.tsx`).**
   - Content: hero with brand, the "Logic, Not Magic" pitch and the big search box; kanji of the day (deterministic by date, drawn from N5–N3); browse by JLPT with counts; the 10 themes; featured radicals (氵 木 火 亻 口 …); browse by stroke count.
   - Keep the radical composition demo and the three pillars, but rewrite the copy so every claim is true. Remove the SRS and dashboard claims.
   - Primary CTAs: "Browse kanji" and "Start with N5".
   - Keep the dark visual identity.
-- [ ] **1.8 Global chrome.**
+- [x] **1.8 Global chrome.**
   - Header nav on every page: Browse, Radicals, Themes, Study, My List, a search entry point, and Practice (classic) as a secondary item, with a mobile menu.
   - Remove hearts, streak and the account icon from the header.
   - Footer: add links to About, Browse, Radicals and Practice (classic); keep the feedback card, GitHub and contact links.
@@ -144,7 +144,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Per-kanji entry `{ status: "learning" | "known", addedAt, updatedAt }`.
   - Actions: save/unsave, set status, clear.
   - Pure helpers covered by `*.test.mjs` tests.
-- [ ] **2.2 Save controls.** On the detail page, add a Save toggle and a "Still learning / Known" switch. Optionally add a small save toggle on grid cards.
+- [x] **2.2 Save controls.** On the detail page, add a Save toggle and a "Still learning / Known" switch. Optionally add a small save toggle on grid cards.
 - [ ] **2.3 `/my-list`.** Show saved kanji filtered by status, with counts, a "Study these" button and a "Review N still-learning kanji" button. Include an empty state that points to Browse.
 - [x] **2.4 Shared quiz logic.** Extract the `PhaseQuiz` distractor algorithm into `lib/atlas/quiz.ts` with tests, and make `PhaseQuiz` import it so the logic isn't duplicated.
 - [ ] **2.5 `/study`.**
@@ -153,7 +153,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
     - **Flashcards:** flip from kanji to meanings and readings. "Knew it" / "Still learning" updates the status of saved kanji and offers to save unsaved ones.
     - **Quiz:** meaning multiple choice built with `lib/atlas/quiz.ts`.
   - No hearts, no locks, can exit anytime, ends with a session summary.
-- [ ] **2.6 De-gamify the classic flow and trim Settings.**
+- [x] **2.6 De-gamify the classic flow and trim Settings.**
   - Wrong answers and failed or errored AI checks no longer cost hearts. Remove the "Out of Hearts" gate and the heart counter in `LearningModal`.
   - Keep the store shape and make sure the sync merge tests still pass.
   - Settings: stop rendering `AccountPanel` (keep the component), relabel the handwriting toggles as classic-practice settings, and point the back button sensibly.
@@ -224,3 +224,8 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 2.6 — Hearts removed from the classic flow ahead of 2.6's Settings part: PhaseQuiz/PhaseChallenge no longer take `onFail`; LearningModal drops the heart counter, the "Out of Hearts" gate and the `heart_lost`/`out_of_hearts` events. `shouldLoseHeartForQuizSelection` and its test were removed. Store fields and actions are untouched.
 - 2026-10-24 1.5 — `/browse` defaults to JLPT order (N5→N1, then frequency); `?sort=frequency|strokes` for the others. Both theme (`?theme=<slug>`) and radical (`?radical=<key>`) filters shipped. Filter changes use `history.replaceState` (no RSC refetch, no history entries). All 2223 slim records ride in the RSC payload (~570 KB raw / ~82 KB gzipped HTML); the first 120 tiles are server-rendered, "Show more" adds 120. Filter logic is the tested `components/Browse/filters.ts`. The old Dashboard/FilterPanel/KanjiGrid/KanjiCard and `/heatmap` page were removed.
 - 2026-10-24 1.6 — `searchKanji` scores: typed kanji 1000; exact meaning 100 > exact kana 95 > exact romaji 85 > meaning word-prefix 70 > kana prefix 60 > romaji prefix 50 > meaning substring 40; ties by frequency then JLPT. A reading's okurigana-less stem also counts as exact (ふる.い matches ふる). `/search` caps at 100 results, robots `noindex, follow`. The header shows the SearchBox inline at ≥1280 px and in the mobile menu; between those widths it shows a search icon linking to `/search`.
+- 2026-10-24 1.1 — `dynamicParams = false` with all 2223 pages prerendered; raw and percent-encoded URLs both resolve. The irregular-reading marker is an `<abbr>` plus a visible footnote (works on touch). `KanjiCanvas` got a small fix: `animate()` threw an uncaught TypeError when the canvas was destroyed mid-animation (also seen in the classic flow before the fix). `lib/atlas/kanjivg.ts` uses `turbopackIgnore` so Turbopack doesn't try to bundle 11k SVGs. `components/StrokeLearning.tsx` was unused and removed.
+- 2026-10-24 1.2–1.4 — Theme pages group the kanji grid by JLPT level (Nature & Elements has 584). Practice pages get metadata from `app/practice/layout.tsx`. Story modal copy says "theme" instead of "category". Practice pages stay client-rendered (moved unchanged, as planned). Verified: `/practice` → Tools & Weapons → Katana Radical (N4) runs to "Checkpoint Mastered!" through 分 and stores `rad-katana-n4`.
+- 2026-10-24 1.7 — Home is a server page (revalidated hourly so the kanji of the day rolls over) with client islands for the search box, floating kanji and the composition demo. Claims rewritten: no SRS, dashboard or AI claims; stats come from the data (kanji, radicals, example words); 海 is described as "water + a sound part (每)".
+- 2026-10-24 2.2 — `StudyControls` (Save toggle + Still learning/Known radiogroup) on the kanji page; it shows a skeleton until the store hydrates. No save toggle on grid cards (optional, skipped to keep tiles server-rendered).
+- 2026-10-24 2.7 — Events added: `kanji_viewed`, `radical_viewed` (via a small `TrackEvent` client component on server pages), `search_performed` (/search page and dropdown selections), `kanji_saved`, `kanji_status_changed`, `trace_used` (start/completed). `study_started`/`study_completed` come with /study.

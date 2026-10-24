@@ -8,6 +8,7 @@ import { kanjiPath, searchPath } from "@/lib/atlas/paths";
 import { formatReading } from "@/lib/atlas/readings";
 import { searchKanji, type SearchIndexEntry } from "@/lib/atlas/search";
 import { loadSearchIndex } from "@/lib/atlas/search-index";
+import { trackEvent } from "@/lib/analytics";
 import type { JlptLevel } from "@/lib/atlas/types";
 import { jlptColor } from "@/components/Atlas/JlptBadge";
 
@@ -65,6 +66,10 @@ export function SearchBox({
     const activeResult = active >= 0 && active < results.length ? results[active] : null;
 
     const go = (href: string) => {
+        // Searches that land on /search are counted by that page.
+        if (href.startsWith("/kanji/")) {
+            trackEvent("search_performed", { query: trimmed, result_count: results.length, source: "dropdown", selected: decodeURIComponent(href.slice(7)) });
+        }
         setOpen(false);
         setActive(-1);
         inputRef.current?.blur();

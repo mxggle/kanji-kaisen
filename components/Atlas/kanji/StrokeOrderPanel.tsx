@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { Lightbulb, PenLine, Play, Trash2, Eye } from "lucide-react";
 import { KanjiCanvas, type KanjiCanvasRef } from "@/components/Learning/KanjiCanvas";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 const prefersReducedMotion = () =>
     typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -21,11 +22,15 @@ export function StrokeOrderPanel({ char }: { char: string }) {
     const [done, setDone] = useState(false);
     const [animateOnLoad] = useState(() => !prefersReducedMotion());
 
-    const handleComplete = useCallback(() => setDone(true), []);
+    const handleComplete = useCallback(() => {
+        setDone(true);
+        if (mode === "practice") trackEvent("trace_used", { kanji: char, action: "completed" });
+    }, [mode, char]);
 
     const switchMode = () => {
         setDone(false);
-        setMode((m) => (m === "view" ? "practice" : "view"));
+        if (mode === "view") trackEvent("trace_used", { kanji: char, action: "start" });
+        setMode(mode === "view" ? "practice" : "view");
     };
 
     const clear = () => {

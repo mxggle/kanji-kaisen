@@ -8,6 +8,7 @@ import { StatBadge } from "@/components/Atlas/JlptBadge";
 import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
 import { RadicalStoryContent } from "@/components/Atlas/radical/RadicalStoryContent";
 import { getThemeClass, getThemeStyle } from "@/components/Atlas/category/themeStyles";
+import { TrackEvent } from "@/components/Atlas/TrackEvent";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 
 type Params = { params: Promise<{ key: string }> };
@@ -42,6 +43,7 @@ export default async function RadicalPage({ params }: Params) {
 
     return (
         <PageShell>
+            <TrackEvent name="radical_viewed" properties={{ radical: radical.key, kanji_count: radical.kanji.length }} />
             <Breadcrumbs
                 items={[
                     { href: "/", label: "Home" },
