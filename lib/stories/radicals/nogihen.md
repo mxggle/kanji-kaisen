@@ -8,7 +8,7 @@ category: "Textiles, Plants & Food"
 
 ## Origin
 
-The nogihen radical is a pictograph of a stalk of grain, like rice or wheat, with its head heavy and drooping toward the ground. The top horizontal stroke is the heavy head of grain, the vertical stroke is the stalk, and the diagonal strokes are the leaves.
+The nogihen radical is a pictograph of a stalk of grain, like rice or wheat, with its head heavy and drooping toward the ground. The short slanting stroke at the top is the heavy, drooping head of grain, the vertical stroke is the stalk, and the horizontal and diagonal strokes are the leaves and roots.
 
 ## Story
 
@@ -16,7 +16,7 @@ The harvest is ready! Imagine a field of golden rice bowing its head in the autu
 
 ## Position
 
-Always appears on the LEFT side of the kanji.
+Most often appears on the LEFT side of the kanji (nogihen), but also at the top or bottom (秀, 秦).
 
 ## Transforms Meaning
 
@@ -34,4 +34,4 @@ Grain (禾) + self/private (ム). Originally referred to one's "private" stash o
 
 ### 税 (tax)
 
-Grain (禾) + exchange/release (充). The "grain" that you must "release" and give to the authority as your formal "tax" payment.
+Grain (禾) + exchange/release (兑). The "grain" that you must "release" and give to the authority as your formal "tax" payment.

@@ -30,7 +30,7 @@ Slant roof (广) + occupy/fortune (占). A specific "building" that "occupies" a
 
 ### 度 (degree / time / measure)
 
-Slant roof (广) + hand (廿/又). It originally related to a "hand" measuring out storage spaces under a "roof"—representing a specific unit of "degree" or "time."
+Slant roof (广) + twenty (廿) + hand (又). It originally related to a "hand" measuring out storage spaces under a "roof"—representing a specific unit of "degree" or "time."
 
 ### 庫 (warehouse / storage / garage)
 
