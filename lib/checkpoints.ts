@@ -44,32 +44,14 @@ function getCategory(key: string): string {
     return CATEGORY_MAP[key] || "Others";
 }
 
-// Generate checkpoints
-// Generate checkpoints
-// We want to sort them by Category Priority
-export const CATEGORIES = [
-    "Nature & Elements",
-    "Human Body & People",
-    "Action & Movement",
-    "Structures & Home",
-    "Animals & Wildlife",
-    "Tools & Weapons",
-    "Communication & Thought",
-    "Textiles, Plants & Food",
-    "States & Attributes",
-    "Time & Sequence"
-] as const;
+import { CATEGORIES } from './atlas/categories';
 
-export type CategoryName = typeof CATEGORIES[number];
+// Categories and slugs live in lib/atlas/categories (client-safe); re-exported
+// here because the practice path has always imported them from this module.
+export { CATEGORIES, getCategorySlug, getCategoryFromSlug } from './atlas/categories';
+export type { CategoryName } from './atlas/categories';
 
-export function getCategorySlug(category: string): string {
-    return category.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-').replace(/,/g, '');
-}
-
-export function getCategoryFromSlug(slug: string): string | undefined {
-    return CATEGORIES.find(c => getCategorySlug(c) === slug);
-}
-
+// Checkpoints are sorted by category priority
 function getCategorySortIndex(category: string): number {
     const index = CATEGORIES.findIndex((value) => value === category);
     return index === -1 ? CATEGORIES.length : index;

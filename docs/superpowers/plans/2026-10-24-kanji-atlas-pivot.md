@@ -69,17 +69,17 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - 々 is an iteration mark: give it a sensible entry or drop it from the practice path, and document the choice.
   - In `LearningModal`, skip a kanji with missing data (or show an error state with a close button) instead of returning `null` under a scroll lock.
   - Add a test that every checkpoint kanji exists in `KANJI_DATA`.
-- [ ] **0.3 Unified atlas dataset.**
+- [x] **0.3 Unified atlas dataset.**
   - Write `scripts/build-kanji-atlas.mjs` (add a `pnpm data:atlas` script). It produces `lib/atlas/kanji-atlas.json` and `public/data/search-index.json` from the existing JSON files plus KanjiVG.
   - Record shape: `{ char, meanings: string[], onyomi: string[], kunyomi: string[], jlpt, grade, strokeCount, frequency, radical: { key, char } | null, category: string | null, examples: { word, reading, meaning, special?: boolean }[] }`.
   - Radical assignment: use the kanji-alive group first. Otherwise take the KanjiVG `kvg:radical="general"` element and map it to a radical key via char and variant forms (`scripts/radical_char_map.json`, story chars, `*hen` variants). Log how many remain unassigned.
   - The 2211 kanji-db entries are the canonical set (including the 12 just added). Kanji-alive data enriches them. Output must be deterministic and committed.
   - Also fix the missing Textiles, Plants & Food category story in `compiled-stories.json`.
-- [ ] **0.4 Data access module `lib/atlas/`** (server-only for full data).
+- [x] **0.4 Data access module `lib/atlas/`** (server-only for full data).
   - Functions: `getAllKanji`, `getKanji(char)`, `getKanjiByRadical`, `getKanjiByCategory`, `getKanjiByJlpt`, `getNeighbors(char)` (same JLPT level, ordered by frequency), `getAllRadicals`, `getRadical(key)` (story merged with kanji list), `getCategories`, `getCategory(slug)`.
   - Reading formatters: KANJIDIC `ふる.い` → `ふる(い)`, keep meaningful prefix/suffix dashes, romaji via wanakana.
   - Unit tests for formatters and lookups.
-- [ ] **0.5 Cleanup.** Delete `public/kanjivg_backup/` and `app/page-new.tsx` after confirming nothing references them.
+- [x] **0.5 Cleanup.** Delete `public/kanjivg_backup/` and `app/page-new.tsx` after confirming nothing references them.
 
 ### Phase 1 — The atlas
 
@@ -207,3 +207,11 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 0.1 — Baseline on the untouched tree was clean: `pnpm lint` 0 problems, `pnpm test` 14/14, `pnpm build` OK (Google Fonts reachable). Nothing pre-existing to record.
 - 2026-10-24 0.2 — kanjiapi.dev (and edrdg.org) are blocked by the session's network policy (proxy 403), so the 11 entries come from the KANJIDIC2-derived `davidluzgouveia/kanji-data` `kanji.json` (strokes, grade, Mainichi frequency, meanings, readings; on-readings converted to katakana to match kanji-db). That source has no "new JLPT" level for any of the 11 — which is exactly why kanjiapi's JLPT lists skipped them — so levels were set from the old 4-level JLPT (4→N5, 2→N3, 1→N1) adjusted by common N-level lists: 分 N5; 的 可 身 無 誰 畑 坊 N3; 頃 里 N2; 孝 N1. Treat these levels as editorial, not official (there is no official post-2010 list).
 - 2026-10-24 0.2 — 々 kept in the practice path (dropping it would change checkpoint contents) and given a kanji-db entry: meaning "iteration mark, repeats the previous kanji", no readings, 3 strokes, JLPT N4 (it appears in N4 words like 人々・時々), frequency 9999, no grade. LearningModal now shows a "Kanji data missing → Skip / Close" state instead of returning `null` under the scroll lock.
+- 2026-10-24 0.3 — Kanji Alive's `*` marks example words with an irregular reading (jukujikun/ateji or a reading outside the kanji's list: 今日 きょう, 眼鏡 めがね, 海老 えび). The build strips it and sets `special: true`.
+- 2026-10-24 0.3 — `kanji-atlas.json` is `{ kanji: AtlasKanji[], radicals: AtlasRadicalSummary[] }` rather than a bare array, so radical metadata (display char, name, meaning, theme, kanji count) lives next to the kanji and the server module never needs the Kanji Alive file. Unknown frequency (kanji-db's 9999 fallback) is `null`.
+- 2026-10-24 0.3 — Radical assignment: 1234 kanji from Kanji Alive, 962 from KanjiVG (`general`, then `tradit`/`nelson` radical groups; element, then `kvg:original`, normalized via `radical_char_map.json`), 27 unassigned (mostly the 鬼, 虍 and 麻 families, which have no Kanji Alive group or story): 釈麻竜魅斉耐亀虚虐魔鬼虎虜魂鼓肇隷匿魁彗爽邑爵虞采麿々.
+- 2026-10-24 0.3 — Story/group char mismatches: `gen.md` describes 元 and `hoko.md` describes 矛, but those Kanji Alive groups hold 言 (警) and 戈 (成戦我). The atlas overrides the display char to 言/戈; the story text itself is for 1.11. Other mismatches (kanji-alive 臣 vs story 辶 for shinnyou, 卜 vs 攵 for bokuzukuri, 人 vs 亻 for ninben…) are Kanji Alive group-char errors; the story char is used.
+- 2026-10-24 0.3 — The 16 story-only `*hen` radicals keep their own pages; `getRadical` exposes `variantOf` (e.g. kihen → ki) and lists the base radical's kanji.
+- 2026-10-24 0.3 — Textiles story was missing because `compile-stories.js` built the filename `textiles,-plants-food`; it now strips commas. Added `pnpm data:stories` alongside `pnpm data:atlas`.
+- 2026-10-24 0.4 — `lib/atlas/core.ts` holds the pure `createAtlas(data, stories)`; `lib/atlas/index.ts` (`import "server-only"`) binds it to the JSON. `server-only` throws outside the react-server condition, so tests exercise `core.ts` with the same files read from disk. Pure modules use explicit `.ts` relative imports so Node's strip-types runner can load them; `allowImportingTsExtensions` was enabled in `tsconfig.json` for that (safe with `noEmit`). Extras beyond the plan's list: `getRadicalSummary`, `getRadicalNeighbors`, `getKanjiOfTheDay`, `decodeParam`, plus client-safe `lib/atlas/categories.ts` (CATEGORIES/slugs, re-exported from `lib/checkpoints.ts`) and `lib/atlas/paths.ts`.
+- 2026-10-24 0.5 — Note for W.2/W.3: before any atlas page exists, `.next/static` already has a ~1 MB client chunk, presumably the Kanji Alive/kanji-db JSON pulled in by the practice path. Pre-existing; check it doesn't grow.

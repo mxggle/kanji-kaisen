@@ -9,6 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "data:stories": "node scripts/compile-stories.js",
+    "data:atlas": "node scripts/build-kanji-atlas.mjs",
     "test": "node --experimental-strip-types --test \"lib/**/*.test.mjs\" \"components/**/*.test.mjs\""
   },
   "dependencies": {

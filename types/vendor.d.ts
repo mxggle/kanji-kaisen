@@ -20,5 +20,17 @@ declare module "kanji-recognizer" {
 }
 
 declare module "wanakana" {
-    export function toRomaji(input: string): string;
+    export interface WanakanaOptions {
+        passRomaji?: boolean;
+        upcaseKatakana?: boolean;
+        IMEMode?: boolean | "toHiragana" | "toKatakana";
+    }
+
+    export function toRomaji(input: string, options?: WanakanaOptions): string;
+    export function toHiragana(input: string, options?: WanakanaOptions): string;
+    export function toKatakana(input: string, options?: WanakanaOptions): string;
+    export function toKana(input: string, options?: WanakanaOptions): string;
+    export function isKana(input: string): boolean;
+    export function isKanji(input: string): boolean;
+    export function isRomaji(input: string): boolean;
 }
