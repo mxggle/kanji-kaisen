@@ -9,9 +9,11 @@ import { JlptBadge, jlptColor } from "@/components/Atlas/JlptBadge";
 import { ThemeCard } from "@/components/Atlas/category/ThemeCard";
 import { FloatingKanji } from "@/components/Home/FloatingKanji";
 import { RadicalDemo } from "@/components/Home/RadicalDemo";
+import { SITE_DESCRIPTION } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
+  openGraph: { title: "Kanji Kaisen – kanji atlas", description: SITE_DESCRIPTION, url: "/", type: "website", siteName: "Kanji Kaisen" },
 };
 
 // Kanji of the day is picked from the date; rebuild the page hourly so it rolls over.

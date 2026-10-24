@@ -129,7 +129,7 @@ function ListDeckSnapshot({ kind, initialMode, categoryOf, picker }: ListDeckPro
 function EmptyDeck({ title, message }: { title: string; message: string }) {
     return (
         <div className="mb-8 rounded-xl border border-white/10 bg-white/5 p-6 text-white/70">
-            <h1 className="text-2xl font-bold text-white">{title}</h1>
+            <h2 className="text-2xl font-bold text-white">{title}</h2>
             <p className="mt-2 text-sm">{message}</p>
             <p className="mt-2 text-sm">
                 <Link href={browsePath({ jlpt: "N5" })} className="text-[var(--accent)] hover:underline">Browse N5 kanji</Link>{" "}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
@@ -14,6 +15,7 @@ import {
     PAGE_SIZE,
     SORTS,
     applyBrowseFilters,
+    parseBrowseParams,
     browseHeading,
     isDefaultFilters,
     toBrowseQuery,
@@ -41,7 +43,14 @@ const STROKE_OPTIONS = Array.from({ length: MAX_STROKES - MIN_STROKES + 1 }, (_,
  * rewrite the query string without a server round trip.
  */
 export function BrowseClient({ items, initialFilters, themes, radicals }: BrowseClientProps) {
-    const [filters, setFilters] = useState(initialFilters);
+    // The URL is the source of truth: Next.js keeps useSearchParams in sync with
+    // history.replaceState and with Back/Forward, which restore a cached tree
+    // whose initial props may belong to a different query.
+    const searchParams = useSearchParams();
+    const filters = useMemo(
+        () => (searchParams ? parseBrowseParams(Object.fromEntries(searchParams.entries())) : initialFilters),
+        [searchParams, initialFilters],
+    );
     const [visible, setVisible] = useState(PAGE_SIZE);
 
     const results = useMemo(() => applyBrowseFilters(items, filters), [items, filters]);
@@ -53,7 +62,6 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
             if ("minStrokes" in patch) next.maxStrokes = next.minStrokes;
             else next.minStrokes = next.maxStrokes;
         }
-        setFilters(next);
         setVisible(PAGE_SIZE);
         // Next.js syncs native history updates with the router; no server round trip.
         window.history.replaceState(null, "", `/browse${toBrowseQuery(next)}`);

@@ -18,6 +18,12 @@ export async function generateMetadata({ searchParams }: BrowsePageProps): Promi
             ? `All ${total} JLPT ${level} kanji with meanings and readings. Filter by stroke count, theme or radical and open any kanji for stroke order and examples.`
             : `Browse all ${total} JLPT kanji by level, stroke count, frequency, theme or radical. Every kanji links to its meanings, readings, stroke order and examples.`,
         alternates: { canonical: level ? `/browse?jlpt=${level}` : "/browse" },
+        openGraph: {
+            title: browseHeading(filters),
+            url: level ? `/browse?jlpt=${level}` : "/browse",
+            type: "website",
+            siteName: "Kanji Kaisen",
+        },
     };
 }
 

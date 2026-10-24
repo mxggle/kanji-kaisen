@@ -29,7 +29,11 @@ const INDEX_OUT = path.join(root, 'public/data/search-index.json');
 // Kanji Alive group keys that are not radicals.
 const NON_RADICAL_GROUPS = new Set(['n/a']);
 
-const normalizeChar = (char) => radicalCharMap[char] || char;
+// KanjiVG writes some side forms with CJK Unified chars, while the radical
+// stories use the CJK Radicals Supplement block.
+const SIDE_FORM_ALIASES = { '忄': '⺖', '刂': '⺉' };
+
+const normalizeChar = (char) => SIDE_FORM_ALIASES[char] || radicalCharMap[char] || char;
 
 // ---------------------------------------------------------------------------
 // Radicals

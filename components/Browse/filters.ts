@@ -54,7 +54,8 @@ type RawParams = Record<string, string | string[] | undefined>;
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
-const slugLike = (v: string | undefined) => (v && /^[a-z0-9-]{1,64}$/.test(v) ? v : null);
+// Theme slugs use "-", radical keys may use "_" (hi_fire, ki_yellow).
+const slugLike = (v: string | undefined) => (v && /^[a-z0-9_-]{1,64}$/.test(v) ? v : null);
 
 function parseLevels(value: string | undefined): JlptLevel[] {
     if (!value) return [];

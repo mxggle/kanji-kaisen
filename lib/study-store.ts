@@ -2,12 +2,14 @@ import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
+    restoreEntry,
     sanitizeEntries,
     saveKanji,
     setStatus,
     toggleSaved,
     unsaveKanji,
     type StudyEntries,
+    type StudyEntry,
     type StudyStatus,
 } from './study-list';
 
@@ -19,6 +21,7 @@ export interface StudyState {
     unsave: (char: string) => void;
     toggle: (char: string) => void;
     setStatus: (char: string, status: StudyStatus) => void;
+    restore: (char: string, entry: StudyEntry) => void;
     clear: () => void;
 }
 
@@ -31,6 +34,7 @@ export const useStudyStore = create<StudyState>()(
             unsave: (char) => set((state) => ({ entries: unsaveKanji(state.entries, char) })),
             toggle: (char) => set((state) => ({ entries: toggleSaved(state.entries, char) })),
             setStatus: (char, status) => set((state) => ({ entries: setStatus(state.entries, char, status) })),
+            restore: (char, entry) => set((state) => ({ entries: restoreEntry(state.entries, char, entry) })),
             clear: () => set({ entries: {} }),
         }),
         {

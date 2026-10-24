@@ -64,3 +64,9 @@ test("slim records carry no examples and at most two meanings", () => {
     assert.deepEqual(Object.keys(sea).sort(), ["char", "frequency", "jlpt", "kunyomi", "meanings", "onyomi", "radical", "strokeCount", "theme"]);
     assert.ok(sea.meanings.length <= 2);
 });
+
+test("radical keys with underscores survive a round trip", () => {
+    const filters = parseBrowseParams({ radical: "hi_fire" });
+    assert.equal(filters.radical, "hi_fire");
+    assert.equal(toBrowseQuery(filters), "?radical=hi_fire");
+});

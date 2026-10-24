@@ -18,6 +18,11 @@ interface FlashcardProps {
 }
 
 /** True when a key press belongs to a focused control rather than the card shortcuts. */
+/** Text fields (e.g. the header search box) own every key, so shortcuts stay off there. */
+export function isTextEntry(target: EventTarget | null): boolean {
+    return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+}
+
 export function isTypingTarget(target: EventTarget | null): boolean {
     return target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(target.tagName);
 }
@@ -26,7 +31,7 @@ export function Flashcard({ entry, status, saveMarked, onSaveMarkedChange, onSav
     const [flipped, setFlipped] = useState(false);
 
     const onKey = useEffectEvent((e: KeyboardEvent) => {
-        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.metaKey || e.ctrlKey || e.altKey || isTextEntry(e.target)) return;
         if ((e.key === " " || e.key === "Enter") && !isTypingTarget(e.target)) {
             e.preventDefault();
             setFlipped((f) => !f);

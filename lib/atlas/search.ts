@@ -79,13 +79,26 @@ function readingForms(reading: string): string[] {
 function readingScore(entry: SearchIndexEntry, kana: string, exact: number, prefix: number): number {
     let best = 0;
     for (const reading of [...entry.kun, ...entry.on]) {
-        for (const form of readingForms(reading)) {
-            if (form === kana) return exact;
-            if (form.startsWith(kana)) best = prefix;
-        }
+        readingForms(reading).forEach((form, i) => {
+            // A whole-reading match (ひと for 人) beats an okurigana-less stem (ひと.つ for 一).
+            if (form === kana) best = Math.max(best, i === 0 ? exact : exact - 2);
+            else if (form.startsWith(kana)) best = Math.max(best, prefix);
+        });
     }
     return best;
 }
+
+// KANJIDIC meanings are bare ("eat", "sea"), so "to eat" / "the sea" drop the lead word.
+const LEADING_FILLER_RE = /^(?:to|a|an|the)\s+(?=\S)/;
+
+// Hepburn macrons: "kūki" -> "kuuki". ō and ē are ambiguous (おう/おお, えい/ええ),
+// so both spellings are tried.
+const MACRON_SPELLINGS: Record<string, string>[] = [
+    { ā: "aa", ī: "ii", ū: "uu", ē: "ei", ō: "ou" },
+    { ā: "aa", ī: "ii", ū: "uu", ē: "ee", ō: "oo" },
+];
+const macronSpellings = (text: string) =>
+    [...new Set(MACRON_SPELLINGS.map((map) => text.replace(/[āīūēō]/g, (c) => map[c])))];
 
 function compareResults(a: SearchResult, b: SearchResult): number {
     if (a.score !== b.score) return b.score - a.score;
@@ -129,22 +142,26 @@ export function searchKanji(index: readonly SearchIndexEntry[], query: string, o
     // 2. Text matching on whatever isn't kanji.
     const text = q.replace(KANJI_GLOBAL_RE, " ").replace(/\s+/g, " ").trim();
     if (text) {
+        const meaningQuery = text.replace(LEADING_FILLER_RE, "");
         const compact = text.replace(/[\s.\-]/g, "");
         const kana = normalizeKana(compact);
         const isKana = KANA_ONLY_RE.test(kana);
-        let romajiKana = "";
-        if (!isKana && ROMAJI_ONLY_RE.test(compact)) {
-            const converted = plainReading(toHiragana(compact));
-            if (KANA_ONLY_RE.test(converted)) romajiKana = converted;
+        const romajiKana: string[] = [];
+        if (!isKana) {
+            for (const spelling of macronSpellings(compact)) {
+                if (!ROMAJI_ONLY_RE.test(spelling)) continue;
+                const converted = plainReading(toHiragana(spelling));
+                if (KANA_ONLY_RE.test(converted)) romajiKana.push(converted);
+            }
         }
 
         const textHits: SearchResult[] = [];
         for (const entry of index) {
             if (seen.has(entry.c)) continue;
-            const meaning = isKana ? 0 : meaningScore(entry.m, text);
+            const meaning = isKana ? 0 : Math.max(meaningScore(entry.m, text), meaningScore(entry.m, meaningQuery));
             let reading = 0;
             if (isKana) reading = readingScore(entry, kana, SCORE.kanaExact, SCORE.kanaPrefix);
-            else if (romajiKana) reading = readingScore(entry, romajiKana, SCORE.romajiExact, SCORE.romajiPrefix);
+            else for (const r of romajiKana) reading = Math.max(reading, readingScore(entry, r, SCORE.romajiExact, SCORE.romajiPrefix));
             const score = Math.max(meaning, reading);
             if (score > 0) textHits.push({ entry, score, match: meaning >= reading ? "meaning" : "reading" });
         }

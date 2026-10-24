@@ -5,7 +5,7 @@ import { useState } from "react";
 import { BookOpen, Check, Layers, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStudyStore, useStudyStoreHydrated } from "@/lib/study-store";
-import { countByStatus, listSaved, type StudyStatus } from "@/lib/study-list";
+import { countByStatus, listSaved, type StudyEntry, type StudyStatus } from "@/lib/study-list";
 import { browsePath, kanjiPath } from "@/lib/atlas/paths";
 import { KanjiTile } from "@/components/Atlas/KanjiTile";
 import { jlptLevelOf, studyPath } from "./session";
@@ -57,7 +57,8 @@ function MyListContent() {
     const unsave = useStudyStore((s) => s.unsave);
     const { byChar, error, retry } = useSearchIndex();
     const [filter, setFilter] = useState<Filter>("all");
-    const [removed, setRemoved] = useState<{ char: string; status: StudyStatus } | null>(null);
+    const restore = useStudyStore((s) => s.restore);
+    const [removed, setRemoved] = useState<{ char: string; entry: StudyEntry } | null>(null);
 
     const counts = countByStatus(entries);
     const chars = listSaved(entries, filter === "all" ? undefined : filter);
@@ -65,17 +66,17 @@ function MyListContent() {
     if (counts.all === 0) {
         return (
             <>
-                {removed && <UndoBar removed={removed} onUndo={() => { setStatus(removed.char, removed.status); setRemoved(null); }} />}
+                {removed && <UndoBar removed={removed} onUndo={() => { restore(removed.char, removed.entry); setRemoved(null); }} />}
                 <EmptyState />
             </>
         );
     }
 
     const remove = (char: string) => {
-        const status = entries[char]?.status;
-        if (!status) return;
+        const entry = entries[char];
+        if (!entry) return;
         unsave(char);
-        setRemoved({ char, status });
+        setRemoved({ char, entry });
     };
 
     return (
@@ -115,7 +116,7 @@ function MyListContent() {
                 ))}
             </div>
 
-            {removed && <UndoBar removed={removed} onUndo={() => { setStatus(removed.char, removed.status); setRemoved(null); }} />}
+            {removed && <UndoBar removed={removed} onUndo={() => { restore(removed.char, removed.entry); setRemoved(null); }} />}
 
             {error && (
                 <p className="mb-4 text-sm text-white/60">
@@ -201,7 +202,7 @@ function EmptyState() {
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 sm:p-8 text-white/70">
             <p className="text-lg font-medium text-white">Your list is empty.</p>
             <p className="mt-2 text-sm">
-                Open any kanji and press Save to add it here. A good place to start is the 79 JLPT N5 kanji.
+                Open any kanji and press Save to add it here. A good place to start is the JLPT N5 kanji.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
                 <Link

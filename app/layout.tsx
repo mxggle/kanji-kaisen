@@ -26,17 +26,14 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  // Only site-wide defaults here: pages set their own openGraph title/url, and
+  // Twitter falls back to it, so nothing generic leaks onto specific pages.
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    url: "/",
   },
   twitter: {
     card: "summary",
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
   },
 };
 

@@ -37,6 +37,11 @@ export function setStatus(entries: StudyEntries, char: string, status: StudyStat
     return { ...entries, [char]: { status, addedAt: existing?.addedAt ?? at, updatedAt: at } };
 }
 
+/** Puts back an entry exactly as it was (used to undo a removal). */
+export function restoreEntry(entries: StudyEntries, char: string, entry: StudyEntry): StudyEntries {
+    return { ...entries, [char]: { ...entry } };
+}
+
 /** Saved characters, newest first, optionally filtered by status. */
 export function listSaved(entries: StudyEntries, status?: StudyStatus): string[] {
     return Object.entries(entries)

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { buildMeaningOptions, type QuizCandidate } from "@/lib/atlas/quiz";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { KanjiDetails } from "./KanjiDetails";
-import { isTypingTarget } from "./Flashcard";
+import { isTextEntry, isTypingTarget } from "./Flashcard";
 import { toQuizCandidate } from "./session";
 
 interface QuizCardProps {
@@ -37,7 +37,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
     }, [answered]);
 
     const onKey = useEffectEvent((e: KeyboardEvent) => {
-        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.metaKey || e.ctrlKey || e.altKey || isTextEntry(e.target)) return;
         const n = Number(e.key);
         if (!answered && n >= 1 && n <= options.length) choose(options[n - 1]);
         else if (answered && (e.key === "Enter" || e.key === " ") && !isTypingTarget(e.target)) {
