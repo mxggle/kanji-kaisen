@@ -139,14 +139,14 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
 
 ### Phase 2 — Light study layer (never punishing)
 
-- [ ] **2.1 Study store `lib/study-store.ts`.**
+- [x] **2.1 Study store `lib/study-store.ts`.**
   - Zustand `persist` with its own storage key.
   - Per-kanji entry `{ status: "learning" | "known", addedAt, updatedAt }`.
   - Actions: save/unsave, set status, clear.
   - Pure helpers covered by `*.test.mjs` tests.
 - [ ] **2.2 Save controls.** On the detail page, add a Save toggle and a "Still learning / Known" switch. Optionally add a small save toggle on grid cards.
 - [ ] **2.3 `/my-list`.** Show saved kanji filtered by status, with counts, a "Study these" button and a "Review N still-learning kanji" button. Include an empty state that points to Browse.
-- [ ] **2.4 Shared quiz logic.** Extract the `PhaseQuiz` distractor algorithm into `lib/atlas/quiz.ts` with tests, and make `PhaseQuiz` import it so the logic isn't duplicated.
+- [x] **2.4 Shared quiz logic.** Extract the `PhaseQuiz` distractor algorithm into `lib/atlas/quiz.ts` with tests, and make `PhaseQuiz` import it so the logic isn't duplicated.
 - [ ] **2.5 `/study`.**
   - Deck sources: My list (all or still-learning), a JLPT level, a radical, or a theme. Deep links from radical, theme and list pages, for example `/study?radical=sanzui`.
   - Modes:
@@ -219,3 +219,6 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 1.8/1.9 — Agent worktrees live in `.claude/worktrees/`; added to `.gitignore`, ESLint ignores and the tsconfig `exclude` so lint/typecheck don't scan them.
 - 2026-10-24 1.11 — Reviewed the 28 radicals with the most kanji plus gen and hoko; fixed 15 stories (gen rewritten as 言, hoko as 戈; stroke count of 彳; positions for 禾 月 金 貝 力 糸; 税 = 禾+兑; 頁 "page" is a sound loan; 度 宅 早 繁 component glosses; 艹 is the crown form of 艸; 一 is an indicator, not a finger pictograph). `DISPLAY_CHAR_OVERRIDES` removed. 矛 lost its (wrong) hoko assignment, so 28 kanji are now unassigned.
 - 2026-10-24 1.11 — Doubtful claims left unchanged (for the final report): gonben/kuchi state the "sound waves" origin of 言 as fact (Shuowen: 口 + 辛 phonetic; others: tongue/reed pipe); ukanmuri "the dot is a chimney" (usually the roof ridge); ito "top part is the cocoon" (Shuowen: twisted silk skein); kane "smelting furnace with nuggets" (accounts conflict: 今 phonetic + 土, or a casting mould); onna "or seated at a loom" (standard: kneeling woman, crossed arms); ichi 万 = "一 + symbol for many" (万 is an old variant of 萬, a scorpion); ninben 体 = 亻+本 (historically a popular form standing for 體); oogai 顔 glossed vaguely without 彦. Data note: some story examples sit outside their radical's Kanji Alive group (案 under ukanmuri, 天 under ichi, 行 under gyouninben, 言 under kuchi), and 書 (radical 曰) is in the `hi` group.
+- 2026-10-24 2.1 — Pure helpers live in `lib/study-list.ts` (tested by `lib/study-list.test.mjs`); `lib/study-store.ts` (key `kanji-study-list`) wraps them and adds `useStudyStoreHydrated()` so client components can avoid hydration mismatches. `setStatus` on an unsaved kanji saves it.
+- 2026-10-24 2.4 — `buildMeaningOptions(target, pool)` in `lib/atlas/quiz.ts` takes the category on each candidate instead of reading checkpoints; PhaseQuiz builds its pool from KANJI_DATA + checkpoint categories, so its options are unchanged. The old second "fallback" loop was dropped because the ranked list already contains the whole pool.
+- 2026-10-24 2.6 — Hearts removed from the classic flow ahead of 2.6's Settings part: PhaseQuiz/PhaseChallenge no longer take `onFail`; LearningModal drops the heart counter, the "Out of Hearts" gate and the `heart_lost`/`out_of_hearts` events. `shouldLoseHeartForQuizSelection` and its test were removed. Store fields and actions are untouched.

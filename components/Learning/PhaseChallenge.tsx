@@ -25,7 +25,6 @@ interface WindowWithWebkitAudioContext extends Window {
 interface PhaseChallengeProps {
     data: KanjiData;
     onSuccess: () => void;
-    onFail: () => void;
     checkpointId: string;
     checkpointTitle: string;
     category: string;
@@ -35,7 +34,6 @@ interface PhaseChallengeProps {
 export function PhaseChallenge({
     data,
     onSuccess,
-    onFail,
     checkpointId,
     checkpointTitle,
     category,
@@ -139,7 +137,6 @@ export function PhaseChallenge({
                     });
                     setStatus("fail");
                     playFailSound();
-                    onFail(); // Lose a heart when user gets wrong answer
                     setShowJumpBackHint(true); // Show hint to jump back
                     // Auto-hide hint after 5 seconds
                     setTimeout(() => setShowJumpBackHint(false), 5000);
@@ -156,7 +153,6 @@ export function PhaseChallenge({
                     failure_reason: "missing_feedback",
                 });
                 setStatus("fail");
-                onFail();
                 setShowFeedbackOverlay(true);
                 // setTimeout(() => {
                 //     setStatus("drawing");
@@ -173,7 +169,6 @@ export function PhaseChallenge({
                 failure_reason: "request_error",
             });
             setStatus("fail");
-            onFail();
             setShowFeedbackOverlay(true);
             // setTimeout(() => {
             //     setStatus("drawing");
