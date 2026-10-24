@@ -125,7 +125,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Header nav on every page: Browse, Radicals, Themes, Study, My List, a search entry point, and Practice (classic) as a secondary item, with a mobile menu.
   - Remove hearts, streak and the account icon from the header.
   - Footer: add links to About, Browse, Radicals and Practice (classic); keep the feedback card, GitHub and contact links.
-- [ ] **1.9 SEO.**
+- [x] **1.9 SEO.**
   - `metadataBase` from `NEXT_PUBLIC_SITE_URL`, falling back to `https://${VERCEL_PROJECT_PRODUCTION_URL}` and then `http://localhost:3000`. Add the variable to `.env.local.example`.
   - Root title template `%s | Kanji Kaisen` and a new site description.
   - `generateMetadata` for kanji, radical and theme pages: title like `海 – sea: stroke order, readings & examples`, description built from meanings, readings and JLPT, a canonical URL and basic Open Graph tags.
@@ -145,9 +145,9 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Actions: save/unsave, set status, clear.
   - Pure helpers covered by `*.test.mjs` tests.
 - [x] **2.2 Save controls.** On the detail page, add a Save toggle and a "Still learning / Known" switch. Optionally add a small save toggle on grid cards.
-- [ ] **2.3 `/my-list`.** Show saved kanji filtered by status, with counts, a "Study these" button and a "Review N still-learning kanji" button. Include an empty state that points to Browse.
+- [x] **2.3 `/my-list`.** Show saved kanji filtered by status, with counts, a "Study these" button and a "Review N still-learning kanji" button. Include an empty state that points to Browse.
 - [x] **2.4 Shared quiz logic.** Extract the `PhaseQuiz` distractor algorithm into `lib/atlas/quiz.ts` with tests, and make `PhaseQuiz` import it so the logic isn't duplicated.
-- [ ] **2.5 `/study`.**
+- [x] **2.5 `/study`.**
   - Deck sources: My list (all or still-learning), a JLPT level, a radical, or a theme. Deep links from radical, theme and list pages, for example `/study?radical=sanzui`.
   - Modes:
     - **Flashcards:** flip from kanji to meanings and readings. "Knew it" / "Still learning" updates the status of saved kanji and offers to save unsaved ones.
@@ -157,11 +157,11 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
   - Wrong answers and failed or errored AI checks no longer cost hearts. Remove the "Out of Hearts" gate and the heart counter in `LearningModal`.
   - Keep the store shape and make sure the sync merge tests still pass.
   - Settings: stop rendering `AccountPanel` (keep the component), relabel the handwriting toggles as classic-practice settings, and point the back button sensibly.
-- [ ] **2.7 Analytics.** Keep `trackEvent`. Add `search_performed`, `kanji_viewed`, `radical_viewed`, `kanji_saved`, `kanji_status_changed`, `trace_used`, `study_started` and `study_completed` with small, useful properties. These are the data for the later Phase 3 decision.
+- [x] **2.7 Analytics.** Keep `trackEvent`. Add `search_performed`, `kanji_viewed`, `radical_viewed`, `kanji_saved`, `kanji_status_changed`, `trace_used`, `study_started` and `study_completed` with small, useful properties. These are the data for the later Phase 3 decision.
 
 ### Wrap-up
 
-- [ ] **W.1 Docs and versioning.** Update `README.md` (new positioning, features, routes, data sources and credits, dev commands). Add a CHANGELOG `[2.0.0]` entry, set the version to 2.0.0 in `package.json` and the footer, and update the root `metadata` in `app/layout.tsx`.
+- [x] **W.1 Docs and versioning.** Update `README.md` (new positioning, features, routes, data sources and credits, dev commands). Add a CHANGELOG `[2.0.0]` entry, set the version to 2.0.0 in `package.json` and the footer, and update the root `metadata` in `app/layout.tsx`.
 - [ ] **W.2 Full QA.**
   - Run `pnpm build && pnpm start`, then drive Chromium with Playwright. It is preinstalled: `require('playwright')` works and `chromium.launch()` needs no options; don't run `playwright install`.
   - Pages to check at 390 px and 1280 px wide: `/`, home search, `/kanji/海`, `/kanji/分`, `/radical/sanzui`, `/radicals`, `/categories`, `/category/nature-elements`, `/browse?jlpt=N5`, `/search?q=water`, `/search?q=mizu`, `/my-list`, a full `/study` flashcard and quiz session, `/practice` and the katana N4 checkpoint (contains 分).
@@ -229,3 +229,6 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 1.7 — Home is a server page (revalidated hourly so the kanji of the day rolls over) with client islands for the search box, floating kanji and the composition demo. Claims rewritten: no SRS, dashboard or AI claims; stats come from the data (kanji, radicals, example words); 海 is described as "water + a sound part (每)".
 - 2026-10-24 2.2 — `StudyControls` (Save toggle + Still learning/Known radiogroup) on the kanji page; it shows a skeleton until the store hydrates. No save toggle on grid cards (optional, skipped to keep tiles server-rendered).
 - 2026-10-24 2.7 — Events added: `kanji_viewed`, `radical_viewed` (via a small `TrackEvent` client component on server pages), `search_performed` (/search page and dropdown selections), `kanji_saved`, `kanji_status_changed`, `trace_used` (start/completed). `study_started`/`study_completed` come with /study.
+- 2026-10-24 1.9 — Verified with curl against `pnpm start`: `/kanji/海` has its title, description, canonical, OG tags, meanings, カイ/うみ, examples (日本海 にほんかい "Sea of Japan") and the inline stroke SVG. `/search`, `/settings`, `/my-list` and `/study` carry `noindex`; robots.txt disallows `/api/`, `/search`, `/study`, `/my-list`, `/settings`. The sitemap lists static pages, the five `/browse?jlpt=` views, 10 themes, 230 radicals and 2223 kanji.
+- 2026-10-24 2.3/2.5 — Study sessions are 20 cards in deck order (JLPT/radical/theme decks in atlas order, list decks newest first), with a "Cards 1–20 of N" chunk picker, optional shuffle and "Next 20". Deep links: `deck=list|learning`, `jlpt=`, `radical=`, `theme=`, `mode=flashcards|quiz` (precedence: deck, jlpt, radical, theme); unknown decks show "Deck not found" plus the picker. Kanji details come from the slim index on the client; the server passes char lists and category codes. Flashcard marks update only saved kanji; unsaved ones get a per-card Save button and an opt-in "Save cards I mark". The quiz never changes status; its summary offers to save missed kanji. Undoing a removal on My list resets `addedAt`.
+- 2026-10-24 Bundle — The ~0.7 MB (Kanji alive), ~0.38 MB (kanji-db) and ~0.36 MB (compiled stories) client chunks belong to the classic practice pages only; atlas pages don't load them, and the full atlas JSON is not in `.next/static`. They were still being fetched everywhere through Next's link prefetch of "Practice (classic)", so practice links now use `prefetch={false}`.

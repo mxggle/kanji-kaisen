@@ -75,7 +75,7 @@ export default function AboutPage() {
                     mark them as still learning or known, and review them with flashcards or a quick quiz on the{" "}
                     <Link href="/study" className="text-[var(--accent)] hover:underline">Study</Link> page. Your list stays in
                     this browser. The older step-by-step path is still available as{" "}
-                    <Link href="/practice" className="text-[var(--accent)] hover:underline">classic practice</Link>.
+                    <Link href="/practice" prefetch={false} className="text-[var(--accent)] hover:underline">classic practice</Link>.
                 </p>
             </Section>
 

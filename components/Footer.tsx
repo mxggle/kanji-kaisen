@@ -45,7 +45,7 @@ export function Footer() {
                     {/* Site Links */}
                     <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                         {FOOTER_LINKS.map((link) => (
-                            <Link key={link.href} href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                            <Link key={link.href} href={link.href} prefetch={link.href === "/practice" ? false : undefined} className="text-sm text-gray-400 hover:text-white transition-colors">
                                 {link.label}
                             </Link>
                         ))}

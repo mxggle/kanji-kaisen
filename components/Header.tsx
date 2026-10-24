@@ -21,6 +21,8 @@ const NAV_ITEMS = [
     { href: "/my-list", label: "My List", match: ["/my-list"] },
 ];
 
+// Practice pages bundle the full Kanji alive/kanji-db JSON (~1.4 MB), so links
+// to them are not prefetched from every atlas page.
 const PRACTICE_ITEM = { href: "/practice", label: "Practice (classic)", match: ["/practice"] };
 
 function isActive(pathname: string, match: string[]) {
@@ -76,7 +78,7 @@ export function Header() {
                         </Link>
                     ))}
                     <span className="mx-1 h-4 w-px bg-white/15" aria-hidden />
-                    <Link href={PRACTICE_ITEM.href} className={cn(navLinkClass(isActive(pathname, PRACTICE_ITEM.match)), "text-white/50")}>
+                    <Link href={PRACTICE_ITEM.href} prefetch={false} className={cn(navLinkClass(isActive(pathname, PRACTICE_ITEM.match)), "text-white/50")}>
                         {PRACTICE_ITEM.label}
                     </Link>
                 </nav>
@@ -114,6 +116,7 @@ export function Header() {
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
+                                    prefetch={item.href === PRACTICE_ITEM.href ? false : undefined}
                                     className={cn("block px-3 py-2.5 rounded-lg text-base", isActive(pathname, item.match) ? "bg-white/15 text-white" : "text-white/75 hover:bg-white/10")}
                                     aria-current={isActive(pathname, item.match) ? "page" : undefined}
                                 >

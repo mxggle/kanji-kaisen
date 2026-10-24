@@ -77,6 +77,7 @@ export default async function CategoryPage({ params }: Params) {
                         </Link>
                         <Link
                             href={practiceCategoryPath(category.name)}
+                            prefetch={false}
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/40 border border-white/15 hover:bg-white/10 transition-colors"
                         >
                             <Swords size={18} aria-hidden /> Practice this theme (classic)

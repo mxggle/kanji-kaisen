@@ -268,7 +268,7 @@ export default function HomePage() {
             <Link href="/study" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-bold hover:bg-blue-50 transition-colors">
               Study <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/practice" className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold border border-white/20 hover:bg-white/10 transition-colors">
+            <Link href="/practice" prefetch={false} className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold border border-white/20 hover:bg-white/10 transition-colors">
               Classic practice
             </Link>
           </div>
