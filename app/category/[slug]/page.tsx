@@ -1,158 +1,125 @@
-
-"use client";
-
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { CHECKPOINTS, getCategoryFromSlug } from "@/lib/checkpoints";
-import { useProgressStore } from "@/lib/store";
-import { RadicalCard } from "@/components/Path/RadicalCard";
-import { ArrowLeft, BookOpen } from "lucide-react";
-import { LearningModal } from "@/components/Learning/LearningModal";
-import { CategoryStoryModal } from "@/components/Story/CategoryStoryModal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { trackEvent } from "@/lib/analytics";
+import { GraduationCap, Swords } from "lucide-react";
+import { getCategories, getCategory, getRadical, JLPT_LEVELS } from "@/lib/atlas";
+import { categoryPath, practiceCategoryPath } from "@/lib/atlas/paths";
+import { PageShell, Breadcrumbs, Section } from "@/components/Atlas/PageShell";
+import { JlptBadge, StatBadge } from "@/components/Atlas/JlptBadge";
+import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
+import { RadicalLinkCard } from "@/components/Atlas/radical/RadicalLinkCard";
+import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
+import { CategoryCardArt } from "@/components/Atlas/category/CategoryCardArt";
+import { getThemeClass, getThemeStyle } from "@/components/Atlas/category/themeStyles";
+import { atlasMetadata } from "@/components/Atlas/metadata";
 
-// Use distinct themes mapping again matching CategorySection...
-// Ideally we should export this theme map to share between components.
-// For now, I'll inline a simplified version or reuse logic.
-const THEME_COLORS: Record<string, string> = {
-    "Nature & Elements": "text-emerald-400 border-emerald-800/50 bg-emerald-950/20",
-    "Human Body & People": "text-blue-400 border-blue-800/50 bg-blue-950/20",
-    "Action & Movement": "text-red-400 border-red-800/50 bg-red-950/20",
-    "Structures & Home": "text-stone-400 border-stone-800/50 bg-stone-950/20",
-    "Animals & Wildlife": "text-amber-400 border-amber-800/50 bg-amber-950/20",
-    "Tools & Weapons": "text-slate-400 border-slate-800/50 bg-slate-950/20",
-    "Communication & Thought": "text-purple-400 border-purple-800/50 bg-purple-950/20",
-    "Textiles, Plants & Food": "text-lime-400 border-lime-800/50 bg-lime-950/20",
-    "States & Attributes": "text-pink-400 border-pink-800/50 bg-pink-950/20",
-    "Time & Sequence": "text-indigo-400 border-indigo-800/50 bg-indigo-950/20",
-    "Others": "text-zinc-400 border-zinc-800/50 bg-zinc-950/20",
-};
+type Params = { params: Promise<{ slug: string }> };
 
-function subscribeHydration() {
-    return () => {};
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+    return getCategories().map((c) => ({ slug: c.slug }));
 }
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { hearts, streak, completedCheckpoints, checkStreak } = useProgressStore();
-    const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
-    const [showCategoryStory, setShowCategoryStory] = useState(false);
-    const [slug, setSlug] = useState<string>("");
-    const hasTrackedCategoryView = useRef(false);
-    const mounted = useSyncExternalStore(subscribeHydration, () => true, () => false);
+export async function generateMetadata({ params }: Params) {
+    const category = getCategory((await params).slug);
+    if (!category) return {};
+    const radicalChars = category.radicals.filter((r) => r.kanjiCount > 0).slice(0, 5).map((r) => r.char).join(" ");
+    return atlasMetadata({
+        title: `${category.name} kanji – radicals and stories`,
+        description: `${category.story?.title ? `${category.story.title}: ` : ""}${category.kanjiCount} kanji built from ${category.radicalCount} ${category.name.toLowerCase()} radicals such as ${radicalChars}. ${category.story?.description ?? ""}`,
+        path: categoryPath(category.name),
+    });
+}
 
-    useEffect(() => {
-        params.then(p => setSlug(p.slug));
-    }, [params]);
+export default async function CategoryPage({ params }: Params) {
+    const category = getCategory((await params).slug);
+    if (!category) notFound();
 
-    useEffect(() => {
-        checkStreak();
-    }, [checkStreak]);
-
-    const categoryName = getCategoryFromSlug(slug);
-    const themeClass = categoryName ? (THEME_COLORS[categoryName] || THEME_COLORS["Others"]) : THEME_COLORS["Others"];
-
-    // Filter Checkpoints
-    const categoryCheckpoints = useMemo(() => {
-        if (!categoryName) return [];
-        return CHECKPOINTS.filter(c => c.category === categoryName);
-    }, [categoryName]);
-
-    useEffect(() => {
-        if (!mounted || !categoryName || hasTrackedCategoryView.current) return;
-
-        hasTrackedCategoryView.current = true;
-        trackEvent("category_page_viewed", {
-            category: categoryName,
-            checkpoint_count: categoryCheckpoints.length,
-            completed_checkpoints: categoryCheckpoints.filter(c => completedCheckpoints[c.id]).length,
-            hearts,
-            streak,
-        });
-    }, [mounted, categoryName, categoryCheckpoints, completedCheckpoints, hearts, streak]);
-
-    if (!mounted || !slug) return null;
-    if (!categoryName) return notFound();
-
-    const handleCheckpointClick = (id: string) => {
-        const checkpoint = categoryCheckpoints.find(item => item.id === id);
-        trackEvent("checkpoint_opened", {
-            checkpoint_id: id,
-            checkpoint_title: checkpoint?.title,
-            category: categoryName,
-            kanji_count: checkpoint?.kanji.length,
-        });
-        setActiveCheckpointId(id);
-    };
+    const theme = getThemeStyle(category.name);
+    const themeClass = getThemeClass(category.name);
+    const Icon = theme.icon;
+    const kanjiByLevel = JLPT_LEVELS.map((level) => ({
+        level,
+        kanji: category.kanji.filter((k) => k.jlpt === level),
+    })).filter((g) => g.kanji.length > 0);
 
     return (
-        <main className="min-h-screen bg-black text-white pb-20 pt-24 relative">
-            {/* Header */}
-            <div className="pt-8 pb-8 px-4 max-w-2xl mx-auto flex items-center gap-4">
-                <Link href="/learn" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-                    <ArrowLeft size={24} />
-                </Link>
-                <div className="flex-1">
-                    <h1 className={`text-3xl font-bold ${themeClass.split(' ')[0]}`}>{categoryName}</h1>
-                    <p className="text-white/40">{categoryCheckpoints.length} Radicals</p>
+        <PageShell>
+            <Breadcrumbs
+                items={[
+                    { href: "/", label: "Home" },
+                    { href: "/categories", label: "Themes" },
+                    { label: category.name },
+                ]}
+            />
+
+            {/* Hero */}
+            <header className={`group relative overflow-hidden rounded-3xl border ${theme.border} ${theme.bg} p-6 sm:p-10`}>
+                <CategoryCardArt category={category.name} theme={theme} />
+                <div className="relative z-10">
+                    <div className={`inline-flex p-3 rounded-2xl bg-white/10 ${theme.title} backdrop-blur-md border border-white/5 mb-4`}>
+                        <Icon size={28} aria-hidden />
+                    </div>
+                    {category.story?.title && (
+                        <p className="text-xs uppercase tracking-widest text-white/50 mb-1">{category.story.title}</p>
+                    )}
+                    <h1 className={`text-3xl sm:text-4xl font-bold mb-3 ${theme.title} drop-shadow-lg`}>{category.name}</h1>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                        <StatBadge>{category.radicalCount} radicals</StatBadge>
+                        <StatBadge>{category.kanjiCount} kanji</StatBadge>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        <Link
+                            href={`/study?theme=${category.slug}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-black font-semibold hover:opacity-90 transition-opacity"
+                        >
+                            <GraduationCap size={18} aria-hidden /> Study this theme
+                        </Link>
+                        <Link
+                            href={practiceCategoryPath(category.name)}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/40 border border-white/15 hover:bg-white/10 transition-colors"
+                        >
+                            <Swords size={18} aria-hidden /> Practice this theme (classic)
+                        </Link>
+                    </div>
                 </div>
-                <button
-                    onClick={() => {
-                        trackEvent("category_story_opened", {
-                            category: categoryName,
-                        });
-                        setShowCategoryStory(true);
-                    }}
-                    className={`
-                        flex items-center gap-2 px-4 py-2 rounded-xl
-                        bg-white/5 hover:bg-white/10 transition-all duration-200
-                        ${themeClass.split(' ')[0]} border ${themeClass.split(' ')[1]}
-                        hover:scale-105 active:scale-95
-                    `}
-                    title="Learn about this category"
-                >
-                    <BookOpen size={18} />
-                    <span className="text-sm font-medium hidden sm:inline">About</span>
-                </button>
-            </div>
+            </header>
 
-            {/* Path */}
-            <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
-                {categoryCheckpoints.map((checkpoint) => {
-                    const isCompleted = !!completedCheckpoints[checkpoint.id];
-
-                    // All checkpoints unlocked for now
-                    const isUnlocked = true;
-
-                    return (
-                        <RadicalCard
-                            key={checkpoint.id}
-                            checkpoint={checkpoint}
-                            isLocked={!isUnlocked}
-                            isCompleted={isCompleted}
-                            onClick={() => handleCheckpointClick(checkpoint.id)}
-                            themeClass={themeClass}
-                        />
-                    );
-                })}
-            </div>
-
-            {/* Learning Modal */}
-            {activeCheckpointId && (
-                <LearningModal
-                    checkpointId={activeCheckpointId}
-                    onClose={() => setActiveCheckpointId(null)}
-                />
+            {category.story && (
+                <div className="mt-10">
+                    <CategoryStoryContent story={category.story} themeClass={themeClass} headingAs="h2" />
+                </div>
             )}
 
-            {/* Category Story Modal */}
-            {showCategoryStory && categoryName && (
-                <CategoryStoryModal
-                    category={categoryName}
-                    onClose={() => setShowCategoryStory(false)}
-                    themeClass={themeClass}
-                />
-            )}
-        </main>
+            <Section title={`Radicals in ${category.name}`} id="radicals" className="scroll-mt-24">
+                <ul className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {category.radicals.map((radical) => (
+                        <li key={radical.key}>
+                            <RadicalLinkCard
+                                radical={radical}
+                                variantOf={radical.kanjiCount === 0 ? getRadical(radical.key)?.variantOf : null}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </Section>
+
+            <Section title={`${category.name} kanji`} id="kanji" className="scroll-mt-24">
+                <p className="text-white/50 text-sm mb-4">
+                    {category.kanjiCount} kanji whose radical belongs to this theme, by JLPT level and frequency.
+                </p>
+                <div className="space-y-8">
+                    {kanjiByLevel.map(({ level, kanji }) => (
+                        <div key={level}>
+                            <h3 className="flex items-center gap-2 mb-3">
+                                <JlptBadge level={level} />
+                                <span className="text-white/40 text-sm">{kanji.length} kanji</span>
+                            </h3>
+                            <KanjiTileGrid items={kanji} />
+                        </div>
+                    ))}
+                </div>
+            </Section>
+        </PageShell>
     );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { X, Sparkles, MapPin, BookOpen, PenTool } from "lucide-react";
+import { X } from "lucide-react";
 import { getRadicalStory, getRadicalStoryByChar, RadicalStory } from "@/lib/story-loader";
 import { useEffect } from "react";
+import { RadicalStoryContent } from "@/components/Atlas/radical/RadicalStoryContent";
 
 interface RadicalStoryModalProps {
     radicalKey?: string;
@@ -111,121 +112,8 @@ export function RadicalStoryModal({ radicalKey, radicalChar, onClose, themeClass
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-8">
-                    {/* Origin Story */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-3">
-                            <BookOpen size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">Origin</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.origin}
-                        </p>
-                    </section>
-
-                    {/* The Story - Mnemonic */}
-                    <section className={`
-                        p-5 rounded-2xl border
-                        bg-gradient-to-br from-white/5 to-transparent
-                        ${themeClass.split(' ')[1]}
-                    `}>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">The Story</h3>
-                        </div>
-                        <p className="text-white/80 leading-relaxed text-lg italic">
-                            &ldquo;{story.story}&rdquo;
-                        </p>
-                    </section>
-
-                    {/* Position Info */}
-                    <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
-                        <div className={`
-                            w-10 h-10 rounded-xl flex items-center justify-center
-                            ${bgColorClass} flex-shrink-0
-                        `}>
-                            <MapPin size={20} className="text-white" />
-                        </div>
-                        <div>
-                            <h4 className="text-white font-medium mb-1">Where It Appears</h4>
-                            <p className="text-white/60 text-sm">
-                                {story.position}
-                            </p>
-                        </div>
-                    </section>
-
-                    {/* How It Transforms Meaning */}
-                    <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
-                        <div className={`
-                            w-10 h-10 rounded-xl flex items-center justify-center
-                            ${bgColorClass} flex-shrink-0
-                        `}>
-                            <PenTool size={20} className="text-white" />
-                        </div>
-                        <div>
-                            <h4 className="text-white font-medium mb-1">Its Power</h4>
-                            <p className="text-white/60 text-sm">
-                                {story.transformsMeaning}
-                            </p>
-                        </div>
-                    </section>
-
-                    {/* Example Kanji */}
-                    {story.exampleKanji && story.exampleKanji.filter(ex =>
-                        ex.char &&
-                        ex.char !== '?' &&
-                        ex.char !== 'undefined' &&
-                        ex.meaning &&
-                        ex.meaning !== 'example' &&
-                        ex.meaning !== 'undefined'
-                    ).length > 0 && (
-                            <section>
-                                <h3 className="text-lg font-semibold text-white mb-4">
-                                    Example Kanji
-                                </h3>
-                                <div className="space-y-3">
-                                    {story.exampleKanji.filter(ex =>
-                                        ex.char &&
-                                        ex.char !== '?' &&
-                                        ex.char !== 'undefined' &&
-                                        ex.meaning &&
-                                        ex.meaning !== 'example' &&
-                                        ex.meaning !== 'undefined'
-                                    ).map((example, index) => (
-                                        <div
-                                            key={index}
-                                            className={`
-                                            flex items-center gap-4 p-4 rounded-xl
-                                            bg-white/5 border border-white/5
-                                            hover:bg-white/10 transition-colors
-                                        `}
-                                        >
-                                            <div className={`
-                                            w-14 h-14 rounded-xl flex items-center justify-center
-                                            bg-black/30 border ${themeClass.split(' ')[1]}
-                                            flex-shrink-0
-                                        `}>
-                                                <span className="text-3xl font-serif text-white">{example.char}</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`font-bold ${colorClass}`}>
-                                                        {example.char}
-                                                    </span>
-                                                    <span className="text-white/60">•</span>
-                                                    <span className="text-white/80">
-                                                        {example.meaning}
-                                                    </span>
-                                                </div>
-                                                <p className="text-white/50 text-sm">
-                                                    {example.explanation}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+                <div className="p-6">
+                    <RadicalStoryContent story={story} themeClass={themeClass} />
                 </div>
 
                 {/* Footer */}

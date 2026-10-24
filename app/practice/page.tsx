@@ -5,6 +5,7 @@ import { CHECKPOINTS, CATEGORIES } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { CategoryCard } from "@/components/Path/CategoryCard";
 import { trackEvent } from "@/lib/analytics";
+import { ClassicPracticeBanner } from "@/components/Atlas/ClassicPracticeBanner";
 
 function subscribeHydration() {
     return () => {};
@@ -36,6 +37,10 @@ export default function LearnPage() {
 
     return (
         <main className="min-h-screen bg-black text-white pb-20 relative overflow-y-auto pt-24 custom-scrollbar">
+            <div className="px-6 max-w-7xl mx-auto mb-6">
+                <ClassicPracticeBanner />
+            </div>
+
             {/* Category Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
                 {CATEGORIES.map((category) => {
