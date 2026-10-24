@@ -32990,5 +32990,180 @@
     "strokeCount": 18,
     "frequency": 9999,
     "grade": 9
+  },
+  {
+    "char": "誰",
+    "meaning": "who, someone, somebody",
+    "onyomi": [
+      "スイ"
+    ],
+    "kunyomi": [
+      "だれ",
+      "たれ",
+      "た"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 15,
+    "frequency": 1933,
+    "grade": 8
+  },
+  {
+    "char": "的",
+    "meaning": "bull's eye, mark, target, object, adjective ending",
+    "onyomi": [
+      "テキ"
+    ],
+    "kunyomi": [
+      "まと"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 8,
+    "frequency": 105,
+    "grade": 4
+  },
+  {
+    "char": "分",
+    "meaning": "part, minute of time, segment, share, degree, one's lot, duty, understand, know, rate, 1%, chances, shaku/100",
+    "onyomi": [
+      "ブン",
+      "フン",
+      "ブ"
+    ],
+    "kunyomi": [
+      "わ.ける",
+      "わ.け",
+      "わ.かれる",
+      "わ.かる",
+      "わ.かつ"
+    ],
+    "jlpt": "N5",
+    "strokeCount": 4,
+    "frequency": 24,
+    "grade": 2
+  },
+  {
+    "char": "孝",
+    "meaning": "filial piety, child's respect",
+    "onyomi": [
+      "コウ",
+      "キョウ"
+    ],
+    "kunyomi": [],
+    "jlpt": "N1",
+    "strokeCount": 7,
+    "frequency": 1030,
+    "grade": 6
+  },
+  {
+    "char": "可",
+    "meaning": "can, passable, mustn't, should not, do not",
+    "onyomi": [
+      "カ",
+      "コク"
+    ],
+    "kunyomi": [
+      "-べ.き",
+      "-べ.し"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 5,
+    "frequency": 314,
+    "grade": 5
+  },
+  {
+    "char": "身",
+    "meaning": "somebody, person, one's station in life",
+    "onyomi": [
+      "シン"
+    ],
+    "kunyomi": [
+      "み"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 7,
+    "frequency": 320,
+    "grade": 3
+  },
+  {
+    "char": "頃",
+    "meaning": "time, about, toward",
+    "onyomi": [
+      "ケイ",
+      "キョウ"
+    ],
+    "kunyomi": [
+      "ころ",
+      "ごろ",
+      "しばら.く"
+    ],
+    "jlpt": "N2",
+    "strokeCount": 11,
+    "frequency": 2015,
+    "grade": 8
+  },
+  {
+    "char": "無",
+    "meaning": "nothingness, none, ain't, nothing, nil, not",
+    "onyomi": [
+      "ム",
+      "ブ"
+    ],
+    "kunyomi": [
+      "な.い"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 12,
+    "frequency": 274,
+    "grade": 4
+  },
+  {
+    "char": "里",
+    "meaning": "ri, village, parent's home, league",
+    "onyomi": [
+      "リ"
+    ],
+    "kunyomi": [
+      "さと"
+    ],
+    "jlpt": "N2",
+    "strokeCount": 7,
+    "frequency": 1096,
+    "grade": 2
+  },
+  {
+    "char": "畑",
+    "meaning": "farm, field, garden, one's specialty, (kokuji)",
+    "onyomi": [],
+    "kunyomi": [
+      "はた",
+      "はたけ",
+      "-ばたけ"
+    ],
+    "jlpt": "N3",
+    "strokeCount": 9,
+    "frequency": 1176,
+    "grade": 3
+  },
+  {
+    "char": "坊",
+    "meaning": "boy, priest's residence, priest",
+    "onyomi": [
+      "ボウ",
+      "ボッ"
+    ],
+    "kunyomi": [],
+    "jlpt": "N3",
+    "strokeCount": 7,
+    "frequency": 1832,
+    "grade": 8
+  },
+  {
+    "char": "々",
+    "meaning": "iteration mark, repeats the previous kanji",
+    "onyomi": [],
+    "kunyomi": [],
+    "jlpt": "N4",
+    "strokeCount": 3,
+    "frequency": 9999
   }
 ]

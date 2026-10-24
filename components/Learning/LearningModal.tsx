@@ -216,7 +216,33 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
         handleChallengeSuccess();
     };
 
-    if (!checkpoint || !currentChar || !currentData) return null;
+    // Never return null here: the body scroll lock above is already active,
+    // so a blank render would leave the page frozen with no way out.
+    if (!checkpoint || !currentChar || !currentData) {
+        const canSkip = Boolean(checkpoint && currentChar);
+        return (
+            <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl text-center max-w-sm w-full">
+                    <h2 className="text-2xl font-bold mb-2">
+                        {canSkip ? "Kanji data missing" : "Checkpoint not found"}
+                    </h2>
+                    <p className="text-zinc-400 mb-6">
+                        {canSkip
+                            ? `We don't have study data for ${currentChar} yet. You can skip it and keep going.`
+                            : "This checkpoint doesn't exist anymore."}
+                    </p>
+                    {canSkip && (
+                        <button onClick={handleChallengeSuccess} className="w-full mb-3 py-3 bg-[var(--n5)] text-black font-bold rounded-lg hover:opacity-90">
+                            Skip this kanji
+                        </button>
+                    )}
+                    <button onClick={onClose} className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-zinc-200">
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (hearts <= 0) {
         return (

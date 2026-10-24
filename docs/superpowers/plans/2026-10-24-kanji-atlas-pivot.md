@@ -63,8 +63,8 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
 
 ### Phase 0 — Foundation and fixes
 
-- [ ] **0.1 Baseline.** Run `pnpm install`, `pnpm lint`, `pnpm test` and `pnpm build` on the untouched tree. Record any pre-existing failures in the Deviations log; don't silently fix unrelated ones. If the build fails only because `next/font/google` can't reach Google Fonts, read `/root/.ccr/README.md` and the proxy status first. Never disable TLS verification.
-- [ ] **0.2 Fix the 12 broken checkpoints.**
+- [x] **0.1 Baseline.** Run `pnpm install`, `pnpm lint`, `pnpm test` and `pnpm build` on the untouched tree. Record any pre-existing failures in the Deviations log; don't silently fix unrelated ones. If the build fails only because `next/font/google` can't reach Google Fonts, read `/root/.ccr/README.md` and the proxy status first. Never disable TLS verification.
+- [x] **0.2 Fix the 12 broken checkpoints.**
   - Add 誰 的 分 孝 可 身 頃 無 里 畑 坊 to `lib/kanji-db.json` with real JLPT levels and frequency ranks. Prefer kanjiapi.dev data in the same shape `scripts/seed-kanji.mjs` produces. Fall back to the kanji-alive fields plus KANJIDIC knowledge.
   - 々 is an iteration mark: give it a sensible entry or drop it from the practice path, and document the choice.
   - In `LearningModal`, skip a kanji with missing data (or show an error state with a close button) instead of returning `null` under a scroll lock.
@@ -203,3 +203,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
 ## Deviations log
 
 _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
+
+- 2026-10-24 0.1 — Baseline on the untouched tree was clean: `pnpm lint` 0 problems, `pnpm test` 14/14, `pnpm build` OK (Google Fonts reachable). Nothing pre-existing to record.
+- 2026-10-24 0.2 — kanjiapi.dev (and edrdg.org) are blocked by the session's network policy (proxy 403), so the 11 entries come from the KANJIDIC2-derived `davidluzgouveia/kanji-data` `kanji.json` (strokes, grade, Mainichi frequency, meanings, readings; on-readings converted to katakana to match kanji-db). That source has no "new JLPT" level for any of the 11 — which is exactly why kanjiapi's JLPT lists skipped them — so levels were set from the old 4-level JLPT (4→N5, 2→N3, 1→N1) adjusted by common N-level lists: 分 N5; 的 可 身 無 誰 畑 坊 N3; 頃 里 N2; 孝 N1. Treat these levels as editorial, not official (there is no official post-2010 list).
+- 2026-10-24 0.2 — 々 kept in the practice path (dropping it would change checkpoint contents) and given a kanji-db entry: meaning "iteration mark, repeats the previous kanji", no readings, 3 strokes, JLPT N4 (it appears in N4 words like 人々・時々), frequency 9999, no grade. LearningModal now shows a "Kanji data missing → Skip / Close" state instead of returning `null` under the scroll lock.
