@@ -34,4 +34,4 @@ Sun + temple (寺) = in ancient times, the sun's position relative to the temple
 
 ### 早 (early)
 
-Sun + a line (the horizon/needle) = the sun just peeking over the edge of the world at the very start of the day.
+Sun + a cross (十, seen as the horizon or a needle) = the sun just peeking over the edge of the world at the very start of the day.

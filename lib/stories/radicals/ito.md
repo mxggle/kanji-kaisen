@@ -16,7 +16,7 @@ Everything is connected! This radical represents the invisible threads that tie 
 
 ## Position
 
-Often appears as a standalone kanji or as the main component in complex characters involving textiles.
+Most often appears on the left side (itohen), and sometimes at the bottom (素, 紫, 繁).
 
 ## Transforms Meaning
 
@@ -34,4 +34,4 @@ Thread (糸) + sound/mark (戠). The rhythmic "sound" of the loom as it interlac
 
 ### 繁 (luxuriant / prosperity / frequent)
 
-Twisting threads (糸) + person + dance (敏). Imagine many "threads" being twisted and woven together in a complex, energetic "dance"—the symbol of richness and prosperity.
+Twisting threads (糸) + nimble/busy (敏). Imagine many "threads" being twisted and woven together in a complex, energetic "dance"—the symbol of richness and prosperity.

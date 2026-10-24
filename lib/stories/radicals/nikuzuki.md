@@ -16,7 +16,7 @@ It looks like the moon, but it's actually muscle! When you see this "moon" on th
 
 ## Position
 
-Always appears on the LEFT side of the kanji.
+Most often appears on the LEFT side of the kanji, but also at the bottom (育, 背, 胃).
 
 ## Transforms Meaning
 

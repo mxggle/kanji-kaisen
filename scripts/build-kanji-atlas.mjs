@@ -29,9 +29,6 @@ const INDEX_OUT = path.join(root, 'public/data/search-index.json');
 // Kanji Alive group keys that are not radicals.
 const NON_RADICAL_GROUPS = new Set(['n/a']);
 
-// Story front matter describes a different character than the group it belongs to.
-const DISPLAY_CHAR_OVERRIDES = { gen: '言', hoko: '戈' };
-
 const normalizeChar = (char) => radicalCharMap[char] || char;
 
 // ---------------------------------------------------------------------------
@@ -46,7 +43,7 @@ const radicals = radicalKeys.map((key) => {
     const story = stories[key];
     return {
         key,
-        char: DISPLAY_CHAR_OVERRIDES[key] || normalizeChar(story?.char || group?.radical_char || ''),
+        char: normalizeChar(story?.char || group?.radical_char || ''),
         name: story?.name || key,
         meaning: story?.meaning || group?.radical_meaning || '',
         category: categoryMap[key] || null,

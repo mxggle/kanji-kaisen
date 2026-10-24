@@ -16,7 +16,7 @@ Treasure the moment! This radical represents the very origins of commerce and th
 
 ## Position
 
-Often appears as a standalone kanji or as the bottom component in complex characters.
+Standalone kanji, at the bottom of complex characters (買, 資), or on the left side (kaihen: 財, 販).
 
 ## Transforms Meaning
 

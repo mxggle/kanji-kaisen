@@ -608,7 +608,7 @@
       "meaning": "power, strength",
       "origin": "A pictograph of a flexed arm showing a bulging muscle, or an ancient plow being pushed through heavy soil—both representing the application of human strength.",
       "story": "Flex your arm and feel the power! That's 力, representing the raw muscle and effort required to change the world. Whether it's the strength of a warrior or the persistence of a farmer, this character is the mark of human agency and force.",
-      "position": "Appears as a standalone kanji or on the right side of compounds",
+      "position": "Appears as a standalone kanji, on the right side (助, 動), at the bottom (努, 労), or occasionally on the left (加)",
       "transformsMeaning": "Indicates physical strength, mental effort, ability, or the application of force and power to a task",
       "exampleKanji": [
         {
@@ -900,28 +900,28 @@
     },
     "gen": {
       "key": "gen",
-      "char": "元",
+      "char": "言",
       "name": "Gen",
-      "meaning": "origin, beginning",
-      "origin": "The gen radical is a combination of a \"person\" (人) and a horizontal line above the head (二). In its earliest form, it was meant to point specifically to the \"top\" of a person's head—the most important part of the body, the source of thought and life.",
-      "story": "Everything starts at the top! This radical points to the head, the source, and the very beginning of all things. When you see it, think of foundations, primary causes, and the \"original\" state of the world. It is the radical of the \"first\" and the \"essential,\" capturing the moment before everything else follows.",
-      "position": "Usually appears as a standalone kanji or at the bottom/center of a character.",
-      "transformsMeaning": "Indicates beginning, origin, the human head, foundations, or something of primary importance.",
+      "meaning": "words, to say",
+      "origin": "The full, standing form of the \"words\" radical (言, 7 strokes). Ancient forms show a mouth (口) at the bottom with something rising out of it—often read as the voice or the tongue at work. When this element is squeezed onto the left side of a kanji it becomes gonben (訁); here it keeps its whole shape and usually stands alone or sits at the bottom.",
+      "story": "Speak up! Picture a mouth with words stacking up above it, ready to be heard. In its full form this radical carries the weight of spoken words—warnings, promises, and declarations. When you see the complete 言 holding up the bottom of a kanji, think of words that are meant to be taken seriously.",
+      "position": "Standalone kanji, or at the bottom of the character in its full form (as in 警 and 誓). On the left side it is written as gonben (訁).",
+      "transformsMeaning": "Indicates speaking, words, language, and acts done with words, such as warning, vowing, or declaring.",
       "exampleKanji": [
         {
-          "char": "元",
-          "meaning": "origin / source / foundation",
-          "explanation": "The base kanji for the start of things, the original state, and the unit of currency (Yen) which is the foundation of value."
+          "char": "言",
+          "meaning": "say / word",
+          "explanation": "The base kanji for speech: a mouth (口) with the lines of the voice rising above it. Read いう (to say) and こと (word), as in 言葉 (ことば, words)."
         },
         {
-          "char": "冠",
-          "meaning": "crown / best / cap",
-          "explanation": "Canopy (冖) + source/head (元) + hand/measure (寸). A ritual head-covering (crown) placed upon the \"top\" (origin) of an important leader."
+          "char": "警",
+          "meaning": "warn / admonish",
+          "explanation": "Respect/caution (敬) + words (言). Words spoken so that people stay alert and careful—a warning, as in 警察 (police) and 警告 (warning)."
         },
         {
-          "char": "頑",
-          "meaning": "stubborn / sturdy",
-          "explanation": "Origin/head (元) + head/page (頁). A person who has an \"original\" head that simply won't budge—the very definition of being stubborn."
+          "char": "誓",
+          "meaning": "vow / swear",
+          "explanation": "Break off/decide (折) + words (言). Words that \"cut off\" every other choice—a solemn vow or oath."
         }
       ]
     },
@@ -1012,7 +1012,7 @@
       "name": "Gyouninben",
       "meaning": "step, walk, go",
       "origin": "A pictograph representing the left half of a crossroad (行). It shows one side of a path, indicating the rhythmic act of walking or moving along a street or thoroughfare.",
-      "story": "Take the first step on your journey! These two quick strokes show the left side of a bustling street or a person taking a brisk step forward. It is the radical of public paths, travel, and the steady, rhythmic movements of people going about their daily lives.",
+      "story": "Take the first step on your journey! These three quick strokes show the left side of a bustling street or a person taking a brisk step forward. It is the radical of public paths, travel, and the steady, rhythmic movements of people going about their daily lives.",
       "position": "Always appears on the LEFT side of the kanji",
       "transformsMeaning": "Indicates walking, streets, travel, social duties, or actions that take place on a path or road",
       "exampleKanji": [
@@ -1380,7 +1380,7 @@
         {
           "char": "早",
           "meaning": "early",
-          "explanation": "Sun + a line (the horizon/needle) = the sun just peeking over the edge of the world at the very start of the day."
+          "explanation": "Sun + a cross (十, seen as the horizon or a needle) = the sun just peeking over the edge of the world at the very start of the day."
         }
       ]
     },
@@ -1656,28 +1656,28 @@
     },
     "hoko": {
       "key": "hoko",
-      "char": "矛",
+      "char": "戈",
       "name": "Hoko",
-      "meaning": "spear, halberd",
-      "origin": "The hoko radical is a pictograph of a long-handled spear or a halberd, featuring a pointed blade and a cross-piece at the top. It represents one of the primary weapons used on the ancient battlefields of East Asia.",
-      "story": "Arm yourself! This radical carries the energy of the warrior and the sharp precision of a piercing blade. When you see it, think of weapons, protection, and the active struggle to overcome obstacles. It brings the power of determination and the strength to \"pierce\" through any challenge to the characters it joins. It is the radical of the defense and the decisive strike.",
-      "position": "Often appears as a standalone kanji or on the left/top side of complex characters.",
-      "transformsMeaning": "Indicates weapons (spears, blades), protection, military force, the act of piercing or striking, or the concept of a \"side\" or \"role\" in a conflict.",
+      "meaning": "spear, halberd, weapon",
+      "origin": "The hoko radical (戈, 4 strokes) is a pictograph of the ancient Chinese dagger-axe: a long wooden shaft with a blade fixed crosswise near the top. It was one of the main weapons of early Chinese armies. On the right side of a kanji it is called hokozukuri. Don't confuse it with 矛, a different radical that is also read \"hoko\" and shows a thrusting spear.",
+      "story": "Arm yourself! The long slanting stroke is the shaft, the short horizontal stroke is the blade, and the little dot is the tassel tied near the top. This radical brings the energy of soldiers, battle, and standing guard. When you see it, think of weapons, conflict, and the strength to defend what matters.",
+      "position": "Usually appears on the RIGHT side of the kanji (hokozukuri), sometimes wrapping around the right and top as in 成.",
+      "transformsMeaning": "Indicates weapons, war and fighting, guarding and defense, or the use of force.",
       "exampleKanji": [
         {
-          "char": "矛",
-          "meaning": "spear / halberd",
-          "explanation": "The base kanji for a long-handled stabbing weapon, representing the fundamental tool of ancient combat."
+          "char": "戦",
+          "meaning": "war / battle",
+          "explanation": "Single/simple (単) + halberd (戈). Here 単 is mainly the sound element, while the halberd says it all: a battle, as in 戦争 (war)."
         },
         {
-          "char": "柔",
-          "meaning": "tender / soft / flexible",
-          "explanation": "Spear (矛) + tree/wood (木). Imagine a spear handle made of high-quality \"flexible\" wood that can bend without breaking—the essence of true softness and strength combined."
+          "char": "戒",
+          "meaning": "admonish / guard against",
+          "explanation": "Halberd (戈) + two hands (廾). Two hands gripping a weapon, ready and on guard—to be cautious or to warn, as in 警戒 (vigilance)."
         },
         {
-          "char": "務",
-          "meaning": "task / duty / business",
-          "explanation": "Spear (矛) + force (力) + task (攵). To wield a \"spear\" with \"force\" and directed \"action\"—the literal representation of taking on a solemn duty or a professional task."
+          "char": "我",
+          "meaning": "I / self",
+          "explanation": "Originally a picture of a weapon with a jagged, saw-toothed blade. Its sound was borrowed to write the word for \"I, oneself,\" as in 自我 (the self)."
         }
       ]
     },
@@ -1767,7 +1767,7 @@
       "char": "一",
       "name": "Ichi",
       "meaning": "one",
-      "origin": "The ichi radical is a simple, single horizontal stroke. It is a pictograph representing a single finger or an object held up to count. In philosophical terms, it represents the primal unity and the horizon from which all other things emerge.",
+      "origin": "The ichi radical is a simple, single horizontal stroke. It is not a picture of a thing but a simple indicator: one counting stroke (often explained as one finger or one counting rod). In philosophical terms, it represents the primal unity and the horizon from which all other things emerge.",
       "story": "Everything begins with one. This radical is the first strike of the brush that defines the horizon, the first step of a long journey, and the very foundation of the mathematical world. When you see it, think of unity, the beginning of a sequence, and the simple truth of a single entity. It is the radical of the absolute and the starting point of all creation.",
       "position": "Often appears as a standalone kanji or at the top or bottom of complex characters.",
       "transformsMeaning": "Indicates the number one, the concept of a \"first\" or \"top\" position, unity, or the beginning of an action or time period.",
@@ -2012,7 +2012,7 @@
       "meaning": "thread, silk, connection",
       "origin": "The ito radical is a pictograph showing multiple strands of silk being twisted together to form a strong, singular thread. The top part represents the cocoon, while the bottom strokes show the fine fibers being drawn out and spun.",
       "story": "Everything is connected! This radical represents the invisible threads that tie us together—our relationships, the fine \"silk\" of our words, and the intricate weaving of our personal histories. When you see it, think of delicate work, strong connections, and the meticulous process of building something great one small strand at a time. It brings a sense of beauty, unity, and infinite detail to all its characters.",
-      "position": "Often appears as a standalone kanji or as the main component in complex characters involving textiles.",
+      "position": "Most often appears on the left side (itohen), and sometimes at the bottom (素, 紫, 繁).",
       "transformsMeaning": "Indicates thread and yarn, silk production, weaving and sewing, social and physical connections, or the concept of being \"fine\" and meticulous.",
       "exampleKanji": [
         {
@@ -2028,7 +2028,7 @@
         {
           "char": "繁",
           "meaning": "luxuriant / prosperity / frequent",
-          "explanation": "Twisting threads (糸) + person + dance (敏). Imagine many \"threads\" being twisted and woven together in a complex, energetic \"dance\"—the symbol of richness and prosperity."
+          "explanation": "Twisting threads (糸) + nimble/busy (敏). Imagine many \"threads\" being twisted and woven together in a complex, energetic \"dance\"—the symbol of richness and prosperity."
         }
       ]
     },
@@ -2120,7 +2120,7 @@
       "meaning": "shell, money, wealth",
       "origin": "The kai radical is a pictograph of a cowry shell, which was used as the primary form of currency in ancient China. The character clearly shows the shell's distinctive markings and the valuable, shimmering interior.",
       "story": "Treasure the moment! This radical represents the very origins of commerce and the primal concept of wealth. When you see it, think of money, shimmering shells, precious objects, and the things we value most in life. It brings the spirit of the ancient marketplace and the weight of genuine treasure to all of its characters, reminding us of what is truly worth keeping.",
-      "position": "Often appears as a standalone kanji or as the bottom component in complex characters.",
+      "position": "Standalone kanji, at the bottom of complex characters (買, 資), or on the left side (kaihen: 財, 販).",
       "transformsMeaning": "Indicates money, wealth, precious items, buying/selling, prizes, or the value and cost associated with an activity.",
       "exampleKanji": [
         {
@@ -2228,7 +2228,7 @@
       "meaning": "metal, gold, money",
       "origin": "The kane radical is a pictograph of a smelting furnace with nuggets of precious metal or \"gold\" being extracted from the earth. It represents the immense value, utility, and refined beauty of metallic materials across human history.",
       "story": "Dig deep for treasure! This radical represents the metals that form the backbone of our technology and the \"gold\" that has served as a global standard of value for centuries. When you see it, think of industrial strength, immense wealth, rare minerals, and the enduring tools forged from the earth's riches. It brings a sense of absolute value, durability, and a shining, timeless brilliance to any character it joins.",
-      "position": "Often appears as a standalone kanji or at the bottom of complex characters.",
+      "position": "Standalone kanji, or most often on the left side (kanehen 釒), and occasionally at the bottom (釜).",
       "transformsMeaning": "Indicates metals (gold, silver, iron), money and finances, minerals, physical value and worth, or things that are hard and shiny.",
       "exampleKanji": [
         {
@@ -3198,7 +3198,7 @@
       "char": "艹",
       "name": "Kusakanmuri",
       "meaning": "grass, plants",
-      "origin": "Shows two tufts of grass or small plants sprouting from the ground. It is the simplified crown form of the kanji for grass (草).",
+      "origin": "Shows two tufts of grass or small plants sprouting from the ground. It is the simplified crown form of 艸, the old character for grass (now written 草).",
       "story": "Grass growing on top! Like a green crown upon the earth, this radical sits above kanji related to flowers, herbs, and vegetation. It’s the sign of life and growth, reminding us of the seasonal cycles of nature.",
       "position": "Always appears at the TOP of the kanji",
       "transformsMeaning": "Indicates plants, vegetation, herbs, flowers, or green growing things",
@@ -3238,7 +3238,7 @@
         {
           "char": "度",
           "meaning": "degree / time / measure",
-          "explanation": "Slant roof (广) + hand (廿/又). It originally related to a \"hand\" measuring out storage spaces under a \"roof\"—representing a specific unit of \"degree\" or \"time.\""
+          "explanation": "Slant roof (广) + twenty (廿) + hand (又). It originally related to a \"hand\" measuring out storage spaces under a \"roof\"—representing a specific unit of \"degree\" or \"time.\""
         },
         {
           "char": "庫",
@@ -3956,7 +3956,7 @@
       "meaning": "meat, flesh",
       "origin": "The nikuzuki radical is the compressed form of \"flesh\" (肉) when it appears on the left side of a kanji. While it looks identical to the \"moon\" (月), it actually represents muscle and body tissue. The internal strokes represent the fibers of meat, narrowed to sit beside other components.",
       "story": "It looks like the moon, but it's actually muscle! When you see this \"moon\" on the left side of a character, don't think of the night sky—think of your own body. It is the radical of organs, limbs, and physical life. From your heart to your skin, nikuzuki is the building block of the human anatomy in the world of kanji.",
-      "position": "Always appears on the LEFT side of the kanji.",
+      "position": "Most often appears on the LEFT side of the kanji, but also at the bottom (育, 背, 胃).",
       "transformsMeaning": "Indicates parts of the human body, internal organs, physical conditions, or aspects of biological life and health.",
       "exampleKanji": [
         {
@@ -4089,9 +4089,9 @@
       "char": "禾",
       "name": "Nogihen",
       "meaning": "grain",
-      "origin": "The nogihen radical is a pictograph of a stalk of grain, like rice or wheat, with its head heavy and drooping toward the ground. The top horizontal stroke is the heavy head of grain, the vertical stroke is the stalk, and the diagonal strokes are the leaves.",
+      "origin": "The nogihen radical is a pictograph of a stalk of grain, like rice or wheat, with its head heavy and drooping toward the ground. The short slanting stroke at the top is the heavy, drooping head of grain, the vertical stroke is the stalk, and the horizontal and diagonal strokes are the leaves and roots.",
       "story": "The harvest is ready! Imagine a field of golden rice bowing its head in the autumn breeze. This radical is the soul of agriculture and sustenance. When you see it on the left side of a kanji, think of crops, harvests, taxes (which were paid in grain), and the abundance of the earth.",
-      "position": "Always appears on the LEFT side of the kanji.",
+      "position": "Most often appears on the LEFT side of the kanji (nogihen), but also at the top or bottom (秀, 秦).",
       "transformsMeaning": "Indicates grains (rice, wheat), agriculture, harvesting, wealth/taxation (originally paid in grain), and seasonal changes.",
       "exampleKanji": [
         {
@@ -4107,7 +4107,7 @@
         {
           "char": "税",
           "meaning": "tax",
-          "explanation": "Grain (禾) + exchange/release (充). The \"grain\" that you must \"release\" and give to the authority as your formal \"tax\" payment."
+          "explanation": "Grain (禾) + exchange/release (兑). The \"grain\" that you must \"release\" and give to the authority as your formal \"tax\" payment."
         }
       ]
     },
@@ -4278,7 +4278,7 @@
       "char": "頁",
       "name": "Oogai",
       "meaning": "head, page",
-      "origin": "The oogai radical is a pictograph of a human head, specifically showing the face, eyes, and the crown of the head. It originally represented a person's countenance or the physical head, eventually evolving to mean a \"page\" because pages in a book were seen as the \"heads\" or \"faces\" of the scroll.",
+      "origin": "The oogai radical is a pictograph of a human head, specifically showing the face, eyes, and the crown of the head. It originally represented a person's countenance or the physical head; its later meaning of \"page\" is a sound borrowing (it was used in place of 葉, \"leaf\"), not a change in what the picture shows.",
       "story": "Face the world! This radical represents everything that happens from the neck up—thinking, seeing, breathing, and the very identity of a person. When you see these strokes, imagine a person's face looking back at you. It is the radical of the mind, the leader, and the primary surface of communication.",
       "position": "Always appears on the RIGHT side of the kanji.",
       "transformsMeaning": "Indicates the human head, face, neck, thinking processes, leadership, or the physical surface of a page or document.",
@@ -5970,7 +5970,7 @@
         {
           "char": "宅",
           "meaning": "home / residence",
-          "explanation": "Roof (宀) + movement/bottom. The place where you come to rest at the end of your journey—your private \"home\" or residence."
+          "explanation": "Roof (宀) + a sprouting plant (乇, which also gives the sound \"taku\"). The place where you come to rest at the end of your journey—your private \"home\" or residence."
         }
       ]
     },
