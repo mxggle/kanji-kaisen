@@ -7,7 +7,7 @@ import { useSettingsStore } from "@/lib/settings-store";
 import { useProgressStore } from "@/lib/store";
 import { isDailyHandwritingSkipActive } from "@/lib/handwriting-preferences";
 import { trackEvent } from "@/lib/analytics";
-import { AccountPanel } from "@/components/Auth/AccountPanel";
+import { useStudyStore } from "@/lib/study-store";
 
 function subscribeHydration() {
     return () => { };
@@ -67,16 +67,24 @@ export default function SettingsPage() {
     } = useSettingsStore();
 
     const resetProgress = useProgressStore((state) => state.resetProgress);
+    const clearStudyList = useStudyStore((state) => state.clear);
     const skipHandwritingForTodayEnabled = isDailyHandwritingSkipActive(skipHandwritingTodayDate);
 
     if (!mounted) return null;
 
     const handleResetProgress = () => {
         const confirmed = window.confirm(
-            "Reset all learning progress? This action cannot be undone."
+            "Reset classic practice progress (completed checkpoints)? This action cannot be undone."
         );
         if (confirmed) {
             resetProgress();
+        }
+    };
+
+    const handleClearStudyList = () => {
+        const confirmed = window.confirm("Remove every kanji from My list? This action cannot be undone.");
+        if (confirmed) {
+            clearStudyList();
         }
     };
 
@@ -112,20 +120,18 @@ export default function SettingsPage() {
                             <Settings2 className="text-cyan-300" size={22} /> Settings
                         </h1>
                         <p className="text-sm text-zinc-400 mt-1">
-                            Tune your learning flow and app behavior.
+                            Classic practice options, feedback and reset tools.
                         </p>
                     </div>
                 </div>
 
-                <AccountPanel />
-
                 <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 md:p-5">
-                    <h2 className="text-base font-semibold mb-1">Learning</h2>
-                    <p className="text-xs text-zinc-400 mb-2">Customize how lessons run.</p>
+                    <h2 className="text-base font-semibold mb-1">Classic practice</h2>
+                    <p className="text-xs text-zinc-400 mb-2">These only affect the step-by-step practice path. Kanji pages always offer stroke animation and free tracing.</p>
 
                     <ToggleRow
                         label="Always Skip Handwriting"
-                        description="Skip trace and handwriting challenge for all kanji every day."
+                        description="Skip the trace and AI handwriting steps in classic practice."
                         enabled={skipHandwritingGlobally}
                         onToggle={() => setSkipHandwritingGlobally(!skipHandwritingGlobally)}
                     />
@@ -134,7 +140,7 @@ export default function SettingsPage() {
                         <div className="border-t border-zinc-800">
                             <ToggleRow
                                 label="Skip Handwriting For Today"
-                                description="Skip trace and handwriting challenge across the app until your local day resets."
+                                description="Skip the trace and AI handwriting steps in classic practice until your local day resets."
                                 enabled={skipHandwritingForTodayEnabled}
                                 onToggle={() =>
                                     skipHandwritingForTodayEnabled
@@ -183,7 +189,13 @@ export default function SettingsPage() {
                             onClick={handleResetProgress}
                             className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-red-500/50 text-red-300 text-sm hover:bg-red-500/10 transition-colors"
                         >
-                            <RotateCcw size={14} /> Reset Progress
+                            <RotateCcw size={14} /> Reset Practice Progress
+                        </button>
+                        <button
+                            onClick={handleClearStudyList}
+                            className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-red-500/50 text-red-300 text-sm hover:bg-red-500/10 transition-colors"
+                        >
+                            <RotateCcw size={14} /> Clear My List
                         </button>
                     </div>
                 </section>
