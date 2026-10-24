@@ -108,7 +108,7 @@ Redirects in `next.config.ts`: `/learn` → `/practice` and `/heatmap` → `/bro
 - [ ] **1.4 Themes.**
   - `/categories`: 10 cards that reuse the `CategoryCard` look and `public/images/categories/*.png`, without progress bars.
   - `/category/[slug]`, server-rendered: the theme story inline (the `CategoryStoryModal` content), radical cards linking to `/radical/[key]`, the theme's kanji grid, and a "Practice this theme (classic)" link to `/practice/[slug]`.
-- [ ] **1.5 Browse `/browse`.**
+- [x] **1.5 Browse `/browse`.**
   - Evolve `Dashboard` into this page: JLPT, stroke range, sort (frequency/strokes/JLPT), plus a theme or radical filter if cheap.
   - Filters sync to query params (for example `/browse?jlpt=N5`).
   - The first paint is server-rendered. Keep it fast on mobile with 2211 cards (pagination or progressive rendering).
@@ -222,3 +222,5 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 - 2026-10-24 2.1 — Pure helpers live in `lib/study-list.ts` (tested by `lib/study-list.test.mjs`); `lib/study-store.ts` (key `kanji-study-list`) wraps them and adds `useStudyStoreHydrated()` so client components can avoid hydration mismatches. `setStatus` on an unsaved kanji saves it.
 - 2026-10-24 2.4 — `buildMeaningOptions(target, pool)` in `lib/atlas/quiz.ts` takes the category on each candidate instead of reading checkpoints; PhaseQuiz builds its pool from KANJI_DATA + checkpoint categories, so its options are unchanged. The old second "fallback" loop was dropped because the ranked list already contains the whole pool.
 - 2026-10-24 2.6 — Hearts removed from the classic flow ahead of 2.6's Settings part: PhaseQuiz/PhaseChallenge no longer take `onFail`; LearningModal drops the heart counter, the "Out of Hearts" gate and the `heart_lost`/`out_of_hearts` events. `shouldLoseHeartForQuizSelection` and its test were removed. Store fields and actions are untouched.
+- 2026-10-24 1.5 — `/browse` defaults to JLPT order (N5→N1, then frequency); `?sort=frequency|strokes` for the others. Both theme (`?theme=<slug>`) and radical (`?radical=<key>`) filters shipped. Filter changes use `history.replaceState` (no RSC refetch, no history entries). All 2223 slim records ride in the RSC payload (~570 KB raw / ~82 KB gzipped HTML); the first 120 tiles are server-rendered, "Show more" adds 120. Filter logic is the tested `components/Browse/filters.ts`. The old Dashboard/FilterPanel/KanjiGrid/KanjiCard and `/heatmap` page were removed.
+- 2026-10-24 1.6 — `searchKanji` scores: typed kanji 1000; exact meaning 100 > exact kana 95 > exact romaji 85 > meaning word-prefix 70 > kana prefix 60 > romaji prefix 50 > meaning substring 40; ties by frequency then JLPT. A reading's okurigana-less stem also counts as exact (ふる.い matches ふる). `/search` caps at 100 results, robots `noindex, follow`. The header shows the SearchBox inline at ≥1280 px and in the mobile menu; between those widths it shows a search icon linking to `/search`.

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Bebas_Neue } from "next/font/google";
 import { Menu, Search, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SearchBox } from "@/components/Search/SearchBox";
 
 const bebasNeue = Bebas_Neue({
     weight: "400",
@@ -81,8 +82,8 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-1">
-                    {/* HEADER_SEARCH_SLOT */}
-                    <Link href="/search" aria-label="Search kanji" className="p-2 rounded-full text-white/75 hover:bg-white/10 hover:text-white transition-colors">
+                    <SearchBox variant="compact" className="hidden xl:block w-56" />
+                    <Link href="/search" aria-label="Search kanji" className="xl:hidden p-2 rounded-full text-white/75 hover:bg-white/10 hover:text-white transition-colors">
                         <Search size={18} />
                     </Link>
                     <Link
@@ -107,6 +108,7 @@ export function Header() {
 
             {menuOpen && (
                 <nav id="mobile-nav" aria-label="Main" className="lg:hidden border-t border-white/10 bg-black/95 px-4 py-3">
+                    <SearchBox variant="compact" className="mb-3" onNavigate={() => setMenuOpen(false)} />
                     <ul className="flex flex-col gap-1">
                         {[...NAV_ITEMS, PRACTICE_ITEM, { href: "/settings", label: "Settings", match: ["/settings"] }].map((item) => (
                             <li key={item.href}>
