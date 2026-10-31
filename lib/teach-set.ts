@@ -53,7 +53,9 @@ export function extractKanji(text: string, known?: KnownChars, max = MAX_SET_KAN
 }
 
 // C0 controls and DEL.
-const CONTROL_RE = new RegExp("[\\u0000-\\u001f\\u007f]", "g");
+// Control characters, plus invisible format characters that can reorder or hide
+// text (zero-width, bidi embeddings, overrides and isolates).
+const CONTROL_RE = new RegExp("[\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u202a-\\u202e\\u2066-\\u2069\\ufeff]", "g");
 
 /** Trimmed, whitespace collapsed, control characters removed, at most 80 characters. */
 export function cleanTitle(title: string | null | undefined): string {

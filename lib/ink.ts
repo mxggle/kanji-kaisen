@@ -120,6 +120,9 @@ export function setShade(entries: InkEntries, char: string, shade: Shade, now = 
     if (shade < 3) {
         delete next.writeDays;
         delete next.firstWrite;
+    } else if (shade < 4 && prev?.shade === 4 && next.firstWrite) {
+        // Marked down from 印: mastery needs three more weeks from now.
+        next.firstWrite = now.toISOString();
     }
     return withEntry(entries, char, next);
 }

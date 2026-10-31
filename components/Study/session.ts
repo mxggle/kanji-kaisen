@@ -5,7 +5,7 @@
 import type { JlptLevel } from "../../lib/atlas/types.ts";
 import type { QuizCandidate } from "../../lib/atlas/quiz.ts";
 import type { SearchIndexEntry } from "../../lib/atlas/search.ts";
-import { cleanTitle, extractKanji } from "../../lib/teach-set.ts";
+import { cleanTitle, extractKanji, type KnownChars } from "../../lib/teach-set.ts";
 
 /** Cards per session. Larger decks are studied in consecutive chunks of this size. */
 export const SESSION_SIZE = 20;
@@ -44,7 +44,8 @@ export interface ParsedStudyParams {
 }
 
 /** First matching param wins: deck, then jlpt, radical, theme, chars. */
-export function parseStudyParams(params: StudyParams): ParsedStudyParams {
+/** `known` filters `chars=` before the 60-kanji cap (the page passes the atlas lookup). */
+export function parseStudyParams(params: StudyParams, known?: KnownChars): ParsedStudyParams {
     const mode = parseMode(params.mode);
     const deck = first(params.deck).toLowerCase();
     const jlpt = first(params.jlpt);
@@ -63,8 +64,8 @@ export function parseStudyParams(params: StudyParams): ParsedStudyParams {
     if (radical) return { request: { kind: "radical", key: radical }, invalid: false, mode };
     if (theme) return { request: { kind: "theme", slug: theme.toLowerCase() }, invalid: false, mode };
     if (chars) {
-        // Kanji only, unique, at most 60 (the teacher set contract); unknown ones are dropped by the page.
-        const kanji = extractKanji(chars);
+        // Kanji only, unique, known, at most 60 (the teacher set contract).
+        const kanji = extractKanji(chars, known);
         if (kanji.length === 0) return { request: null, invalid: true, mode };
         const title = cleanTitle(first(params.t));
         return { request: { kind: "chars", chars: kanji, ...(title ? { title } : {}) }, invalid: false, mode };

@@ -90,3 +90,10 @@ test("builds quiz candidates from slim index entries", () => {
     });
     assert.deepEqual(uniqueChars(["a", "b", "a"]), ["a", "b"]);
 });
+
+test("a chars deck drops unknown kanji before the 60 cap", () => {
+    const rare = "丨".repeat(1) + Array.from({ length: 60 }, (_, i) => String.fromCodePoint(0x4e00 + 200 + i)).join("");
+    const known = new Set(["海", "泳"]);
+    assert.deepEqual(parseStudyParams({ chars: rare + "海泳" }, known).request, { kind: "chars", chars: ["海", "泳"] });
+    assert.equal(parseStudyParams({ chars: rare }, known).invalid, true);
+});

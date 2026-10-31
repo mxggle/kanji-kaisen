@@ -113,12 +113,31 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
         else router.push(set.chars.length ? `/teach?${encodeSet(set)}` : "/teach");
     }, [router, set]);
 
+    // The projector covers the page but renders inside the layout's <main>, so
+    // everything outside it (siblings of each ancestor up to <body>) goes inert:
+    // Tab can't reach the hidden header and footer.
+    useEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+        const made: Element[] = [];
+        for (let node: Element = root; node.parentElement && node !== document.body; node = node.parentElement) {
+            for (const el of Array.from(node.parentElement.children)) {
+                if (el === node || el.hasAttribute("inert") || el.tagName === "SCRIPT") continue;
+                el.setAttribute("inert", "");
+                made.push(el);
+            }
+        }
+        return () => made.forEach((el) => el.removeAttribute("inert"));
+    }, []);
+
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.metaKey || e.ctrlKey || e.altKey) return;
             const target = e.target as HTMLElement | null;
+            // Typing in a field never triggers projector commands.
+            if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
             // Let focused buttons and links handle their own activation keys.
-            if ((e.key === " " || e.key === "Enter") && target?.closest("button, a, input, select, textarea")) return;
+            if ((e.key === " " || e.key === "Enter") && target?.closest("button, a")) return;
             const command = projectorKey(e.key, state.quiz);
             if (!command) return;
             e.preventDefault();
@@ -222,7 +241,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                     <Link href="/teach" className="text-accent hover:underline">Build a set</Link>
                 </div>
             ) : (
-                <main className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]">
+                <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]">
                     {/* Clicking the kanji draws the next stroke; keyboard users press Space. */}
                     <div onClick={() => dispatch({ type: "advance", total, count })} className="justify-self-center cursor-pointer select-none">
                         {glyph ? (
@@ -299,7 +318,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                             )}
                         </div>
                     )}
-                </main>
+                </div>
             )}
 
             <footer className="flex items-center gap-3 px-[3vw] pb-[2.5vh] text-ink-3 text-[clamp(.9rem,1.25vw,1.3rem)]">

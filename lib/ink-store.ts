@@ -93,11 +93,15 @@ export const useInkStore = create<InkState>()(
     )
 );
 
-const subscribeHydration = (onChange: () => void) => useInkStore.persist.onFinishHydration(onChange);
+// `persist` is missing when the browser blocks storage (createJSONStorage
+// can't reach localStorage); the store then works in memory and counts as hydrated.
+const noop = () => {};
+const subscribeHydration = (onChange: () => void) => useInkStore.persist?.onFinishHydration(onChange) ?? noop;
+const isHydrated = () => useInkStore.persist?.hasHydrated() ?? true;
 
 /** False during SSR and the first client render, so ink never causes a hydration mismatch. */
 export function useInkHydrated(): boolean {
-    return useSyncExternalStore(subscribeHydration, () => useInkStore.persist.hasHydrated(), () => false);
+    return useSyncExternalStore(subscribeHydration, isHydrated, () => false);
 }
 
 /** The shade of one kanji (0 until hydrated). */

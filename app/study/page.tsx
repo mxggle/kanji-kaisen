@@ -68,7 +68,7 @@ function resolveServerDeck(request: DeckRequest): ServerDeck | null {
 }
 
 export default async function StudyPage({ searchParams }: StudyPageProps) {
-    const { request, invalid, mode } = parseStudyParams(await searchParams);
+    const { request, invalid, mode } = parseStudyParams(await searchParams, (c) => getKanji(c) !== null);
     const isListDeck = request?.kind === "list" || request?.kind === "learning";
     const serverDeck = request && !isListDeck ? resolveServerDeck(request) : null;
     const notFound = invalid || (request !== null && !isListDeck && serverDeck === null);

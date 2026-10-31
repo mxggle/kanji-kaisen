@@ -49,9 +49,13 @@ export const useStudyStore = create<StudyState>()(
     )
 );
 
-const subscribeHydration = (onChange: () => void) => useStudyStore.persist.onFinishHydration(onChange);
+// `persist` is missing when the browser blocks storage (createJSONStorage
+// can't reach localStorage); the store then works in memory and counts as hydrated.
+const noop = () => {};
+const subscribeHydration = (onChange: () => void) => useStudyStore.persist?.onFinishHydration(onChange) ?? noop;
+const isHydrated = () => useStudyStore.persist?.hasHydrated() ?? true;
 
 /** False during SSR and the first client render, so saved state never causes a hydration mismatch. */
 export function useStudyStoreHydrated(): boolean {
-    return useSyncExternalStore(subscribeHydration, () => useStudyStore.persist.hasHydrated(), () => false);
+    return useSyncExternalStore(subscribeHydration, isHydrated, () => false);
 }

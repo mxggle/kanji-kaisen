@@ -40,7 +40,8 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
     const [paper, setPaper] = useState<Paper>("a4");
     const [answerKey, setAnswerKey] = useState(false);
     const [showWords, setShowWords] = useState(true);
-    const [copied, setCopied] = useState(false);
+    // "selected": the clipboard was blocked and the link is selected for Ctrl+C.
+    const [copied, setCopied] = useState<false | "copied" | "selected">(false);
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const linkRef = useRef<HTMLInputElement>(null);
 
@@ -59,8 +60,11 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
             // Clipboard blocked: select the link so it can be copied by hand.
             setTab("share");
             requestAnimationFrame(() => linkRef.current?.select());
+            setCopied("selected");
+            window.setTimeout(() => setCopied(false), 4000);
+            return;
         }
-        setCopied(true);
+        setCopied("copied");
         window.setTimeout(() => setCopied(false), 2000);
         trackEvent("share_link_created", { count: chars.length });
     };
@@ -92,8 +96,10 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                     <MonitorPlay size={18} aria-hidden /> Present full screen
                 </Link>
                 <button type="button" onClick={copyLink} disabled={empty} className={BUTTON}>
-                    {copied ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
-                    <span aria-live="polite">{copied ? "Link copied" : "Copy link"}</span>
+                    {copied === "copied" ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
+                    <span aria-live="polite">
+                        {copied === "copied" ? "Link copied" : copied === "selected" ? "Link selected: press Ctrl+C" : "Copy link"}
+                    </span>
                 </button>
             </div>
 
@@ -183,7 +189,7 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         <button type="button" onClick={copyLink} className={cn(BUTTON, "h-9")}>
-                                            {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />} {copied ? "Copied" : "Copy link"}
+                                            {copied === "copied" ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />} {copied === "copied" ? "Copied" : "Copy link"}
                                         </button>
                                         <Link href={setPath("set", set)} target="_blank" className={cn(BUTTON, "h-9")}>
                                             <ExternalLink size={16} aria-hidden /> Open the student page

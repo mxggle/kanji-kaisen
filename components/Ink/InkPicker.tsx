@@ -39,13 +39,14 @@ export function InkPicker({ char, source = "self", label, className }: InkPicker
     const onKeyDown = (e: React.KeyboardEvent) => {
         const last = SHADES.length - 1;
         let next: number | null = null;
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = current === last ? 0 : current + 1;
-        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = current === 0 ? last : current - 1;
+        // Arrows stop at the ends: wrapping from 印 to 白 would wipe a kanji's ink.
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = Math.min(current + 1, last);
+        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = Math.max(current - 1, 0);
         else if (e.key === "Home") next = 0;
         else if (e.key === "End") next = last;
         if (next === null) return;
         e.preventDefault();
-        choose(next as Shade, true);
+        if (next !== current) choose(next as Shade, true);
     };
 
     return (
