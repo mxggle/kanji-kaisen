@@ -24,6 +24,10 @@ export interface WorksheetProps {
 }
 
 const TRACE_OPACITY = [0.3, 0.19, 0.11];
+
+// Example words come from the atlas's examples. Update this line when the
+// data layer adds other word sources (e.g. JMdict).
+const WORD_CREDIT = "Words: Kanji alive (CC BY 4.0)";
 const CELLS_PER_ROW = 8;
 
 export const worksheetMeaning = (entry: SearchIndexEntry | undefined) => entry?.m.slice(0, 3).join(", ") ?? "";
@@ -35,7 +39,11 @@ export function worksheetReadings(entry: SearchIndexEntry | undefined): string {
 
 export function Worksheet({ title, chars, entries, strokes, words, showWords, answerKey, siteHost, limit }: WorksheetProps) {
     const shown = limit ? chars.slice(0, limit) : chars;
-    const wordList = shown.flatMap((c) => (words[c] ?? []).map((w) => ({ ...w, char: c })));
+    // A word can serve two kanji in the set (海水 for 海 and 水): list it once.
+    const seen = new Set<string>();
+    const wordList = shown
+        .flatMap((c) => (words[c] ?? []).map((w) => ({ ...w, char: c })))
+        .filter((w) => !seen.has(w.word) && seen.add(w.word));
     const preview = limit !== undefined;
     // The builder preview sits inside /teach, which has its own h1.
     const Title = preview ? "p" : "h1";
@@ -75,7 +83,7 @@ export function Worksheet({ title, chars, entries, strokes, words, showWords, an
                 </section>
             )}
 
-            <WorksheetFooter count={chars.length} siteHost={siteHost} />
+            <WorksheetFooter count={chars.length} siteHost={siteHost} wordCredit={showWords && wordList.length > 0} />
 
             {answerKey && !preview && (
                 <AnswerKey title={title} chars={chars} entries={entries} words={showWords ? words : {}} siteHost={siteHost} />
@@ -187,18 +195,21 @@ function WordLine({ word }: { word: TeachWord }) {
     );
 }
 
-function WorksheetFooter({ count, siteHost }: { count: number; siteHost: string }) {
+function WorksheetFooter({ count, siteHost, wordCredit }: { count: number; siteHost: string; wordCredit: boolean }) {
     return (
         <footer className="break-inside-avoid mt-[5mm] pt-[2mm] border-t border-line-2 flex flex-wrap justify-between gap-x-[4mm] gap-y-[1mm] text-[7.5pt] text-ink-3">
             <span>
                 {count} kanji · Made with Kanji Kaisen{siteHost ? ` · ${siteHost}` : ""}
             </span>
-            <span>Stroke order: KanjiVG (CC BY-SA 3.0)</span>
+            <span>
+                Stroke order: KanjiVG (CC BY-SA 3.0){wordCredit ? ` · ${WORD_CREDIT}` : ""}
+            </span>
         </footer>
     );
 }
 
 function AnswerKey({ title, chars, entries, words, siteHost }: { title: string; chars: string[]; entries: Map<string, SearchIndexEntry>; words: TeachWords; siteHost: string }) {
+    const hasWords = chars.some((c) => (words[c] ?? []).length > 0);
     return (
         <section className="break-before-page mt-[10mm] print:mt-0" aria-labelledby="ws-key">
             <header className="pb-[2.5mm] border-b-[1.5px] border-ink">
@@ -211,7 +222,7 @@ function AnswerKey({ title, chars, entries, words, siteHost }: { title: string; 
                         <th scope="col" className="py-[1.5mm] pr-[3mm] font-normal">Kanji</th>
                         <th scope="col" className="py-[1.5mm] pr-[3mm] font-normal">Meaning</th>
                         <th scope="col" className="py-[1.5mm] pr-[3mm] font-normal">Readings</th>
-                        <th scope="col" className="py-[1.5mm] font-normal">Words</th>
+                        {hasWords && <th scope="col" className="py-[1.5mm] font-normal">Words</th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -222,19 +233,21 @@ function AnswerKey({ title, chars, entries, words, siteHost }: { title: string; 
                                 <th scope="row" lang="ja" className="py-[1.5mm] pr-[3mm] font-jp text-[16pt] font-semibold leading-none text-left">{char}</th>
                                 <td className="py-[1.5mm] pr-[3mm]">{worksheetMeaning(entry)}</td>
                                 <td lang="ja" className="py-[1.5mm] pr-[3mm] font-jp">{worksheetReadings(entry)}</td>
-                                <td className="py-[1.5mm]">
-                                    {(words[char] ?? []).map((w) => (
-                                        <span key={w.word} className="block">
-                                            <span lang="ja" className="font-jp">{w.word}【{w.reading}】</span> {w.meaning}
-                                        </span>
-                                    ))}
-                                </td>
+                                {hasWords && (
+                                    <td className="py-[1.5mm]">
+                                        {(words[char] ?? []).map((w) => (
+                                            <span key={w.word} className="block">
+                                                <span lang="ja" className="font-jp">{w.word}【{w.reading}】</span> {w.meaning}
+                                            </span>
+                                        ))}
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}
                 </tbody>
             </table>
-            <WorksheetFooter count={chars.length} siteHost={siteHost} />
+            <WorksheetFooter count={chars.length} siteHost={siteHost} wordCredit={hasWords} />
         </section>
     );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MonitorPlay, Printer, Share2 } from "lucide-react";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 import { PageShell } from "@/components/Atlas/PageShell";
@@ -58,7 +59,8 @@ export default function TeachPage() {
                     ))}
                 </ul>
                 <p className="mt-6 text-xs text-ink-3">
-                    Stroke order from KanjiVG (CC BY-SA 3.0). Example words from Kanji alive (CC BY 4.0).
+                    Stroke order from KanjiVG (CC BY-SA 3.0). Readings and example words: see{" "}
+                    <Link href="/about" className="text-accent hover:underline">About &amp; credits</Link>.
                 </p>
             </section>
         </PageShell>

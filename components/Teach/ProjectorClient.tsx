@@ -27,6 +27,15 @@ const subscribeFullscreen = (onChange: () => void) => {
     return () => document.removeEventListener("fullscreenchange", onChange);
 };
 
+/** Calls a Fullscreen API method that may be missing or (in old browsers) return nothing. */
+const quietly = (call: (() => Promise<void> | void) | undefined) => {
+    try {
+        Promise.resolve(call?.()).catch(() => {});
+    } catch {
+        // Not allowed here (e.g. no user gesture): ignore.
+    }
+};
+
 const projectorReadings = (entry: SearchIndexEntry | undefined) =>
     entry ? [...entry.on.slice(0, 2), ...entry.kun.slice(0, 2).map(formatReading)].join(" · ") : "";
 
@@ -71,6 +80,8 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
     const answer = entry ? meaningLabel(entry.m) : "";
 
     const fullscreen = useSyncExternalStore(subscribeFullscreen, () => document.fullscreenElement !== null, () => false);
+    // iPhone Safari has no Fullscreen API for pages: hide the button there.
+    const canFullscreen = useSyncExternalStore(subscribeFullscreen, () => document.fullscreenEnabled === true, () => true);
 
     useEffect(() => {
         if (count === 0 || openedRef.current) return;
@@ -90,12 +101,13 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
     }, []);
 
     const toggleFullscreen = useCallback(() => {
-        if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
-        else rootRef.current?.requestFullscreen?.().catch(() => {});
+        const root = rootRef.current;
+        if (document.fullscreenElement) quietly(document.exitFullscreen?.bind(document));
+        else quietly(root?.requestFullscreen?.bind(root));
     }, []);
 
     const exit = useCallback(() => {
-        if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+        if (document.fullscreenElement) quietly(document.exitFullscreen?.bind(document));
         const cameFromSite = document.referrer.startsWith(window.location.origin) && window.history.length > 1;
         if (cameFromSite) router.back();
         else router.push(set.chars.length ? `/teach?${encodeSet(set)}` : "/teach");
@@ -171,25 +183,29 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                     }}
                     aria-pressed={state.quiz !== "off"}
                     aria-keyshortcuts="Q"
+                    aria-label="Quiz the class"
                     disabled={count === 0}
                     className={cn(CONTROL, "aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:border-ink disabled:opacity-40")}
                 >
-                    <MessageCircleQuestion size={18} aria-hidden /> <span className="hidden sm:inline">Quiz</span>
+                    <MessageCircleQuestion size={18} aria-hidden /> <span className="hidden sm:inline" aria-hidden>Quiz</span>
                 </button>
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        toggleFullscreen();
-                        refocus(e);
-                    }}
-                    aria-keyshortcuts="F"
-                    className={CONTROL}
-                >
-                    {fullscreen ? <Minimize size={18} aria-hidden /> : <Maximize size={18} aria-hidden />}
-                    <span className="hidden sm:inline">{fullscreen ? "Exit full screen" : "Full screen"}</span>
-                </button>
-                <button type="button" onClick={exit} aria-keyshortcuts="Escape" className={CONTROL}>
-                    <X size={18} aria-hidden /> <span className="hidden sm:inline">Exit</span>
+                {canFullscreen && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            toggleFullscreen();
+                            refocus(e);
+                        }}
+                        aria-keyshortcuts="F"
+                        aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+                        className={CONTROL}
+                    >
+                        {fullscreen ? <Minimize size={18} aria-hidden /> : <Maximize size={18} aria-hidden />}
+                        <span className="hidden sm:inline" aria-hidden>{fullscreen ? "Exit full screen" : "Full screen"}</span>
+                    </button>
+                )}
+                <button type="button" onClick={exit} aria-keyshortcuts="Escape" aria-label="Exit" className={CONTROL}>
+                    <X size={18} aria-hidden /> <span className="hidden sm:inline" aria-hidden>Exit</span>
                 </button>
             </header>
 
