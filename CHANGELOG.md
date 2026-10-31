@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-10-31
+
+Story-first redesign on top of the unreleased 2.0.0 atlas. See `docs/superpowers/plans/2026-10-31-story-atlas-redesign.md`.
+
+### Added
+- Kanji pages are reading-first. They group words by reading and show each part's role (meaning or sound). They add a "How it was built" animation with sourced ancient forms, a Wiktionary origin kept apart from the labelled memory story, a glowing stroke-order animation, links to kanji built on the same parts, the sound family, same on'yomi and a look-alike compare, an "In Chinese" note and a share card.
+- Four-step study layer (会 Meet, 想 Recall, 描 Trace, 書 Write) at `/kanji/[char]#learn`, with five shades of ink per kanji. Ink is set by the steps or by hand, wrong answers never lower it, and there is no review queue.
+- Radical journey pages that play the oracle bone, bronze, seal and today stages, using only public-domain or CC0 Commons files.
+- Learn home with search first, a featured theme with an ink ring, and ten theme gates. Theme pages show radical seals in a suggested order and a theme scroll that regains colour.
+- 夜 Night and 墨 Ink skins with a persisted toggle; new fonts (Shippori Mincho B1, Cormorant Garamond, Zen Kaku Gothic New).
+- Teacher kit: `/teach` set builder, A4/Letter worksheets with 米字格 cells, projector mode, `/set` share links with a QR code, and `/study?chars=`.
+- The 161 missing jōyō kanji (2,384 kanji in all). JMdict example words for kanji without Kanji alive words. Phonetic series, same-on'yomi groups, look-alikes and Unihan simplified/traditional/pinyin data.
+- Analytics events for journeys, builds, learn steps, ink changes, share cards, worksheets, the projector, share links, the In Chinese note, skin changes and theme gates.
+- `/about/ancient-forms` with per-file credits; `/about` lists every data source and licence.
+
+### Changed
+- The data is split into a language-neutral core (`lib/core/`) and a Japanese layer (`lib/ja/`), and each share-alike source keeps its own file.
+- Meanings follow KANJIDIC2 order, so 土 is "soil", not "Turkey", and 西 is "west", not "Spain".
+- The header nav is Learn / Browse / My list / Teach, with the skin toggle.
+
+### Removed
+- The floating-kanji and radical-demo home widgets, the old same-radical grid on kanji pages, and the unused `StrokeOrderPanel`, `ReadingList`, `ExampleList` and `ThemeCard` components.
+
+---
+
 ## [2.0.0] - 2026-10-24
 
 ### Added

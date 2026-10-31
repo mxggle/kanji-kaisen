@@ -107,7 +107,7 @@ export function Footer() {
                     {/* Meta */}
                     <div className="flex flex-col items-center space-y-1 pt-1 text-center">
                         <div className="text-[11px] text-ink-3">
-                            © {currentYear} Kanji Kaisen • Version 2.0.0
+                            © {currentYear} Kanji Kaisen • Version 2.1.0
                         </div>
                         <div className="text-[11px] text-ink-3">
                             Stroke data © KanjiVG (CC BY-SA 3.0) • Examples © Kanji alive (CC BY 4.0) •{" "}

@@ -2,41 +2,60 @@
 
 ### A kanji atlas: logic, not magic
 
-**Kanji Kaisen** is a free, browse-first kanji reference. Every one of its 2,200+ kanji has its own page with stroke order, readings, example words and the radical it is built from, and every radical has a short story that links its shape to its meaning. An optional study layer lets you save kanji and review them with flashcards or a quiz — no hearts, streaks or lock-outs.
+**Kanji Kaisen** is a free kanji atlas built on radicals. Every one of its 2,384 kanji (all 2,136 jōyō kanji, plus name kanji) has its own page. Each page shows how the kanji is read in real words, which part gives its meaning and which gives its sound, and how it was built where a source says so. Radicals show their sourced journey from oracle bone to today. Study is optional: each kanji darkens through five shades of ink as you learn it, and there are no hearts, streaks, lock-outs or review queues.
+
+The site has two skins: 夜 Night, the dark default, and 墨 Ink, light paper that is also used for printing. Teachers can print worksheets, present on a projector and share sets without student accounts.
 
 ## Features
 
-- 📖 **A page per kanji** — meanings, on/kun readings with romaji, JLPT level, school grade, stroke count and newspaper frequency; a numbered stroke diagram, an animated stroke order with replay, a "Try writing" canvas, example words (irregular readings marked), its radical and story, same-radical kanji and prev/next links.
-- 🧩 **Radicals** — 230 radical pages, grouped by theme, each with origin, story, typical position, how it changes meaning, explained example kanji and every kanji in the atlas that uses it.
-- 🌋 **Ten themes** — Nature & Elements, Human Body & People, Tools & Weapons and more, each with its story, radicals and kanji.
-- 🔎 **Search** — by kanji, English meaning, kana or romaji (`water`, `みず`, `mizu`, `水`), with instant results in the header.
-- 🗂️ **Browse** — filter by JLPT level, stroke range, theme or radical and sort by frequency, strokes or level; filters live in the URL.
-- ⭐ **My list & Study** — save kanji, mark them still learning or known, and study a deck (your list, a JLPT level, a radical or a theme) with flashcards or a meaning quiz. Stored in your browser.
-- 🥋 **Classic practice** — the original step-by-step path (memorize → quiz → trace → AI handwriting challenge) is still available at `/practice`.
+- 📖 **A page per kanji, readings first.** One block per reading (on'yomi in compounds, kun'yomi on its own) with the words that use it, and irregular readings marked. The page also has:
+  - the parts with their role (meaning or sound)
+  - "How it was built": the parts assemble, then the sourced ancient forms
+  - a sourced **Origin** kept apart from the labelled **Memory story**
+  - a glowing stroke-order animation and a numbered diagram
+  - links to kanji built on the same parts, the sound family, kanji with the same on'yomi, and look-alikes compared side by side
+  - an "In Chinese" note (simplified, traditional and pinyin)
+  - a share card
+- 🪶 **Learn it in four steps.** 会 Meet, 想 Recall, 描 Trace and 書 Write open as a layer on any kanji page (`/kanji/海#learn`). Every step is optional, and writing is off by default.
+- 🖋️ **Five shades of ink.** 白 Not met, 淡 Met, 中 Learning, 濃 Familiar, 印 Mastered. Shades rise as you work and you can set them yourself. Wrong answers never lower them, and there is no review queue. Each theme's illustration regains colour as its kanji darken.
+- 🧭 **Radical journeys.** 230 radical pages play the sourced oracle bone → bronze → seal → today stages. Each page shows the origin, the memory story and what the radical grows into.
+- 🌋 **Ten themes.** Nature & Elements, Human Body & People, Tools & Weapons and more. Each theme has illustrated art and its radicals in a suggested order, which you are free to ignore.
+- 🔎 **Search and browse.** Search by kanji, English meaning, kana or romaji (`water`, `みず`, `mizu`, `水`). Browse with filters for JLPT level, strokes, theme or radical.
+- ⭐ **My list and Study.** Save kanji and study any deck (your list, a JLPT level, radical, theme or `?chars=` set) with flashcards or a meaning quiz.
+- 🍎 **Teach.** Build a set from a theme, radical, JLPT level, My list or pasted text. Then print A4 or Letter worksheets (stroke order, tracing cells and 米字格 practice cells), present it one stroke per key press, or share a link students open without an account.
+- 🥋 **Classic practice.** The original step-by-step path is still at `/practice`.
 
 ## Routes
 
 | Route | What it is |
 |---|---|
-| `/` | Search-first home: kanji of the day, JLPT levels, themes, featured radicals, stroke counts |
-| `/kanji/[char]` | Kanji page (statically generated for every kanji) |
-| `/radicals`, `/radical/[key]` | Radical index and radical pages |
+| `/` | Learn home: search, featured theme with ink progress, ten theme gates, kanji of the day |
+| `/kanji/[char]` | Kanji page (statically generated for every kanji); `#learn` opens the four-step layer |
+| `/radicals`, `/radical/[key]` | Radical index and radical journey pages |
 | `/categories`, `/category/[slug]` | Theme index and theme pages |
 | `/browse` | Filterable kanji list (`?jlpt=N5&min=1&max=10&sort=strokes&theme=…&radical=…`) |
 | `/search?q=` | Full search results |
-| `/my-list`, `/study` | Saved kanji and study sessions |
+| `/my-list`, `/study` | Saved kanji and study sessions (`/study?chars=海泳`) |
+| `/teach` | Teacher set builder |
+| `/teach/print?k=&t=`, `/teach/present?k=&t=`, `/set?k=&t=` | Worksheet, projector and shared set (the set lives in the URL) |
 | `/practice`, `/practice/[slug]` | Classic practice path |
-| `/about` | About, data sources and licenses |
-| `/settings` | Classic-practice options and reset tools |
+| `/about`, `/about/ancient-forms` | About, data sources and licences; per-file credits for ancient forms |
+| `/settings` | Skin, classic-practice options and reset tools |
 
 `/learn` redirects to `/practice` and `/heatmap` to `/browse`.
 
 ## Data sources and credits
 
-- **[KanjiVG](https://kanjivg.tagaini.net)** by Ulrich Apel — stroke order SVGs (`public/kanjivg`), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
-- **[Kanji alive](https://kanjialive.com)** — radical groups and example words, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-- **[KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project)** by the EDRDG, via [kanjiapi.dev](https://kanjiapi.dev) — meanings, readings, grades, frequency; used under the [EDRDG licence](https://www.edrdg.org/edrdg/licence.html) (CC BY-SA).
-- JLPT levels are unofficial community lists. Radical stories are original mnemonics written for this site.
+Each source keeps its own file and licence. Share-alike data is never mixed into the language-neutral core.
+
+- **[KanjiVG](https://kanjivg.tagaini.net)** by Ulrich Apel: stroke order SVGs (`public/kanjivg`), part roles and sound marks (`lib/core/components.kanjivg.json`). [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **[Kanji alive](https://kanjialive.com)**: radical groups and hand-picked example words. [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **[KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project)** and **[JMdict](https://www.edrdg.org/jmdict/j_jmdict.html)** by the EDRDG: meanings in dictionary order, readings, grades, frequency, and extra example words (`lib/ja/`). [EDRDG licence](https://www.edrdg.org/edrdg/licence.html), CC BY-SA 4.0.
+- **[JmdictFurigana](https://github.com/Doublevil/JmdictFurigana)**: which reading each word uses. CC BY-SA 4.0.
+- **[Unihan](https://www.unicode.org/charts/unihan.html)**: simplified and traditional forms, pinyin, old forms, jōyō and name-kanji flags (`lib/core/unihan.json`). [Unicode License v3](https://www.unicode.org/license.txt).
+- **[Wiktionary](https://en.wiktionary.org)**: glyph origins, each with its page revision (`lib/core/etymology.wiktionary.json`). CC BY-SA 4.0.
+- **[Wikimedia Commons, Ancient Chinese characters project](https://commons.wikimedia.org/wiki/Commons:Ancient_Chinese_characters_project)**: oracle bone, bronze and seal forms (`public/ancient`). Only public-domain files and CC0 tracings from Academia Sinica are used; Richard Sears–sourced files are excluded. Per-file credits are in `lib/core/ancient-forms.json` and at `/about/ancient-forms`.
+- JLPT levels are unofficial community lists (via [kanjiapi.dev](https://kanjiapi.dev)); jōyō kanji missing from them are shown as N1. Memory stories are original mnemonics written for this site, kept apart from sourced origins.
 
 ## Development
 
@@ -48,18 +67,22 @@ pnpm test           # node --test over lib/** and components/** *.test.mjs
 pnpm build && pnpm start
 ```
 
-Data pipeline (outputs are committed):
+Data pipeline (outputs are committed; raw downloads go to the git-ignored `data-cache/`):
 
 ```bash
-pnpm data:stories   # lib/stories/**/*.md -> lib/compiled-stories.json
-pnpm data:atlas     # kanji-db + Kanji alive + stories + KanjiVG -> lib/atlas/kanji-atlas.json, public/data/search-index.json
+pnpm data:sources    # download KANJIDIC2, Unihan, JMdict and JmdictFurigana into data-cache/
+pnpm data:layers     # data-cache/ + KanjiVG -> lib/core/*.json, lib/ja/*.json
+pnpm data:ancient    # Commons ancient forms (licence-filtered) -> lib/core/ancient-forms.json, public/ancient/
+pnpm data:etymology  # Wiktionary glyph origins -> lib/core/etymology.wiktionary.json
+pnpm data:stories    # lib/stories/**/*.md -> lib/compiled-stories.json
+pnpm data:atlas      # all layers -> lib/atlas/kanji-atlas.json, public/data/search-index.json
 ```
 
-The full atlas dataset is server-only (`lib/atlas/index.ts`); client components get props or the slim search index.
+The full atlas dataset and the story layer are server-only (`lib/atlas/index.ts`, `lib/story/index.ts`). Client components get props or the slim search index.
 
 ### Environment
 
-Copy `.env.local.example` to `.env.local`. `NEXT_PUBLIC_SITE_URL` sets canonical URLs, the sitemap and robots (it falls back to Vercel's production URL). `GEMINI_API_KEY` is only needed for the classic practice handwriting challenge. Supabase variables enable the (hidden) account sync for existing users.
+Copy `.env.local.example` to `.env.local`. `NEXT_PUBLIC_SITE_URL` sets canonical URLs, the sitemap, robots and the worksheet footer (it falls back to Vercel's production URL). `GEMINI_API_KEY` is only needed for the classic practice handwriting challenge. Supabase variables enable the (hidden) account sync for existing users.
 
 ## Tech stack
 
