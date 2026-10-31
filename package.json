@@ -10,7 +10,9 @@
     "start": "next start",
     "lint": "eslint",
     "data:stories": "node scripts/compile-stories.js",
-    "data:atlas": "node scripts/build-kanji-atlas.mjs",
+    "data:sources": "node scripts/fetch-data-sources.mjs",
+    "data:layers": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-data-layers.mjs",
+    "data:atlas": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-kanji-atlas.mjs",
     "test": "node --experimental-strip-types --test \"lib/**/*.test.mjs\" \"components/**/*.test.mjs\""
   },
   "dependencies": {
