@@ -40,7 +40,7 @@ const projectorReadings = (entry: SearchIndexEntry | undefined) =>
     entry ? [...entry.on.slice(0, 2), ...entry.kun.slice(0, 2).map(formatReading)].join(" · ") : "";
 
 const CONTROL =
-    "inline-flex items-center gap-2 h-11 px-4 rounded-full border border-line-2 text-ink-2 hover:text-ink hover:border-ink-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+    "inline-flex items-center gap-2 h-11 px-4 rounded-full border border-line-2 text-ink-2 hover:text-ink hover:border-ink-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 /** /teach/present: one kanji at a time, full screen, a stroke per key press, and a quiz for the room. */
 export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
@@ -238,7 +238,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
             ) : !char || !entry ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3 text-ink-2">
                     <p className="text-xl text-ink">This link has no kanji to present.</p>
-                    <Link href="/teach" className="text-accent hover:underline">Build a set</Link>
+                    <Link href="/teach" className="text-ink underline underline-offset-2">Build a set</Link>
                 </div>
             ) : (
                 <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]">
@@ -255,7 +255,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                 className="w-[min(78vw,40vh)] md:w-[min(42vw,70vh)] aspect-square"
                             />
                         ) : (
-                            <p lang="ja" className="font-jp font-extrabold leading-none text-c glow text-[min(60vw,32vh)] md:text-[min(36vw,58vh)]">
+                            <p lang="ja" className="font-jp font-extrabold leading-none text-c text-[min(60vw,32vh)] md:text-[min(36vw,58vh)]">
                                 {char}
                             </p>
                         )}
@@ -311,7 +311,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                         refocus(e);
                                     }}
                                     aria-keyshortcuts="R"
-                                    className="self-start inline-flex items-center h-[clamp(3rem,6vh,4.5rem)] px-[clamp(1.25rem,2vw,2.5rem)] rounded-full bg-accent text-onacc font-bold text-[clamp(1.1rem,1.8vw,2rem)] hover:bg-ink hover:text-bg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                                    className="self-start inline-flex items-center h-[clamp(3rem,6vh,4.5rem)] px-[clamp(1.25rem,2vw,2.5rem)] rounded-full bg-ink text-bg font-bold text-[clamp(1.1rem,1.8vw,2rem)] hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                                 >
                                     Reveal
                                 </button>
@@ -377,7 +377,7 @@ function RadicalLine({ radical }: { radical: TeachRadical }) {
     return (
         <p className="text-ink-2 text-[clamp(1.1rem,1.9vw,2.2rem)]">
             Radical{" "}
-            <span lang="ja" className="font-jp font-extrabold text-c glow text-[1.3em] leading-none">
+            <span lang="ja" className="font-jp font-extrabold text-c text-[1.3em] leading-none">
                 {radical.char}
             </span>{" "}
             {radical.meaning}

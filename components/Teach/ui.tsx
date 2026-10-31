@@ -1,21 +1,18 @@
-// Small shared controls for the teacher pages.
+// Small shared controls for the teacher pages, on the One Atlas primitives.
 
 import { cn } from "@/lib/utils";
+import { buttonClass } from "@/components/ui/Button";
+import { CHIP_CLASS } from "@/components/ui/Chip";
 
-export const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+export const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
-export const BUTTON =
-    "inline-flex items-center justify-center gap-2 h-11 px-4 rounded-full border border-line-2 text-sm text-ink hover:border-accent transition-colors disabled:opacity-50 disabled:pointer-events-none " +
-    FOCUS;
+export const BUTTON = buttonClass();
 
-export const BUTTON_MAIN =
-    "inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-accent border border-accent text-onacc text-sm font-bold hover:bg-ink hover:border-ink hover:text-bg transition-colors disabled:opacity-50 disabled:pointer-events-none " +
-    FOCUS;
+export const BUTTON_MAIN = buttonClass({ variant: "primary" });
 
-export const CHIP =
-    "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-line-2 text-sm text-ink-2 hover:text-ink hover:border-ink-3 transition-colors aria-pressed:bg-ink aria-pressed:border-ink aria-pressed:text-bg " +
-    FOCUS;
+export const CHIP = CHIP_CLASS;
 
+/** One of a few options, as pressed chips (A4 · Letter). */
 export function Segmented<T extends string>({
     label,
     value,
@@ -28,33 +25,21 @@ export function Segmented<T extends string>({
     onChange: (value: T) => void;
 }) {
     return (
-        <div role="group" aria-label={label} className="flex items-center gap-2">
-            <span className="text-ink-3" aria-hidden>{label}</span>
-            <div className="inline-flex overflow-hidden rounded-full border border-line-2">
-                {options.map((o) => (
-                    <button
-                        key={o.value}
-                        type="button"
-                        aria-pressed={o.value === value}
-                        onClick={() => onChange(o.value)}
-                        className={cn(
-                            "h-8 px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent",
-                            o.value === value ? "bg-ink text-bg" : "text-ink-2 hover:text-ink",
-                        )}
-                    >
-                        {o.label}
-                    </button>
-                ))}
-            </div>
+        <div role="group" aria-label={label} className="flex flex-wrap items-center gap-2">
+            {options.map((o) => (
+                <button key={o.value} type="button" aria-pressed={o.value === value} onClick={() => onChange(o.value)} className={CHIP_CLASS}>
+                    {o.label}
+                </button>
+            ))}
         </div>
     );
 }
 
+/** An on/off option as a pressed chip. */
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
     return (
-        <label className="inline-flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4 accent-[var(--accent)]" />
-            <span>{label}</span>
-        </label>
+        <button type="button" aria-pressed={checked} onClick={() => onChange(!checked)} className={cn(CHIP_CLASS)}>
+            {label}
+        </button>
     );
 }

@@ -35,8 +35,8 @@ export function SetClient() {
                 {settled && (
                     <p className="mt-3 text-ink-2">
                         The link has no kanji we know.{" "}
-                        <Link href="/teach" className="text-accent hover:underline">Build a set</Link> or{" "}
-                        <Link href="/browse" className="text-accent hover:underline">browse all kanji</Link>.
+                        <Link href="/teach" className="text-ink underline underline-offset-2">Build a set</Link> or{" "}
+                        <Link href="/browse" className="text-ink underline underline-offset-2">browse all kanji</Link>.
                     </p>
                 )}
             </div>
@@ -84,7 +84,7 @@ export function SetClient() {
 
             <p className="mt-10 text-sm text-ink-3">
                 Each kanji opens its page with readings, words and stroke order. Teachers:{" "}
-                <Link href="/teach" className="text-accent hover:underline">make your own set</Link>.
+                <Link href="/teach" className="text-ink underline underline-offset-2">make your own set</Link>.
             </p>
         </div>
     );

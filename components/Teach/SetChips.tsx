@@ -5,7 +5,8 @@ import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { MAX_SET_KANJI } from "@/lib/teach-set";
 import { cn } from "@/lib/utils";
-import { BUTTON, FOCUS } from "./ui";
+import { Button } from "@/components/ui/Button";
+import { FOCUS } from "./ui";
 
 interface SetChipsProps {
     chars: string[];
@@ -15,9 +16,9 @@ interface SetChipsProps {
 }
 
 /**
- * The kanji in the set, in teaching order. Select a chip, then move or remove
- * it with the buttons; on a focused chip Alt+arrows move it and Delete removes
- * it. Mouse users can also drag chips.
+ * The kanji in the set, in teaching order, as square tiles. Each has a remove
+ * button; select a tile to move it with the buttons. On a focused tile
+ * Alt+arrows move it and Delete removes it. Mouse users can also drag tiles.
  */
 export function SetChips({ chars, entries, onMove, onRemove }: SetChipsProps) {
     const [selected, setSelected] = useState<string | null>(null);
@@ -60,16 +61,16 @@ export function SetChips({ chars, entries, onMove, onRemove }: SetChipsProps) {
     };
 
     if (chars.length === 0) {
-        return <p className="rounded-xl border border-dashed border-line-2 p-4 text-sm text-ink-3">No kanji yet. Add some from a theme, a radical, a JLPT level, your list, or paste text.</p>;
+        return <p className="rounded-xl border border-dashed border-line-2 p-4 text-sm text-ink-3">No kanji yet. Add some from a theme, a radical, a JLPT level, your list, or pasted text.</p>;
     }
 
     return (
         <div className="flex flex-col gap-2">
-            <ol aria-label="Kanji in this set" className="flex flex-wrap gap-2">
+            <ol aria-label="Kanji in this set" className="grid grid-cols-4 gap-2">
                 {chars.map((c, i) => {
                     const meaning = entries?.get(c)?.m[0];
                     return (
-                        <li key={c}>
+                        <li key={c} className="relative">
                             <button
                                 ref={(el) => {
                                     if (el) refs.current.set(c, el);
@@ -95,12 +96,22 @@ export function SetChips({ chars, entries, onMove, onRemove }: SetChipsProps) {
                                     dragFrom.current = null;
                                 }}
                                 className={cn(
-                                    "w-11 h-11 flex items-center justify-center rounded-lg border border-line-2 bg-card font-jp font-bold text-[22px] cursor-grab active:cursor-grabbing transition-colors",
-                                    selected === c ? "border-accent text-accent ring-1 ring-accent" : i === 0 ? "border-ink-3" : "hover:border-ink-3",
+                                    "flex aspect-square w-full items-center justify-center rounded-xl border bg-bg font-jp font-extrabold text-2xl text-ink cursor-grab active:cursor-grabbing transition-colors",
+                                    selected === c ? "border-ink ring-1 ring-ink" : "border-line hover:border-ink-3",
                                     FOCUS,
                                 )}
                             >
                                 <span lang="ja" aria-hidden>{c}</span>
+                            </button>
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                aria-label={`Remove ${c}`}
+                                title={`Remove ${c}`}
+                                onClick={() => remove(i)}
+                                className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border border-line-2 bg-card text-ink-3 transition-colors hover:border-ink hover:text-ink"
+                            >
+                                <X size={12} aria-hidden />
                             </button>
                         </li>
                     );
@@ -110,19 +121,16 @@ export function SetChips({ chars, entries, onMove, onRemove }: SetChipsProps) {
             <div className="flex flex-wrap items-center gap-2 min-h-9">
                 {index >= 0 ? (
                     <>
-                        <button type="button" onClick={() => move(index, index - 1)} disabled={index === 0} className={cn(BUTTON, "h-9 px-3")}>
-                            <ArrowLeft size={16} aria-hidden /> Earlier
-                        </button>
-                        <button type="button" onClick={() => move(index, index + 1)} disabled={index === chars.length - 1} className={cn(BUTTON, "h-9 px-3")}>
-                            Later <ArrowRight size={16} aria-hidden />
-                        </button>
-                        <button type="button" onClick={() => remove(index)} className={cn(BUTTON, "h-9 px-3")}>
-                            <X size={16} aria-hidden /> Remove <span lang="ja" className="font-jp">{selected}</span>
-                        </button>
+                        <Button size="sm" onClick={() => move(index, index - 1)} disabled={index === 0}>
+                            <ArrowLeft aria-hidden /> Earlier
+                        </Button>
+                        <Button size="sm" onClick={() => move(index, index + 1)} disabled={index === chars.length - 1}>
+                            Later <ArrowRight aria-hidden />
+                        </Button>
                     </>
                 ) : (
                     <p className="text-xs text-ink-3">
-                        Select a kanji to move or remove it, or drag it. Up to {MAX_SET_KANJI} kanji.
+                        Select a kanji to move it, or drag it. Up to {MAX_SET_KANJI} kanji.
                     </p>
                 )}
             </div>

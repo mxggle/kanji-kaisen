@@ -113,13 +113,13 @@ function KanjiBlock({ char, entry, strokes }: { char: string; entry: SearchIndex
                     <ol aria-label="Stroke order" className="flex flex-wrap gap-[1mm]">
                         {strokes.strokes.map((_, i) => (
                             <li key={i} className="relative w-[9mm] h-[9mm] border border-line-2">
-                                <span className="absolute top-[0.3mm] left-[0.6mm] text-[5.5pt] leading-none text-accent" aria-hidden>
+                                <span className="absolute top-[0.3mm] left-[0.6mm] text-[5.5pt] leading-none text-c" aria-hidden>
                                     {i + 1}
                                 </span>
                                 <svg viewBox={KANJIVG_VIEWBOX} className="absolute inset-[0.6mm] w-[calc(100%-1.2mm)] h-[calc(100%-1.2mm)]" aria-hidden>
                                     <g className="fill-none" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round">
                                         {strokes.strokes.slice(0, i + 1).map((d, j) => (
-                                            <path key={j} d={d} className={j === i ? "stroke-accent" : "stroke-ink"} />
+                                            <path key={j} d={d} className={j === i ? "stroke-c" : "stroke-ink"} />
                                         ))}
                                     </g>
                                 </svg>
@@ -173,7 +173,7 @@ function PracticeCell({ char, strokes, opacity }: { char: string; strokes: Kanji
     return (
         <div className="relative aspect-square border border-ink-3">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full" aria-hidden>
-                <g className="stroke-accent" strokeOpacity={0.4} strokeWidth={0.75} strokeDasharray="2.5 2.5">
+                <g className="stroke-c" strokeOpacity={0.4} strokeWidth={0.75} strokeDasharray="2.5 2.5">
                     <line x1="50" y1="0" x2="50" y2="100" vectorEffect="non-scaling-stroke" />
                     <line x1="0" y1="50" x2="100" y2="50" vectorEffect="non-scaling-stroke" />
                     <line x1="0" y1="0" x2="100" y2="100" vectorEffect="non-scaling-stroke" />

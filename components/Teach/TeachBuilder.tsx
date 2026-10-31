@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
+import { Tool } from "@/components/Layout/Tool";
+import { PROSE_LINK } from "@/components/Layout/Document";
+import { Button } from "@/components/ui/Button";
 import { CATEGORIES } from "@/lib/atlas/categories";
 import { radicalPath } from "@/lib/atlas/paths";
 import { decodeSet, encodeSet, MAX_SET_KANJI, MAX_TITLE_LENGTH, moveItem, sharedRadical } from "@/lib/teach-set";
@@ -13,7 +16,7 @@ import { SetChips } from "./SetChips";
 import { SourcePicker } from "./SourcePicker";
 import { TeachPreview } from "./TeachPreview";
 import type { TeachLists, TeachRadical } from "./types";
-import { BUTTON, FOCUS } from "./ui";
+import { FOCUS } from "./ui";
 
 const noopSubscribe = () => () => {};
 
@@ -123,102 +126,112 @@ function Builder({ lists, known, initialSearch, syncUrl, siteHost }: BuilderProp
         setStatus(`Saved ${title || "the set"} on this device.`);
     };
 
+    const rail = (
+        <>
+            <label className="flex flex-col gap-2">
+                <span className="type-label">Set name</span>
+                <input
+                    type="text"
+                    value={title}
+                    maxLength={MAX_TITLE_LENGTH}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Lesson 7 · Water words"
+                    className="h-10 rounded-full border border-line-2 bg-bg px-4 text-[15px] text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none"
+                />
+            </label>
+
+            <SourcePicker lists={lists} known={known} inSet={inSet} entries={byChar} onAdd={add} onToggle={toggle} />
+
+            <hr className="border-line" />
+
+            <div className="flex flex-col gap-2.5">
+                <p className="flex items-baseline justify-between gap-2">
+                    <span className="type-label">In this set</span>
+                    <span className="text-xs text-ink-3">
+                        {chars.length} kanji{chars.length > 1 ? " · drag to reorder" : ""}
+                    </span>
+                </p>
+                <SetChips chars={chars} entries={byChar} onMove={move} onRemove={removeAt} />
+            </div>
+
+            {shared && (
+                <p className="text-sm leading-relaxed text-ink-2">
+                    All {chars.length} share{" "}
+                    <span lang="ja" className="font-jp text-[1.15em] font-extrabold text-ink">
+                        {shared.char}
+                    </span>
+                    . Teach the radical’s story first and the class learns {chars.length} kanji for the price of one idea.{" "}
+                    <Link href={radicalPath(shared.key)} className={PROSE_LINK}>
+                        Read the {shared.char} story
+                    </Link>
+                </p>
+            )}
+
+            <p aria-live="polite" className="sr-only">{status}</p>
+
+            <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={save} disabled={chars.length === 0}>
+                    <Save aria-hidden /> Save set
+                </Button>
+                <Button
+                    size="sm"
+                    variant="quiet"
+                    onClick={() => {
+                        setChars([]);
+                        setTitle("");
+                        setStatus("Started a new set.");
+                    }}
+                    disabled={chars.length === 0 && !title}
+                >
+                    <Plus aria-hidden /> New set
+                </Button>
+            </div>
+
+            {savedSets.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                    <h3 className="type-label">
+                        Saved sets <span className="normal-case tracking-normal font-normal">· on this device</span>
+                    </h3>
+                    <ul className="flex flex-col">
+                        {savedSets.map((s) => (
+                            <li key={s.id} className="flex items-center gap-1 border-t border-line first:border-t-0">
+                                <button
+                                    type="button"
+                                    onClick={() => load(s)}
+                                    className={cn("flex-1 min-w-0 truncate py-2 text-left text-[15px] text-ink hover:underline", FOCUS)}
+                                >
+                                    {s.title || <span lang="ja" className="font-jp">{Array.from(s.chars).slice(0, 8).join("")}</span>}{" "}
+                                    <span className="text-ink-3">· {Array.from(s.chars).length}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        deleteSavedSet(s.id);
+                                        setStatus(`Deleted ${s.title || "the saved set"}.`);
+                                    }}
+                                    aria-label={`Delete saved set ${s.title || s.chars}`}
+                                    className={cn("rounded-full p-2 text-ink-3 transition-colors hover:text-ink", FOCUS)}
+                                >
+                                    <Trash2 size={16} aria-hidden />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </>
+    );
+
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] gap-8 lg:gap-10">
-            <section aria-labelledby="build-heading" className="flex flex-col gap-5 min-w-0">
-                <div>
-                    <h2 id="build-heading" className="font-disp text-[34px] font-bold leading-none">Build a set</h2>
-                    <p className="mt-1.5 text-sm text-ink-2">For one lesson, one class, one evening’s homework.</p>
-                </div>
-
-                <label className="flex flex-col gap-1.5 text-[13px] text-ink-3">
-                    Name
-                    <input
-                        type="text"
-                        value={title}
-                        maxLength={MAX_TITLE_LENGTH}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Lesson 7 · Water words"
-                        className={cn("h-11 px-3.5 rounded-[10px] border border-line-2 bg-card text-ink text-base placeholder:text-ink-3", FOCUS)}
-                    />
-                </label>
-
-                <SourcePicker lists={lists} known={known} inSet={inSet} entries={byChar} onAdd={add} onToggle={toggle} />
-
-                <div className="flex flex-col gap-2">
-                    <p className="flex justify-between gap-2 text-[13px] text-ink-3">
-                        <span>In this set</span>
-                        <span>
-                            {chars.length} kanji{chars.length > 1 ? " · drag to reorder" : ""}
-                        </span>
-                    </p>
-                    <SetChips chars={chars} entries={byChar} onMove={move} onRemove={removeAt} />
-                </div>
-
-                {shared && (
-                    <div className="rounded-xl border border-line bg-card p-4 text-sm leading-relaxed text-ink-2">
-                        All {chars.length} share{" "}
-                        <span lang="ja" className="font-jp font-extrabold text-accent text-[1.15em]">{shared.char}</span>. Teach the radical’s story
-                        first and the class learns {chars.length} kanji for the price of one idea.{" "}
-                        <Link href={radicalPath(shared.key)} className="text-accent hover:underline">Read the {shared.char} story</Link>
-                    </div>
-                )}
-
-                <p aria-live="polite" className="sr-only">{status}</p>
-
-                <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={save} disabled={chars.length === 0} className={cn(BUTTON, "h-10")}>
-                        <Save size={16} aria-hidden /> Save set
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setChars([]);
-                            setTitle("");
-                            setStatus("Started a new set.");
-                        }}
-                        disabled={chars.length === 0 && !title}
-                        className={cn(BUTTON, "h-10")}
-                    >
-                        <Plus size={16} aria-hidden /> New set
-                    </button>
-                </div>
-
-                {savedSets.length > 0 && (
-                    <div className="flex flex-col gap-1.5">
-                        <h3 className="text-[13px] font-normal text-ink-3">Saved sets <span className="text-xs">(on this device)</span></h3>
-                        <ul className="flex flex-col">
-                            {savedSets.map((s) => (
-                                <li key={s.id} className="flex items-center gap-1 border-t border-line first:border-t-0">
-                                    <button
-                                        type="button"
-                                        onClick={() => load(s)}
-                                        className={cn("flex-1 min-w-0 text-left py-2 text-[15px] text-ink hover:text-accent transition-colors truncate", FOCUS)}
-                                    >
-                                        {s.title || <span lang="ja" className="font-jp">{Array.from(s.chars).slice(0, 8).join("")}</span>}{" "}
-                                        <span className="text-ink-3">· {Array.from(s.chars).length}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            deleteSavedSet(s.id);
-                                            setStatus(`Deleted ${s.title || "the saved set"}.`);
-                                        }}
-                                        aria-label={`Delete saved set ${s.title || s.chars}`}
-                                        className={cn("p-2 rounded-full text-ink-3 hover:text-bad hover:bg-ink/10 transition-colors", FOCUS)}
-                                    >
-                                        <Trash2 size={16} aria-hidden />
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </section>
-
-            <section aria-label="Use the set" className="min-w-0">
-                <TeachPreview chars={chars} title={title.trim()} entries={byChar} themeOf={themeOf} origin={origin} siteHost={siteHost} />
-            </section>
-        </div>
+        <Tool
+            jp="教"
+            kind="Teach"
+            title="Build a set, then print, project or share it"
+            lede="Students open a share link without an account. Paper always prints in 墨."
+            railLabel="Build a set"
+            rail={rail}
+        >
+            <TeachPreview chars={chars} title={title.trim()} entries={byChar} themeOf={themeOf} origin={origin} siteHost={siteHost} />
+        </Tool>
     );
 }

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { MonitorPlay, Printer, Share2 } from "lucide-react";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 import { PageShell } from "@/components/Atlas/PageShell";
+import { PROSE_LINK } from "@/components/Layout/Document";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { getTeachLists } from "@/components/Teach/server";
 import { TeachBuilder } from "@/components/Teach/TeachBuilder";
 import { SITE_URL } from "@/lib/site";
@@ -35,32 +37,26 @@ const FEATURES = [
 export default function TeachPage() {
     const lists = getTeachLists();
     return (
-        <PageShell className="max-w-7xl pt-8">
-            <header className="mb-8 max-w-3xl">
-                <p className="text-sm text-ink-3">Teach</p>
-                <h1 className="mt-1 font-disp text-[clamp(2.25rem,5vw,3.25rem)] font-bold leading-[1.05]">Kanji worksheet generator</h1>
-                <p className="mt-3 text-ink-2 leading-relaxed">
-                    Pick the kanji for a lesson, then print stroke-order worksheets, present them on a projector or share a link with
-                    your students. Free, with no account.
-                </p>
-            </header>
-
+        <PageShell>
             <TeachBuilder lists={lists} siteHost={SITE_URL.replace(/^https?:\/\//, "")} />
 
-            <section aria-labelledby="teach-features" className="mt-16 border-t border-line pt-10">
-                <h2 id="teach-features" className="font-disp text-3xl font-bold">Three tools, one set</h2>
-                <ul className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section aria-labelledby="teach-features" className="mt-20 flex flex-col gap-6 border-t border-line pt-12">
+                <SectionHeader jp="三つ" title="Three tools, one set" id="teach-features" aside="A free kanji worksheet generator, with no account" />
+                <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     {FEATURES.map(({ icon: Icon, title, text }) => (
-                        <li key={title} className="rounded-xl border border-line bg-card p-5">
-                            <Icon size={22} className="text-accent" aria-hidden />
-                            <h3 className="mt-3 text-lg font-bold">{title}</h3>
-                            <p className="mt-1.5 text-sm text-ink-2 leading-relaxed">{text}</p>
+                        <li key={title} className="flex flex-col gap-2 rounded-2xl border border-line bg-card px-[22px] py-5">
+                            <Icon size={20} className="text-ink-3" aria-hidden />
+                            <h3 className="text-[17px] font-bold">{title}</h3>
+                            <p className="text-sm leading-relaxed text-ink-2">{text}</p>
                         </li>
                     ))}
                 </ul>
-                <p className="mt-6 text-xs text-ink-3">
+                <p className="text-xs text-ink-3">
                     Stroke order from KanjiVG (CC BY-SA 3.0). Readings and example words: see{" "}
-                    <Link href="/about" className="text-accent hover:underline">About &amp; credits</Link>.
+                    <Link href="/about" className={PROSE_LINK}>
+                        About &amp; credits
+                    </Link>
+                    .
                 </p>
             </section>
         </PageShell>

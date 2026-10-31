@@ -61,7 +61,7 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
                         type="button"
                         onClick={() => window.print()}
                         disabled={!ready || chars.length === 0}
-                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-accent text-onacc font-bold hover:bg-ink hover:text-bg transition-colors disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2"
+                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-ink text-bg font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                         <Printer size={18} aria-hidden /> Print or save PDF
                     </button>
@@ -87,14 +87,14 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
                 {error ? (
                     <div role="alert" className="text-sm text-ink-2">
                         <p className="font-medium text-ink">Couldn’t load kanji details.</p>
-                        <button type="button" onClick={retry} className="mt-2 text-accent hover:underline">Try again</button>
+                        <button type="button" onClick={retry} className="mt-2 text-ink underline underline-offset-2">Try again</button>
                     </div>
                 ) : !ready ? (
                     <p className="text-sm text-ink-3 py-10 text-center">Preparing the worksheet…</p>
                 ) : chars.length === 0 ? (
                     <div className="py-10 text-center text-sm text-ink-2">
                         <p className="font-medium text-ink">This link has no kanji to print.</p>
-                        <Link href="/teach" className="mt-2 inline-block text-accent hover:underline">Build a set</Link>
+                        <Link href="/teach" className="mt-2 inline-block text-ink underline underline-offset-2">Build a set</Link>
                     </div>
                 ) : (
                     <Worksheet

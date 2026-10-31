@@ -1,13 +1,10 @@
 // A kanji drawn from KanjiVG paths for screens: faint guide strokes, the
-// strokes drawn so far in the theme colour (glowing in 夜, vermilion in 墨),
+// strokes drawn so far in the theme colour (live in 夜, vermilion in 墨),
 // and optional radical highlighting. Drawing uses a dash transition, which the
 // global reduced-motion rule turns into an instant change.
 
 import { cn } from "@/lib/utils";
 import { KANJIVG_VIEWBOX } from "./strokes";
-
-// Glow only in 夜: --glow-off is `none` in 墨.
-const GLOW = { filter: "var(--glow-off, drop-shadow(0 0 .35vmin var(--c)) drop-shadow(0 0 1.6vmin color-mix(in oklab, var(--c) 55%, transparent)))" };
 
 export interface StrokeGlyphProps {
     strokes: string[];
@@ -37,7 +34,7 @@ export function StrokeGlyph({ strokes, drawn = strokes.length, highlight = null,
                 </g>
             </svg>
             {!plain && (
-                <svg viewBox={KANJIVG_VIEWBOX} className="absolute inset-0 w-full h-full" style={GLOW} aria-hidden>
+                <svg viewBox={KANJIVG_VIEWBOX} className="live absolute inset-0 w-full h-full" aria-hidden>
                     <g {...common} className="stroke-c">
                         {strokes.map((d, i) =>
                             marked ? (

@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CATEGORIES } from "@/lib/atlas/categories";
+import { RadicalFilter } from "@/components/Browse/FilterGroups";
+import type { RadicalOption } from "@/components/Browse/radicals";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { PROSE_LINK } from "@/components/Layout/Document";
 import type { JlptLevel } from "@/lib/atlas/types";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { listSaved } from "@/lib/study-list";
@@ -10,16 +15,16 @@ import { useStudyStore, useStudyStoreHydrated } from "@/lib/study-store";
 import { extractKanji, MAX_SET_KANJI } from "@/lib/teach-set";
 import { cn } from "@/lib/utils";
 import type { TeachLists } from "./types";
-import { BUTTON, CHIP, FOCUS } from "./ui";
+import { FOCUS } from "./ui";
 
 export type Source = "theme" | "radical" | "jlpt" | "list" | "text";
 
 const SOURCES: { id: Source; label: string }[] = [
     { id: "theme", label: "Theme" },
     { id: "radical", label: "Radical" },
-    { id: "jlpt", label: "JLPT level" },
+    { id: "jlpt", label: "JLPT" },
     { id: "list", label: "My list" },
-    { id: "text", label: "Type or paste" },
+    { id: "text", label: "Paste" },
 ];
 
 // Long lists (a JLPT level has up to 1,200 kanji) show this many until expanded.
@@ -38,14 +43,15 @@ interface SourcePickerProps {
 export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: SourcePickerProps) {
     const [source, setSource] = useState<Source>("theme");
     const [theme, setTheme] = useState<string | null>(null);
-    const [radical, setRadical] = useState("");
+    const [radical, setRadical] = useState<string | null>(null);
     const [level, setLevel] = useState<JlptLevel | null>(null);
 
-    const radicalGroups = useMemo(
+    // Browse's radical filter: a box that narrows the seals, most kanji first.
+    const radicalOptions = useMemo<RadicalOption[]>(
         () =>
-            [...CATEGORIES.map((name, index) => ({ name, index })), { name: "Other", index: -1 }]
-                .map(({ name, index }) => ({ name, radicals: lists.radicals.filter((r) => r.theme === index) }))
-                .filter((g) => g.radicals.length > 0),
+            lists.radicals
+                .map((r) => ({ key: r.key, char: r.char, name: r.name, meaning: r.meaning, count: Array.from(r.chars).length, category: r.theme >= 0 ? CATEGORIES[r.theme] : null }))
+                .sort((a, b) => b.count - a.count),
         [lists.radicals],
     );
 
@@ -58,36 +64,26 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
     const selectedLevel = lists.jlpt.find((l) => l.level === level);
 
     return (
-        <div className="flex flex-col gap-3">
-            <div role="group" aria-label="Add kanji from" className="flex flex-col gap-2">
-                <span className="text-[13px] text-ink-3" aria-hidden>Add kanji from</span>
+        <div className="flex flex-col gap-4">
+            <div role="group" aria-label="Add kanji from" className="flex flex-col gap-2.5">
+                <span className="type-label" aria-hidden>Add from</span>
                 <div className="flex flex-wrap gap-2">
                     {SOURCES.map((s) => (
-                        <button key={s.id} type="button" aria-pressed={source === s.id} onClick={() => setSource(s.id)} className={CHIP}>
+                        <Chip key={s.id} pressed={source === s.id} onClick={() => setSource(s.id)}>
                             {s.label}
-                        </button>
+                        </Chip>
                     ))}
                 </div>
             </div>
 
-            <div className="rounded-xl border border-line bg-card p-3">
+            <div className="flex flex-col">
                 {source === "theme" && (
                     <div className="flex flex-col gap-3">
                         <div role="group" aria-label="Themes" className="flex flex-wrap gap-1.5">
                             {lists.themes.map((t) => (
-                                <button
-                                    key={t.slug}
-                                    type="button"
-                                    aria-pressed={theme === t.slug}
-                                    onClick={() => setTheme(t.slug)}
-                                    title={t.name}
-                                    className={cn(CHIP, "h-8 px-3")}
-                                    style={{ "--tc": t.color } as React.CSSProperties}
-                                >
-                                    <span aria-hidden className="w-2 h-2 rounded-full bg-c" />
+                                <Chip key={t.slug} pressed={theme === t.slug} onClick={() => setTheme(t.slug)} theme={t.name} count={Array.from(t.chars).length} className="h-8 px-3">
                                     {t.short}
-                                    <span className="text-xs opacity-70">{Array.from(t.chars).length}</span>
-                                </button>
+                                </Chip>
                             ))}
                         </div>
                         {selectedTheme ? candidates(selectedTheme.chars, `${selectedTheme.name} theme`) : <Hint>Pick a theme to see its kanji.</Hint>}
@@ -96,25 +92,7 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
 
                 {source === "radical" && (
                     <div className="flex flex-col gap-3">
-                        <label className="flex flex-col gap-1.5 text-[13px] text-ink-3">
-                            Radical
-                            <select
-                                value={radical}
-                                onChange={(e) => setRadical(e.target.value)}
-                                className={cn("h-11 px-3 rounded-lg border border-line-2 bg-bg text-ink text-[15px]", FOCUS)}
-                            >
-                                <option value="">Choose a radical…</option>
-                                {radicalGroups.map((g) => (
-                                    <optgroup key={g.name} label={g.name}>
-                                        {g.radicals.map((r) => (
-                                            <option key={r.key} value={r.key}>
-                                                {r.char} {r.meaning} ({r.name}) · {Array.from(r.chars).length}
-                                            </option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                        </label>
+                        <RadicalFilter radicals={radicalOptions} value={radical} onChange={setRadical} limit={8} />
                         {selectedRadical ? (
                             candidates(selectedRadical.chars, `Radical ${selectedRadical.char} ${selectedRadical.meaning}`)
                         ) : (
@@ -127,10 +105,9 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
                     <div className="flex flex-col gap-3">
                         <div role="group" aria-label="JLPT levels" className="flex flex-wrap gap-1.5">
                             {lists.jlpt.map((l) => (
-                                <button key={l.level} type="button" aria-pressed={level === l.level} onClick={() => setLevel(l.level)} className={cn(CHIP, "h-8 px-3")}>
+                                <Chip key={l.level} pressed={level === l.level} onClick={() => setLevel(l.level)} count={Array.from(l.chars).length} className="h-8 px-3">
                                     {l.level}
-                                    <span className="text-xs opacity-70">{Array.from(l.chars).length}</span>
-                                </button>
+                                </Chip>
                             ))}
                         </div>
                         {selectedLevel ? candidates(selectedLevel.chars, `JLPT ${selectedLevel.level}, most common first`) : <Hint>Pick a level. Kanji are listed most common first.</Hint>}
@@ -157,7 +134,10 @@ function MyListSource({ candidates }: { candidates: (chars: string, label: strin
     if (saved.length === 0) {
         return (
             <Hint>
-                Kanji you save from any kanji page show up here. <Link href="/browse" className="text-accent hover:underline">Browse kanji</Link>
+                Kanji you save from any kanji page show up here.{" "}
+                <Link href="/browse" className={PROSE_LINK}>
+                    Browse kanji
+                </Link>
             </Hint>
         );
     }
@@ -179,7 +159,7 @@ function TextSource({ known, onAdd }: { known: ReadonlySet<string>; onAdd: (char
                 setText("");
             }}
         >
-            <label className="flex flex-col gap-1.5 text-[13px] text-ink-3">
+            <label className="flex flex-col gap-2 text-sm text-ink-2">
                 Type or paste text; only the kanji are kept
                 <textarea
                     value={text}
@@ -187,13 +167,13 @@ function TextSource({ known, onAdd }: { known: ReadonlySet<string>; onAdd: (char
                     rows={3}
                     lang="ja"
                     placeholder="海で泳ぐ。港の近くの湖。"
-                    className={cn("px-3 py-2 rounded-lg border border-line-2 bg-bg text-ink text-base font-jp resize-y", FOCUS)}
+                    className={cn("px-3.5 py-2.5 rounded-xl border border-line-2 bg-bg text-ink text-base font-jp resize-y placeholder:text-ink-3", FOCUS)}
                 />
             </label>
             <div className="flex flex-wrap items-center gap-3">
-                <button type="submit" disabled={found.length === 0} className={cn(BUTTON, "h-9")}>
+                <Button type="submit" size="sm" disabled={found.length === 0}>
                     Add {found.length > 0 ? `${found.length} kanji` : "kanji"}
-                </button>
+                </Button>
                 <span className="text-xs text-ink-3" aria-live="polite">
                     {skipped > 0 ? `${skipped} not in the atlas will be skipped.` : found.length > MAX_SET_KANJI ? `A set holds up to ${MAX_SET_KANJI}.` : ""}
                 </span>
@@ -223,10 +203,10 @@ function Candidates({ chars, label, inSet, entries, onAdd, onToggle }: Candidate
     return (
         <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[13px] text-ink-3">{label} · {chars.length}</span>
-                <button type="button" disabled={addCount === 0} onClick={() => onAdd(missing.slice(0, addCount))} className={cn(BUTTON, "h-8 px-3")}>
+                <span className="text-xs text-ink-3">{label} · {chars.length}</span>
+                <Button size="sm" disabled={addCount === 0} onClick={() => onAdd(missing.slice(0, addCount))}>
                     {missing.length === 0 ? "All added" : addCount < missing.length ? `Add first ${addCount}` : `Add all ${addCount}`}
-                </button>
+                </Button>
             </div>
             <ul className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1.5">
                 {shown.map((c) => {
@@ -242,8 +222,8 @@ function Candidates({ chars, label, inSet, entries, onAdd, onToggle }: Candidate
                                 title={meaning ? `${c} ${meaning}` : c}
                                 aria-label={meaning ? `${c}, ${meaning}` : c}
                                 className={cn(
-                                    "w-full aspect-square flex items-center justify-center rounded-lg border border-line-2 font-jp font-semibold text-xl transition-colors disabled:opacity-40",
-                                    added ? "bg-ink border-ink text-bg" : "bg-bg hover:border-accent",
+                                    "w-full aspect-square flex items-center justify-center rounded-xl border font-jp font-extrabold text-xl transition-colors disabled:opacity-40",
+                                    added ? "bg-ink border-ink text-bg" : "bg-bg border-line hover:border-ink-3",
                                     FOCUS,
                                 )}
                             >
@@ -254,9 +234,9 @@ function Candidates({ chars, label, inSet, entries, onAdd, onToggle }: Candidate
                 })}
             </ul>
             {chars.length > shown.length && (
-                <button type="button" onClick={() => setExpanded(true)} className="self-start text-sm text-accent hover:underline">
+                <Button variant="quiet" size="sm" onClick={() => setExpanded(true)} className="self-start px-0">
                     Show all {chars.length}
-                </button>
+                </Button>
             )}
         </div>
     );
