@@ -136,7 +136,7 @@ function Builder({ lists, known, initialSearch, syncUrl, siteHost }: BuilderProp
                     maxLength={MAX_TITLE_LENGTH}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Lesson 7 · Water words"
-                    className="h-10 rounded-full border border-line-2 bg-bg px-4 text-[15px] text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none"
+                    className="h-10 rounded-full border border-line-2 bg-bg px-4 text-[15px] text-ink placeholder:text-ink-3 focus:border-ink"
                 />
             </label>
 

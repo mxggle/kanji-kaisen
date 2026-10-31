@@ -182,7 +182,7 @@ export function SearchBox({
                     }}
                     onKeyDown={onKeyDown}
                     className={cn(
-                        "w-full bg-card border border-line-2 rounded-full text-ink placeholder:text-ink-3 focus:outline-none focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
+                        "w-full bg-card border border-line-2 rounded-full text-ink placeholder:text-ink-3 focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
                         hero ? "h-13 pl-11 pr-4 text-base lg:h-15 lg:pl-[54px] lg:pr-12 lg:text-lg" : "h-10 pl-10 pr-10 text-sm",
                     )}
                 />

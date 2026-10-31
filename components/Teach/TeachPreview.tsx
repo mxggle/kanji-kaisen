@@ -146,7 +146,7 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                                             readOnly
                                             value={shareUrl || setPath("set", set)}
                                             onFocus={(e) => e.target.select()}
-                                            className="h-10 min-w-0 rounded-full border border-line-2 bg-bg px-4 text-sm text-ink focus:border-ink focus:outline-none"
+                                            className="h-10 min-w-0 rounded-full border border-line-2 bg-bg px-4 text-sm text-ink focus:border-ink"
                                         />
                                     </label>
                                     <Button variant="quiet" size="sm" href={setPath("set", set)} target="_blank" className="self-start px-0">

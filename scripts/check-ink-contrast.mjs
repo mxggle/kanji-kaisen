@@ -62,3 +62,7 @@ for (const [skin, s] of Object.entries(SKINS)) {
 }
 console.log(`\nFull matrix, 2 skins × 10 themes × 5 shades × meaning/reading: lowest ${worst.toFixed(2)}:1`);
 console.log(fails.length ? `Below 4.5:1 (${fails.length}): ${fails.join(" | ")}` : "All ≥ 4.5:1");
+// Captions: --ink-3 on --card and --bg, and --ink-2 on --card, in both skins (One Atlas 3.3).
+for (const [skin, s] of Object.entries(SKINS)) {
+  console.log(`${skin} captions: ink-3 on card ${cr(hex(s.card), hex(s.ink3)).toFixed(2)}, ink-3 on bg ${cr(hex(s.bg), hex(s.ink3)).toFixed(2)}, ink-2 on card ${cr(hex(s.card), hex(s.ink2)).toFixed(2)}`);
+}
