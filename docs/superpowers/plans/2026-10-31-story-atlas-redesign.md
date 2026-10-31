@@ -158,7 +158,7 @@ Existing events are kept: `search_performed`, `kanji_viewed`, `radical_viewed`, 
     - 木 and 休 have formation types (pictogram; ideogrammic compound of 人 + 木).
     - `JourneyPlayer` renders with zero, one or three ancient stages.
 
-- [ ] **1C Skins, design system, ink store, analytics registry and chrome** (agent "skin"; owns `app/globals.css`, `app/layout.tsx`, `components/Header.tsx`, `components/Footer.tsx`, `lib/ink*.ts`, `lib/analytics.ts`, `lib/atlas/categories.ts` theme metadata, `components/Ink/`, and a token sweep of existing components)
+- [x] **1C Skins, design system, ink store, analytics registry and chrome** (agent "skin"; owns `app/globals.css`, `app/layout.tsx`, `components/Header.tsx`, `components/Footer.tsx`, `lib/ink*.ts`, `lib/analytics.ts`, `lib/atlas/categories.ts` theme metadata, `components/Ink/`, and a token sweep of existing components)
   - Load the three fonts with `next/font/google`, define the token contract for both skins, add the no-flash skin script and a `SkinToggle` (夜/墨, `aria-pressed`, fires `skin_changed`).
   - Header per the boards: 解 logo with "Kanji Kaisen" in Cormorant; nav Learn (`/`), Browse, My list, Teach; search; skin toggle. Keep the mobile menu.
   - Sweep existing pages and components from hard-coded `white/…`, `black` and `#2effff` colours to tokens, so both skins are readable everywhere. Classic practice only needs to stay readable in 夜; it may force `data-skin="night"` on its subtree.
@@ -290,6 +290,7 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 
 - 2026-10-31 0.1 — Baseline clean: `pnpm lint` 0 problems, `pnpm test` 80/80, `pnpm build` prerenders 2489 pages. `/data-cache/` added to `.gitignore`; agent worktrees live outside this checkout (`/Users/harry/code/kanji-kaisen/.claude/worktrees/sa-*`), so no ESLint/tsconfig change was needed.
 - 2026-10-31 plan — Owner confirmed: no review queue (ink by steps + self-marking, wrong answers never lower a shade) and all five Phase 2 workstreams.
+- 2026-10-31 1C — Merged `claude/sa-skin`. Tokens also include `text-onacc`, `bg-shade/…`, `text-c`/`bg-c`/`border-c`, `ok`/`bad`/`tip`; `--accent` is #3BE0A6 (夜) / #B5341E (墨). Contrast on `--bg`: `--ink-2` 9.22:1 (夜) / 7.47:1 (墨), `--ink-3` 5.64 / 4.68. JLPT colours are darker in 墨 to stay ≥ 4.5:1 on paper. The desktop header shows Learn/Browse/My list/Teach; Themes, Radicals, Study, Practice (classic) and Settings sit in the phone menu and footer. Settings gained an Appearance section. Classic practice forces `data-skin="night"` on its subtree instead of being swept (about 100 hard-coded colours remain there). `ThemeScroll`'s "M of T" counts kanji met (shade ≥ 1). Added a token-styled `app/not-found.tsx` because Next's default 404 overrides the skin. Checked in the browser: both skins on `/kanji/海`, 墨 ink-wash art on `/category/nature-elements` at 375 px with no horizontal scroll.
 
 ## Final report
 
