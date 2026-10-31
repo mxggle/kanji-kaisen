@@ -11,23 +11,49 @@ const STATUSES: { value: StudyStatus; label: string }[] = [
     { value: "known", label: "Known" },
 ];
 
-/** Save toggle plus a learning/known switch for one kanji. State is local to this browser. */
-export function StudyControls({ char }: { char: string }) {
+/**
+ * Save toggle plus a learning/known switch for one kanji. State is local to
+ * this browser. The "button" variant is the Save toggle alone, sized for an
+ * action row, with a same-size placeholder until the store hydrates.
+ */
+export function StudyControls({ char, variant = "full" }: { char: string; variant?: "full" | "button" }) {
     const hydrated = useStudyStoreHydrated();
     const entry = useStudyStore((state) => state.entries[char]);
     const toggle = useStudyStore((state) => state.toggle);
     const setStatus = useStudyStore((state) => state.setStatus);
 
+    const saved = hydrated && Boolean(entry);
+
+    if (variant === "button") {
+        return (
+            <button
+                type="button"
+                onClick={hydrated ? () => handleToggle() : undefined}
+                aria-pressed={saved}
+                aria-disabled={!hydrated || undefined}
+                className={cn(
+                    "inline-flex h-12 items-center justify-center gap-2 rounded-full border px-5 text-[15px] font-medium transition-colors",
+                    saved ? "border-[var(--accent)] bg-[var(--accent)]/15 text-[var(--accent)]" : "border-line-2 text-ink hover:border-ink",
+                )}
+            >
+                {saved ? <BookmarkCheck size={17} aria-hidden /> : <Bookmark size={17} aria-hidden />}
+                {/* The name stays "Save 海 to My list"; aria-pressed carries the state. */}
+                <span>
+                    Save<span aria-hidden>{saved ? "d" : ""}</span>
+                    <span className="sr-only"> {char} to My list</span>
+                </span>
+            </button>
+        );
+    }
+
     if (!hydrated) {
         return <div className="mt-4 h-9 w-40 rounded-full bg-card animate-pulse" aria-hidden />;
     }
 
-    const saved = Boolean(entry);
-
-    const handleToggle = () => {
+    function handleToggle() {
         toggle(char);
         trackEvent("kanji_saved", { kanji: char, saved: !saved, source: "kanji_page" });
-    };
+    }
 
     const handleStatus = (status: StudyStatus) => {
         if (entry?.status === status) return;

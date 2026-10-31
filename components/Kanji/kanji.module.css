@@ -1,0 +1,142 @@
+/*
+ * Stroke and part styles for the kanji page and the #learn layer. Colours come
+ * only from skin tokens: --c is the theme colour in 夜 and vermilion in 墨;
+ * --glow-off switches glows off in 墨 and in print.
+ *
+ * A part container sets --tc (its theme colour) and gets `.part`, plus `.alt`
+ * for sound/form parts, which are drawn in ink instead of vermilion in 墨 so the
+ * parts stay distinguishable without colour.
+ */
+
+.part {
+  --pc: var(--c);
+}
+
+:global([data-skin="ink"]) .alt {
+  --pc: var(--ink);
+}
+
+@media print {
+  .alt {
+    --pc: var(--ink);
+  }
+}
+
+.glyph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Stroke states. */
+.lit {
+  stroke: var(--pc, var(--c));
+}
+
+.done {
+  stroke: var(--ink);
+}
+
+.ghost {
+  stroke: var(--line-2);
+  opacity: 0.45;
+}
+
+.loose {
+  stroke: var(--ink-3);
+}
+
+.mark {
+  stroke: var(--ink);
+}
+
+.glow {
+  filter: var(
+    --glow-off,
+    drop-shadow(0 0 3px var(--pc, var(--c))) drop-shadow(0 0 10px color-mix(in srgb, var(--pc, var(--c)) 55%, transparent))
+  );
+}
+
+.softGlow {
+  filter: var(--glow-off, drop-shadow(0 0 2px color-mix(in srgb, var(--ink) 45%, transparent)));
+}
+
+/* Dash drawing: paths need pathLength="1". Hidden (not just offset) before
+   their delay, so round caps don't leave a dot. */
+.draw {
+  stroke-dasharray: 1 2;
+  animation: kk-draw var(--dur, 0.55s) ease-out var(--delay, 0s) both;
+}
+
+@keyframes kk-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Parts sliding apart and together in the build animation. */
+.move {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Faint decorative rings around a stage. */
+.spin {
+  animation: kk-spin 90s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.spinBack {
+  animation: kk-spin 140s linear infinite reverse;
+  transform-origin: 50% 50%;
+}
+
+@keyframes kk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Chips and badges tinted by a part's colour. */
+.chip {
+  border-color: color-mix(in srgb, var(--pc, var(--c)) 70%, transparent);
+  color: var(--pc, var(--c));
+}
+
+.chip:hover {
+  background: color-mix(in srgb, var(--pc, var(--c)) 12%, transparent);
+}
+
+.hit {
+  color: var(--c);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw {
+    animation: none;
+    stroke-dasharray: none;
+    opacity: 1;
+  }
+
+  .move {
+    transition: none;
+  }
+
+  .spin,
+  .spinBack {
+    animation: none;
+  }
+}
