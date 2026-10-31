@@ -72,7 +72,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     };
 
     return (
-        <div className="min-h-screen bg-black text-white pb-20 pt-24 relative">
+        <div className="min-h-screen bg-black text-white pb-20 pt-8 relative">
             <div className="px-4 max-w-2xl mx-auto">
                 <ClassicPracticeBanner />
             </div>

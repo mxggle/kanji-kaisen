@@ -5,7 +5,7 @@ import { getAllKanji, getKanjiByJlpt, getKanjiOfTheDay, JLPT_LEVELS } from "@/li
 import { formatReading, readingToRomaji } from "@/lib/atlas/readings";
 import { browsePath, kanjiPath } from "@/lib/atlas/paths";
 import { SearchBox } from "@/components/Search/SearchBox";
-import { JlptBadge, jlptColor } from "@/components/Atlas/JlptBadge";
+import { JlptBadge } from "@/components/Atlas/JlptBadge";
 import { getDeckThemes } from "@/components/Theme/data";
 import { ThemeDeck } from "@/components/Home/ThemeDeck";
 import { SITE_DESCRIPTION } from "@/lib/site";
@@ -45,7 +45,7 @@ export default function HomePage() {
     const todayReadings = [...today.onyomi.slice(0, 2), ...today.kunyomi.slice(0, 2)];
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-4 pt-[84px] pb-16 text-ink lg:px-8 lg:pt-24">
+        <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-16 text-ink lg:px-8 lg:pt-8">
             {/* Search first: most visits start with a kanji in mind. */}
             <section aria-labelledby="home-title" className="mx-auto max-w-3xl pt-2 pb-8 text-center lg:pt-6 lg:pb-12">
                 <h1 id="home-title" className="text-balance font-disp text-[38px] font-bold leading-[1.02] sm:text-5xl lg:text-[60px]">
@@ -89,10 +89,9 @@ export default function HomePage() {
                                 <li key={level}>
                                     <Link
                                         href={browsePath({ jlpt: level })}
-                                        className={`flex flex-col items-center rounded-xl border border-line border-b-4 py-3 transition-colors hover:bg-ink/5 ${FOCUS}`}
-                                        style={{ borderBottomColor: jlptColor(level) }}
+                                        className={`flex flex-col items-center rounded-xl border border-line py-3 transition-colors hover:bg-ink/5 ${FOCUS}`}
                                     >
-                                        <span className="text-lg font-bold" style={{ color: jlptColor(level) }}>{level}</span>
+                                        <span className="text-lg font-bold">{level}</span>
                                         <span className="text-xs text-ink-3">{getKanjiByJlpt(level).length}</span>
                                     </Link>
                                 </li>

@@ -42,9 +42,9 @@ export function PhaseNavigator({ currentPhase, onPhaseChange, skipHandwriting = 
                                 w-6 h-6 rounded-full flex items-center justify-center
                                 text-xs font-bold transition-all duration-300
                                 ${isActive
-                                    ? 'bg-[var(--accent)] text-black'
+                                    ? 'bg-[var(--classic-accent)] text-black'
                                     : isPast
-                                        ? 'bg-[var(--accent)]/40 text-white/80'
+                                        ? 'bg-[var(--classic-accent)]/40 text-white/80'
                                         : 'bg-white/10 text-white/50 group-hover:bg-white/20 group-hover:text-white/70'
                                 }
                             `}

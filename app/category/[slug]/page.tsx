@@ -65,7 +65,7 @@ export default async function CategoryPage({ params }: Params) {
                 </div>
 
                 <div className="mx-auto w-full max-w-7xl px-4 pb-16 lg:px-8">
-                    <header className="flex min-h-[340px] flex-col justify-between pt-[76px] sm:min-h-[420px] lg:block lg:min-h-0 lg:pt-24">
+                    <header className="flex min-h-[340px] flex-col justify-between pt-3 sm:min-h-[420px] lg:block lg:min-h-0 lg:pt-8">
                         <Breadcrumbs
                             items={[
                                 { href: "/", label: "Home" },

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 // subtree so its hard-coded colours stay readable when the site is in 墨.
 export default function PracticeLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div data-skin="night" className="bg-bg text-ink">
+        <div data-skin="night" data-classic className="bg-bg text-ink">
             {children}
         </div>
     );

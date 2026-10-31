@@ -50,7 +50,7 @@ export default function RadicalsPage() {
     const withAncient = groups.reduce((n, g) => n + g.radicals.filter((r) => r.ancient > 0).length, 0);
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-24 text-ink lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 text-ink lg:px-8">
             <Breadcrumbs items={[{ href: "/", label: "Learn" }, { label: "Radicals" }]} />
 
             <header className="mb-8 max-w-3xl">

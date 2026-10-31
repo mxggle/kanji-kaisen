@@ -45,3 +45,7 @@ next-env.d.ts
 
 # downloaded raw data sources (see scripts/)
 /data-cache/
+
+# Design QA screenshots (One Atlas plan, Phase 0.2 / 3.2)
+/docs/design/before/
+/docs/design/after/

@@ -139,7 +139,7 @@ export function PhasePractice({
                 <div className="space-y-3">
                     <button
                         onClick={onNext}
-                        className="w-full py-4 bg-[var(--accent)] text-black font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:bg-[#1eeeee] transition-colors shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all"
+                        className="w-full py-4 bg-[var(--classic-accent)] text-black font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:bg-[#1eeeee] transition-colors shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all"
                     >
                         I&apos;m Ready <ArrowRight />
                     </button>

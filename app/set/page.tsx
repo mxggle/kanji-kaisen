@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // The set lives in the query string (no backend), so this is a static shell.
 export default function SetPage() {
     return (
-        <PageShell>
+        <PageShell className="pt-8">
             <Suspense fallback={<p className="py-10 text-ink-3">Loading the set…</p>}>
                 <SetClient />
             </Suspense>

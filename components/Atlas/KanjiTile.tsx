@@ -2,7 +2,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { kanjiPath } from "@/lib/atlas/paths";
 import type { AtlasKanji } from "@/lib/atlas/types";
-import { jlptColor } from "./JlptBadge";
 
 export type KanjiTileData = Pick<AtlasKanji, "char" | "meanings" | "jlpt" | "onyomi" | "kunyomi">;
 
@@ -13,15 +12,14 @@ interface KanjiTileProps {
     action?: React.ReactNode;
 }
 
-/** Server-safe kanji card linking to /kanji/[char]. Bottom border shows the JLPT level. */
+/** Server-safe kanji card linking to /kanji/[char]. Deprecated: use components/ui/KanjiTile. */
 export function KanjiTile({ kanji, className, action }: KanjiTileProps) {
     const reading = kanji.kunyomi[0] ?? kanji.onyomi[0] ?? "";
     return (
         <div className={cn("relative group", className)}>
             <Link
                 href={kanjiPath(kanji.char)}
-                className="flex flex-col items-center justify-center aspect-square p-2 rounded-lg bg-card border border-line border-b-4 hover:bg-ink/10 hover:border-[var(--accent)] transition-colors"
-                style={{ borderBottomColor: jlptColor(kanji.jlpt) }}
+                className="flex flex-col items-center justify-center aspect-square p-2 rounded-lg bg-card border border-line hover:bg-ink/10 hover:border-ink-3 transition-colors"
                 title={`${kanji.char} – ${kanji.meanings.slice(0, 3).join(", ")}`}
             >
                 <span className="text-[10px] text-ink-3 truncate w-full text-center font-japanese">{reading.replace(/\./g, "")}</span>

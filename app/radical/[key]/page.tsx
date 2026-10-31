@@ -110,7 +110,7 @@ export default async function RadicalPage({ params }: Params) {
                 </div>
             )}
 
-            <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-[68px] lg:px-8 lg:pt-24">
+            <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-2 lg:px-8 lg:pt-8">
                 <div className="hidden lg:block">
                     <Breadcrumbs
                         items={[

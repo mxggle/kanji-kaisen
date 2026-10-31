@@ -32,7 +32,7 @@ export function CheckpointNode({ checkpoint, isLocked, isCompleted, onClick, ind
                         ? "bg-zinc-800 border-zinc-700 text-zinc-600 grayscale"
                         : isCompleted
                             ? "bg-amber-500/20 border-amber-500 text-amber-500 shadow-amber-500/20"
-                            : "bg-[var(--accent)]/20 border-[var(--accent)] text-[var(--accent)] shadow-[var(--accent)]/20"
+                            : "bg-[var(--classic-accent)]/20 border-[var(--classic-accent)] text-[var(--classic-accent)] shadow-[var(--classic-accent)]/20"
                 )}
             >
                 {isCompleted && (

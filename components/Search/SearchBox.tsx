@@ -10,7 +10,6 @@ import { searchKanji, type SearchIndexEntry } from "@/lib/atlas/search";
 import { loadSearchIndex } from "@/lib/atlas/search-index";
 import { trackEvent } from "@/lib/analytics";
 import type { JlptLevel } from "@/lib/atlas/types";
-import { jlptColor } from "@/components/Atlas/JlptBadge";
 
 export interface SearchBoxProps {
     /** "hero" for the big home-page box, "compact" for the header. Default "compact". */
@@ -24,6 +23,8 @@ export interface SearchBoxProps {
     className?: string;
     /** Called after the box navigates (result picked or query submitted), e.g. to close a mobile menu. */
     onNavigate?: () => void;
+    /** Keyboard hint shown at the right of an empty compact box (the header's "/"). */
+    shortcut?: string;
 }
 
 type IndexState = { status: "idle" | "loading" | "error" } | { status: "ready"; index: SearchIndexEntry[] };
@@ -32,11 +33,12 @@ type IndexState = { status: "idle" | "loading" | "error" } | { status: "ready"; 
 export function SearchBox({
     variant = "compact",
     defaultValue = "",
-    placeholder = "Search kanji, meaning or reading…",
+    placeholder,
     autoFocus,
     limit = 8,
     className,
     onNavigate,
+    shortcut,
 }: SearchBoxProps) {
     const router = useRouter();
     const id = useId();
@@ -124,8 +126,8 @@ export function SearchBox({
                 <Search
                     aria-hidden
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-[var(--accent)] transition-colors pointer-events-none",
-                        hero ? "left-4 w-5 h-5" : "left-3 w-4 h-4",
+                        "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-ink transition-colors pointer-events-none",
+                        hero ? "left-4 w-5 h-5" : "left-3.5 size-[18px]",
                     )}
                 />
                 <input
@@ -145,7 +147,7 @@ export function SearchBox({
                     enterKeyHint="search"
                     autoFocus={autoFocus}
                     value={query}
-                    placeholder={placeholder}
+                    placeholder={placeholder ?? (hero ? "Search kanji, meaning or reading…" : "water, みず, mizu or 水")}
                     onFocus={() => {
                         ensureIndex();
                         setOpen(true);
@@ -159,10 +161,15 @@ export function SearchBox({
                     }}
                     onKeyDown={onKeyDown}
                     className={cn(
-                        "w-full bg-card border border-line text-ink placeholder:text-ink-3 focus:outline-none focus:border-[var(--accent)] focus:bg-ink/10 transition-all [&::-webkit-search-cancel-button]:hidden",
-                        hero ? "rounded-xl py-4 pl-12 pr-4 text-lg" : "rounded-md py-2 pl-9 pr-3 text-sm",
+                        "w-full bg-card border text-ink placeholder:text-ink-3 focus:outline-none focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
+                        hero ? "border-line rounded-xl py-4 pl-12 pr-4 text-lg" : "border-line-2 rounded-full h-10 pl-10 pr-10 text-sm",
                     )}
                 />
+                {shortcut && !hero && !query && (
+                    <kbd aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[5px] border border-line-2 px-1.5 font-ui text-[11px] leading-[18px] text-ink-3">
+                        {shortcut}
+                    </kbd>
+                )}
             </div>
 
             <div
@@ -196,7 +203,7 @@ export function SearchBox({
                                     <span className="block text-sm text-ink truncate">{e.m.slice(0, 3).join(", ")}</span>
                                     {reading && <span className="block text-xs text-ink-3 font-japanese truncate">{formatReading(reading)}</span>}
                                 </span>
-                                <span className="text-[10px] font-bold shrink-0" style={{ color: jlptColor(level) }}>{level}</span>
+                                <span className="text-[10px] font-bold shrink-0 text-ink-3">{level}</span>
                             </li>
                         );
                     })}

@@ -13,10 +13,10 @@ const PRESSED: Record<Skin, string> = {
 };
 
 const SIZES = {
-    sm: "h-[30px] px-2.5 text-sm",
-    md: "h-[34px] px-3 text-[15px]",
+    sm: "h-[30px] w-[34px] text-sm",
+    md: "h-[34px] w-10 text-[15px]",
     // Phone size below lg, desktop size from lg (the header).
-    responsive: "h-[30px] px-2.5 text-sm lg:h-[34px] lg:px-3 lg:text-[15px]",
+    responsive: "h-[30px] w-[34px] text-sm lg:h-[34px] lg:w-10 lg:text-[15px]",
 };
 
 /** 夜/墨 segmented control. Persists the choice and fires `skin_changed`. */
@@ -39,7 +39,7 @@ export function SkinToggle({ size = "responsive", className }: { size?: keyof ty
                     title={`${SKIN_LABELS[value].name} skin`}
                     onClick={() => choose(value)}
                     className={cn(
-                        "flex items-center font-jp transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]",
+                        "flex items-center justify-center font-jp transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink",
                         SIZES[size],
                         PRESSED[value],
                     )}

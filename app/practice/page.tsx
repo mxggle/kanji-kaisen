@@ -36,7 +36,7 @@ export default function LearnPage() {
     if (!mounted) return null;
 
     return (
-        <div className="min-h-screen bg-black text-white pb-20 relative overflow-y-auto pt-24 custom-scrollbar">
+        <div className="min-h-screen bg-black text-white pb-20 relative overflow-y-auto pt-8 custom-scrollbar">
             <div className="px-6 max-w-7xl mx-auto mb-6">
                 <ClassicPracticeBanner />
             </div>

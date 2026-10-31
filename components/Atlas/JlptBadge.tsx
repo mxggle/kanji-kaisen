@@ -1,25 +1,19 @@
 import { cn } from "@/lib/utils";
 import type { JlptLevel } from "@/lib/atlas/types";
 
-// JLPT colors come from the --n1…--n5 tokens in globals.css.
-export function jlptColor(level: JlptLevel) {
-    return `var(--${level.toLowerCase()})`;
-}
-
+/** Deprecated: JLPT is a plain tag now (rule 1). Use components/ui/Tag. */
 export function JlptBadge({ level, className }: { level: JlptLevel; className?: string }) {
     return (
-        <span
-            className={cn("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border", className)}
-            style={{ color: jlptColor(level), borderColor: jlptColor(level), backgroundColor: `color-mix(in oklab, ${jlptColor(level)} 12%, transparent)` }}
-        >
+        <span className={cn("inline-flex h-[26px] items-center rounded-full border border-line-2 px-2.5 text-[13px] leading-none text-ink-2", className)}>
             JLPT {level}
         </span>
     );
 }
 
+/** Deprecated: use components/ui/Tag. */
 export function StatBadge({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <span className={cn("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-ink/10 text-ink border border-line", className)}>
+        <span className={cn("inline-flex h-[26px] items-center rounded-full border border-line-2 px-2.5 text-[13px] leading-none text-ink-2", className)}>
             {children}
         </span>
     );

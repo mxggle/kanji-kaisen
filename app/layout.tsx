@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Shippori_Mincho_B1, Zen_Kaku_Gothic_New } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/Layout/SiteHeader";
+import { SiteFooter } from "@/components/Layout/SiteFooter";
+import { TabBar } from "@/components/Layout/TabBar";
 import { AuthSyncBootstrap } from "@/components/Auth/AuthSyncBootstrap";
 import { DEFAULT_SKIN, SKIN_SCRIPT } from "@/components/Skin/skin";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -70,13 +71,15 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: SKIN_SCRIPT }} />
       </head>
-      <body className="font-ui antialiased flex flex-col min-h-screen">
+      {/* Phones pad the bottom by the tab bar (76px plus the home indicator). */}
+      <body className="font-ui antialiased flex flex-col min-h-screen pb-[calc(76px+env(safe-area-inset-bottom))] lg:pb-0 print:pb-0">
         <AuthSyncBootstrap />
-        <Header />
+        <SiteHeader />
         <main className="flex-1">
           {children}
         </main>
-        <Footer />
+        <SiteFooter />
+        <TabBar />
         <Analytics />
       </body>
     </html>

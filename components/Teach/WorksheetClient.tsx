@@ -46,7 +46,7 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
 
     return (
         // Worksheets are always 墨, on screen and on paper.
-        <div data-skin="ink" className="min-h-screen bg-bg text-ink pt-[76px] lg:pt-20 pb-16 px-3 sm:px-4 print:min-h-0 print:p-0 print:bg-transparent">
+        <div data-skin="ink" className="min-h-screen bg-bg text-ink pt-4 pb-16 px-3 sm:px-4 print:min-h-0 print:p-0 print:bg-transparent">
             <style>{`@page { size: ${paper === "letter" ? "letter" : "A4"} portrait; margin: 12mm; }`}</style>
 
             <div className={cn("mx-auto mb-4 flex flex-col gap-3 print:hidden", pageWidth)}>

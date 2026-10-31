@@ -5,8 +5,7 @@ import { BookmarkPlus } from "lucide-react";
 import { kanjiPath } from "@/lib/atlas/paths";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import type { StudyEntries } from "@/lib/study-list";
-import { jlptColor } from "@/components/Atlas/JlptBadge";
-import { jlptLevelOf, uniqueChars, type StudyMode } from "./session";
+import { uniqueChars, type StudyMode } from "./session";
 
 export interface CardResult {
     char: string;
@@ -71,8 +70,7 @@ export function SessionSummary(props: SessionSummaryProps) {
                                 <li key={char}>
                                     <Link
                                         href={kanjiPath(char)}
-                                        className="flex items-center gap-3 rounded-lg border border-line border-l-4 bg-card px-3 py-2 hover:border-[var(--accent)] transition-colors"
-                                        style={entry ? { borderLeftColor: jlptColor(jlptLevelOf(entry.j)) } : undefined}
+                                        className="flex items-center gap-3 rounded-lg border border-line bg-card px-3 py-2 hover:border-ink-3 transition-colors"
                                     >
                                         <span className="font-japanese text-3xl font-bold">{char}</span>
                                         <span className="min-w-0 text-sm text-ink-2 truncate">{entry?.m.slice(0, 3).join(", ")}</span>

@@ -101,7 +101,7 @@ export default function AboutPage() {
     const radicalCount = getAllRadicals().length;
 
     return (
-        <PageShell className="max-w-3xl">
+        <PageShell className="max-w-3xl pt-8">
             <h1 className="text-4xl font-bold mb-4">About Kanji Kaisen</h1>
             <p className="text-lg text-ink-2 leading-relaxed">
                 Kanji Kaisen is a free kanji atlas. Every one of its {kanjiCount.toLocaleString("en")} kanji has its own page with
@@ -182,6 +182,12 @@ export default function AboutPage() {
                     under the MIT license (the data keeps its own licenses above). Found a wrong reading or a story that doesn&apos;t
                     hold up? Tell us on the{" "}
                     <a href="https://kanjikaisen.featurebase.app/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">feedback board</a>.
+                </p>
+                <p className="mt-3 text-ink-2 leading-relaxed">
+                    Kanji Kaisen is made by Harry Sui. Find more at{" "}
+                    <a href="https://harrysui.me" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">harrysui.me</a>{" "}
+                    or write to{" "}
+                    <a href="mailto:muggle6594@gmail.com" className="text-[var(--accent)] hover:underline">muggle6594@gmail.com</a>.
                 </p>
             </Section>
         </PageShell>

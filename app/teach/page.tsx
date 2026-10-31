@@ -35,7 +35,7 @@ const FEATURES = [
 export default function TeachPage() {
     const lists = getTeachLists();
     return (
-        <PageShell className="max-w-7xl">
+        <PageShell className="max-w-7xl pt-8">
             <header className="mb-8 max-w-3xl">
                 <p className="text-sm text-ink-3">Teach</p>
                 <h1 className="mt-1 font-disp text-[clamp(2.25rem,5vw,3.25rem)] font-bold leading-[1.05]">Kanji worksheet generator</h1>

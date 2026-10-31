@@ -4,7 +4,7 @@ import { PageShell } from "@/components/Atlas/PageShell";
 // Token-styled 404 so both skins apply (Next's default page sets its own colours).
 export default function NotFound() {
     return (
-        <PageShell className="text-center space-y-6">
+        <PageShell className="text-center space-y-6 pt-16">
             <p lang="ja" className="font-jp text-8xl text-ink-3" aria-hidden>無</p>
             <h1 className="font-disp text-4xl font-bold">Page not found</h1>
             <p className="text-ink-2">This page doesn&apos;t exist. Try searching for a kanji instead.</p>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useStudyStore, useStudyStoreHydrated } from "@/lib/study-store";
 import { countByStatus } from "@/lib/study-list";
-import { jlptColor } from "@/components/Atlas/JlptBadge";
 import { cn } from "@/lib/utils";
 import type { PickerData } from "./StudyClient";
 import { studyPath, type DeckRequest, type StudyMode } from "./session";
@@ -33,7 +32,7 @@ export function DeckPicker({ picker, mode }: { picker: PickerData; mode: StudyMo
             <h2 className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">JLPT level</h2>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
                 {picker.jlpt.map(({ level, count }) => (
-                    <Link key={level} href={href({ kind: "jlpt", level })} className={cn(CARD, "border-b-4")} style={{ borderBottomColor: jlptColor(level) }}>
+                    <Link key={level} href={href({ kind: "jlpt", level })} className={CARD}>
                         <span className="text-lg font-bold">{level}</span>
                         <span className="text-xs text-ink-3">{count} kanji</span>
                     </Link>

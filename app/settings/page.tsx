@@ -106,7 +106,7 @@ export default function SettingsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-bg text-ink pb-24 pt-24">
+        <main className="min-h-screen bg-bg text-ink pb-24 pt-8">
             <div className="max-w-3xl mx-auto px-4 space-y-5">
                 <div className="pt-8 pb-2 flex items-center gap-4">
                     <button

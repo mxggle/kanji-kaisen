@@ -194,7 +194,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                             : "This checkpoint doesn't exist anymore."}
                     </p>
                     {canSkip && (
-                        <button onClick={handleChallengeSuccess} className="w-full mb-3 py-3 bg-[var(--n5)] text-black font-bold rounded-lg hover:opacity-90">
+                        <button onClick={handleChallengeSuccess} className="w-full mb-3 py-3 bg-[var(--classic-ok)] text-black font-bold rounded-lg hover:opacity-90">
                             Skip this kanji
                         </button>
                     )}
@@ -209,11 +209,11 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     if (isCompleted) {
         return (
             <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-zinc-900 border border-[var(--n5)] p-8 rounded-2xl text-center max-w-sm w-full animate-in zoom-in-50 duration-300">
+                <div className="bg-zinc-900 border border-[var(--classic-ok)] p-8 rounded-2xl text-center max-w-sm w-full animate-in zoom-in-50 duration-300">
                     <div className="text-6xl mb-4">🎉</div>
-                    <h2 className="text-2xl font-bold mb-2 text-[var(--n5)]">Checkpoint Mastered!</h2>
+                    <h2 className="text-2xl font-bold mb-2 text-[var(--classic-ok)]">Checkpoint Mastered!</h2>
                     <p className="text-zinc-400 mb-6">You&apos;ve learned {checkpoint.kanji.length} new kanji.</p>
-                    <button onClick={onClose} className="w-full py-3 bg-[var(--n5)] text-black font-bold rounded-lg hover:opacity-90">
+                    <button onClick={onClose} className="w-full py-3 bg-[var(--classic-ok)] text-black font-bold rounded-lg hover:opacity-90">
                         Continue Path
                     </button>
                 </div>
@@ -254,7 +254,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                         {checkpoint.kanji.map((_, idx) => (
                             <div
                                 key={idx}
-                                className={`h-1.5 w-4 rounded-full transition-colors ${idx < currentIndex ? "bg-[var(--n5)]" :
+                                className={`h-1.5 w-4 rounded-full transition-colors ${idx < currentIndex ? "bg-[var(--classic-ok)]" :
                                     idx === currentIndex ? "bg-white" : "bg-zinc-800"
                                     }`}
                             />

@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
-import { jlptColor } from "@/components/Atlas/JlptBadge";
 import type { JlptLevel } from "@/lib/atlas/types";
 import {
     ALL_LEVELS,
@@ -107,9 +106,8 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                                     onClick={() => toggleLevel(level)}
                                     className={cn(
                                         "h-9 px-3 rounded-full text-sm font-bold border-2 transition-colors",
-                                        active ? "text-ink" : "bg-transparent text-ink-2 border-line-2 hover:border-ink-3 hover:text-ink",
+                                        active ? "bg-ink text-bg border-ink" : "bg-transparent text-ink-2 border-line-2 hover:border-ink-3 hover:text-ink",
                                     )}
-                                    style={active ? { borderColor: jlptColor(level), backgroundColor: `color-mix(in oklab, ${jlptColor(level)} 35%, transparent)` } : undefined}
                                 >
                                     {level}
                                 </button>
