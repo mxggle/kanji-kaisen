@@ -46,7 +46,8 @@ export function ThemeGate({ category, chars, count, longName, source = "gate", h
             )}
         >
             <Image src={getCategoryImage(category)} alt="" fill sizes={sizes} preload={preload} className="ink-art object-cover" />
-            <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_30%,rgba(var(--shade),.94)_88%)]" />
+            {/* The fade is solid enough behind the text for the small Japanese name to stay readable on busy art. */}
+            <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_28%,rgba(var(--shade),.88)_62%,rgba(var(--shade),.97)_82%)]" />
             <span className="absolute inset-x-3.5 bottom-3.5 flex flex-col gap-[5px]">
                 {known && (
                     <span lang="ja" className="font-jp text-xs text-c">
