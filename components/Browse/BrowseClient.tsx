@@ -1,47 +1,53 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { RotateCcw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
-import type { JlptLevel } from "@/lib/atlas/types";
+import { X } from "lucide-react";
+import { getShade } from "@/lib/ink";
+import { useInkHydrated, useInkStore } from "@/lib/ink-store";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
+import { Tool } from "@/components/Layout/Tool";
+import { Button } from "@/components/ui/Button";
+import { InkLegend, InkSwatch } from "@/components/ui/InkLegend";
+import { Tag } from "@/components/ui/Tag";
+import { FilterPanel, InkFilter, JlptFilter, RadicalFilter, ReadingFilter, StrokeFilter, ThemeFilter } from "./FilterGroups";
+import { TileGrid } from "./TileGrid";
 import {
-    ALL_LEVELS,
     DEFAULT_FILTERS,
-    MAX_STROKES,
-    MIN_STROKES,
     PAGE_SIZE,
     SORTS,
     applyBrowseFilters,
+    filterTags,
+    levelCounts,
     parseBrowseParams,
-    browseHeading,
-    isDefaultFilters,
+    setTitle,
+    studyLink,
+    teachLink,
+    themeName,
     toBrowseQuery,
+    withStrokes,
     type BrowseFilters,
     type BrowseKanji,
+    type BrowseSort,
+    type FilterTag,
 } from "./filters";
-
-export interface BrowseOption {
-    value: string;
-    label: string;
-}
+import { radicalLabel, type RadicalOption } from "./radicals";
 
 interface BrowseClientProps {
     items: BrowseKanji[];
     initialFilters: BrowseFilters;
-    themes: BrowseOption[];
-    radicals: BrowseOption[];
+    radicals: RadicalOption[];
 }
 
-const STROKE_OPTIONS = Array.from({ length: MAX_STROKES - MIN_STROKES + 1 }, (_, i) => MIN_STROKES + i);
+const fmt = (n: number) => n.toLocaleString("en-US");
 
 /**
  * Client island for /browse. The server renders it with filters parsed from the URL,
  * so the first page of results is in the HTML; later changes filter in memory and
- * rewrite the query string without a server round trip.
+ * rewrite the query string without a server round trip. The ink filter waits for
+ * the ink store: until it hydrates every kanji shows, with the swatches still pressed.
  */
-export function BrowseClient({ items, initialFilters, themes, radicals }: BrowseClientProps) {
+export function BrowseClient({ items, initialFilters, radicals }: BrowseClientProps) {
     // The URL is the source of truth: Next.js keeps useSearchParams in sync with
     // history.replaceState and with Back/Forward, which restore a cached tree
     // whose initial props may belong to a different query.
@@ -52,154 +58,147 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
     );
     const [visible, setVisible] = useState(PAGE_SIZE);
 
-    const results = useMemo(() => applyBrowseFilters(items, filters), [items, filters]);
-    const shown = results.slice(0, visible);
+    const hydrated = useInkHydrated();
+    const entries = useInkStore((state) => state.entries);
+    const inkOn = hydrated && filters.ink.length > 0;
+    const shadeOf = useMemo(() => (inkOn ? (char: string) => getShade(entries, char) : undefined), [inkOn, entries]);
 
-    const update = (patch: Partial<BrowseFilters>) => {
-        const next = { ...filters, ...patch };
-        if (next.minStrokes > next.maxStrokes) {
-            if ("minStrokes" in patch) next.maxStrokes = next.minStrokes;
-            else next.minStrokes = next.maxStrokes;
-        }
+    const results = useMemo(() => applyBrowseFilters(items, filters, { shadeOf }), [items, filters, shadeOf]);
+    const counts = useMemo(() => levelCounts(items, filters, { shadeOf }), [items, filters, shadeOf]);
+
+    const radicalByKey = useMemo(() => new Map(radicals.map((r) => [r.key, r])), [radicals]);
+    const nameRadical = useCallback(
+        (key: string) => {
+            const r = radicalByKey.get(key);
+            return r ? radicalLabel(r) : null;
+        },
+        [radicalByKey],
+    );
+    const tags = filterTags(filters, nameRadical);
+    const chars = useMemo(() => results.map((k) => k.char), [results]);
+    const title = setTitle(filters, nameRadical);
+    const study = studyLink(filters, chars, title);
+    const sheet = teachLink(chars, title);
+    const none = results.length === 0;
+
+    const shown = useMemo(
+        () => results.slice(0, visible).map((k) => ({ char: k.char, meanings: k.meanings, onyomi: k.onyomi, kunyomi: k.kunyomi, category: themeName(k.theme) })),
+        [results, visible],
+    );
+
+    const replace = (next: BrowseFilters) => {
         setVisible(PAGE_SIZE);
         // Next.js syncs native history updates with the router; no server round trip.
         window.history.replaceState(null, "", `/browse${toBrowseQuery(next)}`);
     };
-
-    const toggleLevel = (level: JlptLevel) => {
-        const set = new Set(filters.jlpt);
-        if (set.has(level)) set.delete(level);
-        else set.add(level);
-        const jlpt = ALL_LEVELS.filter((l) => set.has(l));
-        update({ jlpt: jlpt.length === ALL_LEVELS.length ? [] : jlpt });
-    };
+    const update = (patch: Partial<BrowseFilters>) => replace({ ...filters, ...patch });
+    const clearAll = () => replace({ ...DEFAULT_FILTERS, sort: filters.sort });
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold mb-2">{browseHeading(filters)}</h1>
-            <p className="text-ink-2 text-sm mb-6">
-                Filter by JLPT level, stroke count, theme or radical. Every tile links to the kanji&apos;s full page.
-            </p>
-
-            <div className="rounded-xl border border-line bg-card p-4 space-y-4">
-                <fieldset>
-                    <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">JLPT level</legend>
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            aria-pressed={filters.jlpt.length === 0}
-                            onClick={() => update({ jlpt: [] })}
-                            className={cn(
-                                "h-9 px-3 rounded-full text-sm font-bold border transition-colors",
-                                filters.jlpt.length === 0 ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
-                            )}
-                        >
-                            All
-                        </button>
-                        {ALL_LEVELS.map((level) => {
-                            const active = filters.jlpt.includes(level);
-                            return (
-                                <button
-                                    key={level}
-                                    type="button"
-                                    aria-pressed={active}
-                                    onClick={() => toggleLevel(level)}
-                                    className={cn(
-                                        "h-9 px-3 rounded-full text-sm font-bold border-2 transition-colors",
-                                        active ? "bg-ink text-bg border-ink" : "bg-transparent text-ink-2 border-line-2 hover:border-ink-3 hover:text-ink",
-                                    )}
-                                >
-                                    {level}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">Sort by</legend>
-                    <div className="flex flex-wrap gap-2">
-                        {SORTS.map((s) => (
-                            <button
-                                key={s.id}
-                                type="button"
-                                aria-pressed={filters.sort === s.id}
-                                onClick={() => update({ sort: s.id })}
-                                className={cn(
-                                    "h-9 px-3 rounded-full text-sm font-medium border transition-colors",
-                                    filters.sort === s.id ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
-                                )}
+        <Tool
+            jp="探す"
+            kind="Browse"
+            title={`Browse ${fmt(items.length)} kanji`}
+            lede="Filter by what you know about a kanji. Everything combines, and the address keeps your filters so you can share them."
+            actions={
+                <>
+                    <Button variant="quiet" href={sheet.href} prefetch={false} aria-disabled={none || undefined} tabIndex={none ? -1 : undefined}>
+                        Make a worksheet
+                    </Button>
+                    <Button variant="primary" href={study.href} prefetch={false} aria-disabled={none || undefined} tabIndex={none ? -1 : undefined}>
+                        {study.capped ? `Study the first ${study.count}` : `Study these ${fmt(study.count)}`}
+                    </Button>
+                </>
+            }
+            // The rail is taller than a laptop screen: let it scroll inside its sticky card.
+            className="lg:[&_aside]:max-h-[calc(100dvh-3rem)] lg:[&_aside]:overflow-y-auto lg:[&_aside]:overscroll-contain"
+            rail={
+                <FilterPanel activeCount={tags.length}>
+                    <JlptFilter value={filters.jlpt} counts={counts} onChange={(jlpt) => update({ jlpt })} />
+                    <ThemeFilter value={filters.themes} onChange={(themes) => update({ themes })} />
+                    <InkFilter value={filters.ink} onChange={(ink) => update({ ink })} />
+                    <StrokeFilter min={filters.minStrokes} max={filters.maxStrokes} onChange={(patch) => replace(withStrokes(filters, patch))} />
+                    <RadicalFilter radicals={radicals} value={filters.radical} onChange={(radical) => update({ radical })} />
+                    <ReadingFilter value={filters.reading} onChange={(reading) => update({ reading })} />
+                    <Button variant="quiet" size="sm" onClick={clearAll} disabled={tags.length === 0} className="self-start px-0">
+                        Clear all filters
+                    </Button>
+                </FilterPanel>
+            }
+        >
+            <section aria-label="Results" className="flex flex-col gap-[18px]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
+                    <p aria-live="polite" className="text-[17px] font-bold leading-snug text-ink">
+                        {fmt(results.length)} kanji
+                    </p>
+                    {tags.length > 0 && (
+                        <ul aria-label="Active filters" className="flex flex-wrap gap-2">
+                            {tags.map((tag) => (
+                                <li key={tag.key}>
+                                    <RemovableTag tag={tag} onRemove={() => replace(tag.without)} />
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 sm:ml-auto">
+                        <label className="flex items-center gap-2 text-sm text-ink-2">
+                            Sort
+                            <select
+                                value={filters.sort}
+                                onChange={(e) => update({ sort: e.target.value as BrowseSort })}
+                                className="h-9 cursor-pointer rounded-full border border-line-2 bg-card px-2.5 text-sm text-ink"
                             >
-                                {s.label}
-                            </button>
-                        ))}
+                                {SORTS.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <InkLegend />
                     </div>
-                </fieldset>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <SelectField label="Min strokes" value={String(filters.minStrokes)} onChange={(v) => update({ minStrokes: Number(v) })}>
-                        {STROKE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
-                    </SelectField>
-                    <SelectField label="Max strokes" value={String(filters.maxStrokes)} onChange={(v) => update({ maxStrokes: Number(v) })}>
-                        {STROKE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
-                    </SelectField>
-                    <SelectField label="Theme" value={filters.theme ?? ""} onChange={(v) => update({ theme: v || null })}>
-                        <option value="">All themes</option>
-                        {themes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                    </SelectField>
-                    <SelectField label="Radical" value={filters.radical ?? ""} onChange={(v) => update({ radical: v || null })}>
-                        <option value="">All radicals</option>
-                        {radicals.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-                    </SelectField>
                 </div>
-            </div>
 
-            <div className="flex items-center justify-between gap-3 mt-6 mb-3">
-                <p className="text-sm text-ink-2" aria-live="polite">
-                    {results.length === 0
-                        ? "No kanji match these filters."
-                        : `Showing ${shown.length} of ${results.length} kanji`}
-                </p>
-                {!isDefaultFilters(filters) && (
-                    <button
-                        type="button"
-                        onClick={() => update(DEFAULT_FILTERS)}
-                        className="inline-flex items-center gap-1.5 text-sm text-[var(--accent)] hover:underline"
-                    >
-                        <RotateCcw className="w-3.5 h-3.5" aria-hidden /> Reset filters
-                    </button>
+                {none ? (
+                    <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                        <p className="text-sm text-ink-2">No kanji match all of these. Remove a filter to see more.</p>
+                        {tags.length > 0 && (
+                            <Button size="sm" onClick={clearAll}>
+                                Clear all filters
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <TileGrid items={shown} label="Kanji" />
                 )}
-            </div>
 
-            {results.length > 0 && <KanjiTileGrid items={shown} />}
-
-            {visible < results.length && (
-                <div className="mt-6 flex justify-center">
-                    <button
-                        type="button"
-                        onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                        className="px-6 py-3 rounded-full bg-ink/10 hover:bg-ink/15 border border-line hover:border-[var(--accent)] text-sm font-medium transition-colors"
-                    >
-                        Show {Math.min(PAGE_SIZE, results.length - visible)} more
-                        <span className="text-ink-3"> · {results.length - visible} left</span>
-                    </button>
-                </div>
-            )}
-        </div>
+                {visible < results.length && (
+                    <Button onClick={() => setVisible((v) => v + PAGE_SIZE)} className="self-center">
+                        Show more
+                        <span className="font-normal text-ink-3">· {fmt(results.length - visible)} left</span>
+                    </Button>
+                )}
+            </section>
+        </Tool>
     );
 }
 
-function SelectField({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: React.ReactNode }) {
+/** An active filter as a Tag; pressing it removes that value. */
+function RemovableTag({ tag, onRemove }: { tag: FilterTag; onRemove: () => void }) {
     return (
-        <label className="block min-w-0">
-            <span className="block text-xs font-medium text-ink-2 uppercase tracking-wider mb-1.5">{label}</span>
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full min-w-0 h-10 rounded-md bg-card border border-line px-2 text-sm text-ink focus:outline-none focus:border-[var(--accent)]"
-            >
-                {children}
-            </select>
-        </label>
+        <button
+            type="button"
+            onClick={onRemove}
+            aria-label={`Remove filter: ${tag.theme ?? tag.label}`}
+            style={tag.theme ? themeVars(tag.theme) : undefined}
+            className="group flex cursor-pointer rounded-full"
+        >
+            <Tag className="transition-colors group-hover:border-ink-3 group-hover:text-ink">
+                {tag.theme && <span aria-hidden className="size-2 flex-none rounded-full bg-c" />}
+                {tag.shade !== undefined && <InkSwatch shade={tag.shade} className="size-3 rounded-[3px]" />}
+                {tag.label}
+                <X aria-hidden className="size-3.5 flex-none text-ink-3 group-hover:text-ink" />
+            </Tag>
+        </button>
     );
 }

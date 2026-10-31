@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ import { trackEvent } from "@/lib/analytics";
 import type { JlptLevel } from "@/lib/atlas/types";
 
 export interface SearchBoxProps {
-    /** "hero" for the big home-page box, "compact" for the header. Default "compact". */
+    /** "hero" for the big home-page box (a 60px pill, 52 on phones, at most 640 wide), "compact" for the header. Default "compact". */
     variant?: "hero" | "compact";
     /** Initial query (e.g. the current `q` on /search). */
     defaultValue?: string;
@@ -23,7 +23,10 @@ export interface SearchBoxProps {
     className?: string;
     /** Called after the box navigates (result picked or query submitted), e.g. to close a mobile menu. */
     onNavigate?: () => void;
-    /** Keyboard hint shown at the right of an empty compact box (the header's "/"). */
+    /**
+     * Keyboard hint at the right of an empty box (the header's "/"). On a hero
+     * box (desktop only) "/" also focuses it when the header search isn't shown.
+     */
     shortcut?: string;
 }
 
@@ -110,12 +113,30 @@ export function SearchBox({
 
     const hero = variant === "hero";
 
+    // "/" focuses a hero box where the header has no search (the home page).
+    useEffect(() => {
+        if (!hero || shortcut !== "/") return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+            const target = e.target as HTMLElement | null;
+            if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+            const header = document.querySelector<HTMLInputElement>("[data-header-search] input");
+            if (header && header.offsetParent !== null) return;
+            const input = inputRef.current;
+            if (!input || input.offsetParent === null) return;
+            e.preventDefault();
+            input.focus();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [hero, shortcut]);
+
     return (
         <form
             role="search"
             action="/search"
             method="get"
-            className={cn("relative w-full", className)}
+            className={cn("relative w-full", hero && "max-w-[640px]", className)}
             onSubmit={(e) => {
                 e.preventDefault();
                 submit();
@@ -127,7 +148,7 @@ export function SearchBox({
                     aria-hidden
                     className={cn(
                         "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-ink transition-colors pointer-events-none",
-                        hero ? "left-4 w-5 h-5" : "left-3.5 size-[18px]",
+                        hero ? "left-4 size-[18px] lg:left-[22px] lg:size-[22px]" : "left-3.5 size-[18px]",
                     )}
                 />
                 <input
@@ -147,7 +168,7 @@ export function SearchBox({
                     enterKeyHint="search"
                     autoFocus={autoFocus}
                     value={query}
-                    placeholder={placeholder ?? (hero ? "Search kanji, meaning or reading…" : "water, みず, mizu or 水")}
+                    placeholder={placeholder ?? "water, みず, mizu or 水"}
                     onFocus={() => {
                         ensureIndex();
                         setOpen(true);
@@ -161,12 +182,18 @@ export function SearchBox({
                     }}
                     onKeyDown={onKeyDown}
                     className={cn(
-                        "w-full bg-card border text-ink placeholder:text-ink-3 focus:outline-none focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
-                        hero ? "border-line rounded-xl py-4 pl-12 pr-4 text-lg" : "border-line-2 rounded-full h-10 pl-10 pr-10 text-sm",
+                        "w-full bg-card border border-line-2 rounded-full text-ink placeholder:text-ink-3 focus:outline-none focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
+                        hero ? "h-13 pl-11 pr-4 text-base lg:h-15 lg:pl-[54px] lg:pr-12 lg:text-lg" : "h-10 pl-10 pr-10 text-sm",
                     )}
                 />
-                {shortcut && !hero && !query && (
-                    <kbd aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-[5px] border border-line-2 px-1.5 font-ui text-[11px] leading-[18px] text-ink-3">
+                {shortcut && !query && (
+                    <kbd
+                        aria-hidden
+                        className={cn(
+                            "pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-[5px] border border-line-2 px-1.5 font-ui text-[11px] leading-[18px] text-ink-3",
+                            hero ? "right-4 max-lg:hidden" : "right-2.5",
+                        )}
+                    >
                         {shortcut}
                     </kbd>
                 )}
@@ -174,7 +201,7 @@ export function SearchBox({
 
             <div
                 className={cn(
-                    "absolute left-0 right-0 mt-2 z-50 rounded-xl border border-line bg-card/95 backdrop-blur shadow-2xl overflow-hidden",
+                    "absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-line-2 bg-card overflow-hidden",
                     !showDropdown && "hidden",
                 )}
                 // Keep focus in the input while clicking inside the dropdown.
@@ -198,12 +225,13 @@ export function SearchBox({
                                     i === active ? "bg-ink/10" : "hover:bg-ink/5",
                                 )}
                             >
-                                <span className="w-10 text-center text-2xl font-bold font-japanese text-ink shrink-0">{e.c}</span>
+                                <span lang="ja" className="w-10 shrink-0 text-center font-jp text-2xl font-extrabold text-ink">{e.c}</span>
                                 <span className="min-w-0 flex-1">
                                     <span className="block text-sm text-ink truncate">{e.m.slice(0, 3).join(", ")}</span>
-                                    {reading && <span className="block text-xs text-ink-3 font-japanese truncate">{formatReading(reading)}</span>}
+                                    {reading && <span lang="ja" className="block truncate font-jp text-xs text-ink-3">{formatReading(reading)}</span>}
                                 </span>
-                                <span className="text-[10px] font-bold shrink-0 text-ink-3">{level}</span>
+                                {/* JLPT as plain text (rule 1). */}
+                                <span className="shrink-0 text-[11px] text-ink-3">{level}</span>
                             </li>
                         );
                     })}
@@ -222,7 +250,7 @@ export function SearchBox({
                 <button
                     type="button"
                     onClick={() => go(searchPath(trimmed))}
-                    className="block w-full text-left px-3 py-2 text-xs text-[var(--accent)] border-t border-line hover:bg-ink/5"
+                    className="block w-full cursor-pointer border-t border-line px-3 py-2.5 text-left text-xs text-ink-2 hover:bg-ink/5 hover:text-ink"
                 >
                     See all results for “{trimmed}”{!activeResult && <span className="text-ink-3"> (Enter)</span>}
                 </button>
