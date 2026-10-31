@@ -112,7 +112,7 @@ export default async function CategoryPage({ params }: Params) {
                         prev={ring ? neighbour(ring.prev, "Previous") : null}
                         next={ring ? neighbour(ring.next, "Next") : null}
                     />
-                    <Plate specimen={specimen} specimenLabel="Theme art" reading={reading} className="max-lg:pt-4" />
+                    <Plate specimen={specimen} specimenLabel="Theme art" reading={reading} />
 
                     <section aria-labelledby="theme-radicals" className="mt-16 flex flex-col gap-[22px] lg:mt-24">
                         <SectionHeader

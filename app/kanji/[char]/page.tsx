@@ -101,7 +101,7 @@ export default async function KanjiPage({ params }: PageProps) {
 
     return (
         <InkPaint>
-            <PageShell className="max-lg:pt-3" style={themeVars(kanji.category)}>
+            <PageShell style={themeVars(kanji.category)}>
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(data) }} />
                 <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
                 <LearnLauncher data={data.learn} />

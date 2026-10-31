@@ -189,7 +189,7 @@ export default async function RadicalPage({ params }: Params) {
 
     return (
         <InkPaint>
-            <PageShell style={themeVars(category)} className="max-lg:pt-2">
+            <PageShell style={themeVars(category)}>
                 <TrackEvent name="radical_viewed" properties={{ radical: radical.key, kanji_count: radical.kanji.length }} />
                 <AtlasPath steps={steps} prev={neighbour(neighbors.prev, "Previous")} next={neighbour(neighbors.next, "Next")} />
 

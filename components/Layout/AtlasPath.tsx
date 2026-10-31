@@ -123,6 +123,8 @@ export function AtlasPath({ steps, prev, next, inHeader = true, className }: Atl
                     </span>
                 )}
             </nav>
+            {/* On phones the path sits in the header; keep the same top space below it. */}
+            {inHeader && <div aria-hidden className="h-4 lg:hidden" />}
             {inHeader && (
                 <HeaderPath>
                     <nav aria-label="Atlas path" className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[13px] text-ink-3">

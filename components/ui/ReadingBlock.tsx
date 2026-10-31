@@ -47,7 +47,8 @@ function Highlight({ word, char }: { word: string; char: string }) {
  * and the kanji in --c inside each word. Server-safe.
  */
 export function ReadingBlock({ char, stem, okurigana, prefix, suffix, label, words, empty, className }: ReadingBlockProps) {
-    const row = "flex min-w-0 items-baseline gap-2.5 rounded-md py-[5px] text-sm text-ink-2";
+    // A long word pushes its meaning onto the next line instead of squeezing it.
+    const row = "flex min-w-0 flex-wrap items-baseline gap-x-2.5 rounded-md py-[5px] text-sm text-ink-2";
     return (
         <div className={cn("flex flex-col gap-3 rounded-2xl border border-line bg-card px-5 py-[18px]", className)}>
             <p className="flex flex-wrap items-baseline gap-3">

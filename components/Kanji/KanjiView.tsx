@@ -70,6 +70,7 @@ export function KanjiViewTabs({ values, className }: { values: readonly KanjiVie
         label: LABEL[value],
         jp: JP[value],
         disabled: (value === "parts" && isPhone === true) || (value === "readings" && isPhone === false),
+        className: value === "parts" ? "max-[959px]:hidden" : value === "readings" ? "min-[960px]:hidden" : undefined,
     }));
     return (
         <Tabs
@@ -80,7 +81,6 @@ export function KanjiViewTabs({ values, className }: { values: readonly KanjiVie
             onChange={pick}
             className={cn(
                 "max-[959px]:flex max-[959px]:w-full max-[959px]:[&>button]:flex-1 max-[959px]:[&>button]:justify-center",
-                "max-[959px]:[&>#kanji-view-tab-parts]:hidden min-[960px]:[&>#kanji-view-tab-readings]:hidden",
                 className,
             )}
         />

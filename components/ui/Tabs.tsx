@@ -11,6 +11,8 @@ export interface TabItem<T extends string> {
     /** The current learn step lights up (rule 5, 夜 only). */
     live?: boolean;
     disabled?: boolean;
+    /** Extra classes for this tab, e.g. to show it at one breakpoint only. */
+    className?: string;
 }
 
 interface TabsProps<T extends string> {
@@ -74,6 +76,7 @@ export function Tabs<T extends string>({ items, value, onChange, label, id, clas
                             "focus-visible:outline-offset-[-2px] disabled:cursor-not-allowed disabled:opacity-50",
                             selected ? "bg-ink text-bg" : "text-ink-2 hover:text-ink",
                             item.live && "live",
+                            item.className,
                         )}
                     >
                         {item.jp && (
