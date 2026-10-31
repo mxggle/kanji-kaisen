@@ -54,6 +54,7 @@
   stroke: var(--ink);
 }
 
+/* Deprecated (One Atlas rule 5): only `live` lights up. Kept for the #learn layer until it moves to `live`. */
 .glow {
   filter: var(
     --glow-off,
@@ -91,6 +92,20 @@
   transform-box: fill-box;
   transform-origin: center;
   transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* A part fading in while the build replays (kanji page). */
+.appear {
+  animation: kk-appear 0.45s ease-out var(--delay, 0s) both;
+}
+
+@keyframes kk-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Faint decorative rings around a stage. */
@@ -133,6 +148,10 @@
 
   .move {
     transition: none;
+  }
+
+  .appear {
+    animation: none;
   }
 
   .spin,

@@ -63,3 +63,33 @@ export function zhFacts(char: string, zh: ZhInfo, get: UnihanLookup, meaningOf: 
         falseFriend,
     };
 }
+
+/** The "In Chinese" row's one-line summary: "Same character in simplified and traditional · xiū". */
+export function zhSummary(f: Pick<ZhFacts, "relation" | "simplified" | "traditional" | "pinyin" | "kokuji">): string {
+    const s = f.simplified ?? "";
+    const t = f.traditional ?? "";
+    let head: string;
+    switch (f.relation) {
+        case "same":
+            head = "Same character in simplified and traditional";
+            break;
+        case "ja-trad":
+            head = `Simplified ${s} · traditional, as in Japanese`;
+            break;
+        case "ja-simp":
+            head = `Simplified, as in Japanese · traditional ${t}`;
+            break;
+        case "ja-only":
+            head = `A Japanese form · Chinese writes ${s}`;
+            break;
+        case "all-differ":
+            head = `Simplified ${s} · traditional ${t}`;
+            break;
+        case "kokuji":
+            head = "Made in Japan, no Chinese counterpart";
+            break;
+        default:
+            head = "No clear Chinese counterpart";
+    }
+    return f.pinyin.length && !f.kokuji ? `${head} · ${f.pinyin.join(", ")}` : head;
+}

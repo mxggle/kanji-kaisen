@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { zhFacts, PINYIN_LIMIT } from "./zh.ts";
+import { zhFacts, zhSummary, PINYIN_LIMIT } from "./zh.ts";
 
 // Trimmed Unihan entries (lib/core/unihan.json shape).
 const UNIHAN = {
@@ -40,4 +40,12 @@ test("kokuji never get a false-friend note and pinyin is capped", () => {
     assert.equal(facts.falseFriend, null);
     assert.equal(facts.pinyin.length, PINYIN_LIMIT);
     assert.equal(facts.pinyinTruncated, true);
+});
+
+test("zhSummary gives the In Chinese row one line", () => {
+    const base = { simplified: null, traditional: null, pinyin: [], kokuji: false };
+    assert.equal(zhSummary({ ...base, relation: "same", simplified: "休", traditional: "休", pinyin: ["xiū"] }), "Same character in simplified and traditional · xiū");
+    assert.equal(zhSummary({ ...base, relation: "ja-trad", simplified: "说", traditional: "說", pinyin: ["shuō"] }), "Simplified 说 · traditional, as in Japanese · shuō");
+    assert.equal(zhSummary({ ...base, relation: "all-differ", simplified: "艺", traditional: "藝" }), "Simplified 艺 · traditional 藝");
+    assert.equal(zhSummary({ ...base, relation: "kokuji", pinyin: ["dòng"], kokuji: true }), "Made in Japan, no Chinese counterpart");
 });

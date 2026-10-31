@@ -29,6 +29,18 @@ export function extractStrokes(raw: string): Stroke[] {
     return found.sort((a, b) => a.n - b.n).map((f) => f.stroke);
 }
 
+/**
+ * Where KanjiVG puts each stroke's number (the text's left baseline, in its
+ * 109 box), in stroke order. [] when the file has no numbers.
+ */
+export function extractStrokeNumbers(raw: string): { x: number; y: number }[] {
+    const found: { n: number; x: number; y: number }[] = [];
+    for (const m of raw.matchAll(/<text\b[^>]*transform="matrix\(1 0 0 1 (-?[\d.]+) (-?[\d.]+)\)"[^>]*>\s*(\d+)\s*<\/text>/g)) {
+        found.push({ n: Number(m[3]), x: Number(m[1]), y: Number(m[2]) });
+    }
+    return found.sort((a, b) => a.n - b.n).map(({ x, y }) => ({ x, y }));
+}
+
 /** 1-based inclusive ranges ([[1, 3], [8, 8]]) -> 0-based indexes ([0, 1, 2, 7]). */
 export function rangeIndexes(ranges: readonly (readonly [number, number])[], count = Infinity): number[] {
     const out = new Set<number>();

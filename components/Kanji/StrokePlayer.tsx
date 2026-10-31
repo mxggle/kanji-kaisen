@@ -2,45 +2,43 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, Eye, PenLine, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
+import { Button } from "@/components/ui/Button";
+import type { Point } from "./strokes";
 import styles from "./kanji.module.css";
 
 // The writing canvas (and kanji-recognizer) loads only when asked for.
 const TryWriting = dynamic(() => import("./TryWriting").then((m) => m.TryWriting), {
     ssr: false,
-    loading: () => <div className="aspect-square w-full max-w-[300px] rounded-xl bg-card animate-pulse" aria-hidden />,
+    loading: () => <div className="mx-auto aspect-square w-full max-w-[300px] animate-pulse rounded-xl bg-bg" aria-hidden />,
 });
 
 const STEP_MS = 620;
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-const control =
-    "inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-line-2 px-4 text-sm text-ink transition-colors hover:border-[var(--c)] hover:text-[var(--c)] disabled:opacity-40 disabled:hover:border-line-2 disabled:hover:text-ink";
-
 interface StrokePlayerProps {
     char: string;
     paths: string[];
-    /** Play once when the player scrolls into view (skipped with reduced motion). */
+    /** KanjiVG's stroke number positions; numbers are left out without them. */
+    numbers?: Point[];
+    /** Play once when the player is first seen (skipped with reduced motion). */
     autoPlay?: boolean;
-    /** Show the "Try writing" switch. */
-    writing?: boolean;
     className?: string;
 }
 
 /**
- * Glowing stroke order: KanjiVG paths drawn with a dash animation (glow in 夜,
- * vermilion in 墨), replay and step back/forward. "Try writing" swaps in the
- * tracing canvas (local, no scoring, no API calls).
+ * Stroke order, numbered: strokes so far in ink, the one being drawn in the
+ * accent (the only thing that lights up, rule 5), the rest faint. Step with
+ * ‹ ›, replay, or swap in "Try writing it" (local tracing, no scoring).
  */
-export function StrokePlayer({ char, paths, autoPlay = true, writing = true, className }: StrokePlayerProps) {
+export function StrokePlayer({ char, paths, numbers, autoPlay = true, className }: StrokePlayerProps) {
     const total = paths.length;
-    // `shown` strokes are visible; when all are shown and nothing plays, they glow.
-    const [shown, setShown] = useState(total);
+    // The stroke being drawn; null when all strokes are shown at rest.
+    const [current, setCurrent] = useState<number | null>(null);
     const [playing, setPlaying] = useState(false);
-    const [run, setRun] = useState(0);
     const [mode, setMode] = useState<"view" | "write">("view");
     const rootRef = useRef<HTMLDivElement>(null);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -51,43 +49,41 @@ export function StrokePlayer({ char, paths, autoPlay = true, writing = true, cla
         timer.current = null;
     };
 
-    const tick = (next: number) => {
+    const tick = (i: number) => {
         stop();
-        setShown(next);
-        if (next >= total) {
+        if (i >= total) {
+            setCurrent(null);
             setPlaying(false);
             return;
         }
-        timer.current = setTimeout(() => tick(next + 1), STEP_MS);
+        setCurrent(i);
+        timer.current = setTimeout(() => tick(i + 1), STEP_MS);
     };
 
     const play = () => {
-        if (!total) return;
-        if (reducedMotion()) {
+        if (!total || reducedMotion()) {
             stop();
             setPlaying(false);
-            setShown(total);
-            setRun((r) => r + 1);
+            setCurrent(null);
             return;
         }
         setPlaying(true);
-        setRun((r) => r + 1);
-        tick(1);
+        tick(0);
     };
 
     const step = (delta: number) => {
         stop();
         setPlaying(false);
-        setRun((r) => r + 1);
-        setShown((s) => {
-            const from = s >= total ? (delta < 0 ? total : 0) : s;
-            return Math.min(total, Math.max(1, from + delta));
+        setCurrent((c) => {
+            const from = c ?? total;
+            const next = from + delta;
+            return next >= total ? null : Math.max(0, next);
         });
     };
 
     useEffect(() => stop, []);
 
-    // Play once when first seen.
+    // Play once when first seen (a hidden tab panel is seen when it opens).
     useEffect(() => {
         const el = rootRef.current;
         if (!autoPlay || !el || !total || typeof IntersectionObserver === "undefined") return;
@@ -98,8 +94,7 @@ export function StrokePlayer({ char, paths, autoPlay = true, writing = true, cla
                 io.disconnect();
                 if (!reducedMotion()) {
                     setPlaying(true);
-                    setRun((r) => r + 1);
-                    tick(1);
+                    tick(0);
                 }
             },
             { threshold: 0.5 },
@@ -110,7 +105,7 @@ export function StrokePlayer({ char, paths, autoPlay = true, writing = true, cla
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [autoPlay, total]);
 
-    const switchMode = () => {
+    const write = () => {
         stop();
         setPlaying(false);
         if (mode === "view") trackEvent("trace_used", { kanji: char, action: "start" });
@@ -121,79 +116,68 @@ export function StrokePlayer({ char, paths, autoPlay = true, writing = true, cla
         return <p className="text-sm text-ink-3">No stroke order data for this kanji yet.</p>;
     }
 
-    const finished = shown >= total && !playing;
-    const current = finished ? null : shown - 1;
+    const status = current === null ? `${total} stroke${total === 1 ? "" : "s"}` : `Stroke ${current + 1} of ${total}`;
+    const box = "relative aspect-square w-full rounded-xl bg-bg max-[959px]:border max-[959px]:border-line max-[959px]:bg-card";
 
     return (
-        <div ref={rootRef} className={cn("flex flex-col items-center gap-3", className)}>
+        <div ref={rootRef} className={cn("flex flex-col gap-3.5", className)}>
             {mode === "view" ? (
-                <div
-                    role="img"
-                    aria-label={finished ? `${char}, all ${total} strokes` : `${char}, stroke ${shown} of ${total}`}
-                    className="relative aspect-square w-full max-w-[300px] rounded-xl border border-line bg-card p-5"
-                >
-                    <svg viewBox="0 0 109 109" aria-hidden className={styles.glyph} strokeWidth={4.2} key={run}>
-                        {/* Faint guide cross. */}
-                        <g stroke="var(--line)" strokeWidth={0.5} strokeDasharray="2 2">
-                            <line x1="54.5" y1="0" x2="54.5" y2="109" />
-                            <line x1="0" y1="54.5" x2="109" y2="54.5" />
-                        </g>
-                        <g className={cn(styles.part, finished && styles.glow)}>
-                            {paths.map((d, i) => {
-                                // The stroke being drawn sits in its own glowing group below.
-                                if (i === current) return null;
-                                const cls = finished ? styles.lit : i < shown - 1 ? styles.done : styles.ghost;
-                                return <path key={i} d={d} className={cls} />;
-                            })}
-                        </g>
-                        {current !== null && (
-                            <g className={cn(styles.part, styles.glow)}>
-                                <path key={current} d={paths[current]} pathLength={1} className={cn(styles.lit, styles.draw)} style={{ "--dur": `${STEP_MS - 120}ms` } as CSSProperties} />
-                            </g>
-                        )}
+                <div role="img" aria-label={current === null ? `${char}, all ${total} strokes, numbered` : `${char}, stroke ${current + 1} of ${total}`} className={box}>
+                    <svg viewBox="0 0 109 109" aria-hidden className="absolute inset-0 size-full fill-none stroke-line [stroke-dasharray:1.4_1.4] [stroke-width:.4]">
+                        <path d="M54.5 0V109M0 54.5H109" />
                     </svg>
+                    <svg viewBox="0 0 109 109" aria-hidden className="absolute inset-[6%] size-[88%] overflow-visible fill-none [stroke-linecap:round] [stroke-linejoin:round]" strokeWidth={4.2}>
+                        {paths.map((d, i) => (
+                            <path
+                                key={i}
+                                d={d}
+                                className={current === null || i < current ? "stroke-ink" : i === current ? "stroke-transparent" : "stroke-line-2"}
+                            />
+                        ))}
+                        {numbers?.map((p, i) => (
+                            <text
+                                key={i}
+                                x={p.x}
+                                y={p.y}
+                                className={cn("stroke-none text-[5.5px] font-bold", i === current ? "fill-c" : "fill-ink-3")}
+                            >
+                                {i + 1}
+                            </text>
+                        ))}
+                    </svg>
+                    {current !== null && (
+                        <svg viewBox="0 0 109 109" aria-hidden className="live absolute inset-[6%] size-[88%] overflow-visible fill-none stroke-c [stroke-linecap:round] [stroke-linejoin:round]" strokeWidth={4.2}>
+                            <path key={current} d={paths[current]} pathLength={1} className={styles.draw} style={{ "--dur": `${STEP_MS - 120}ms` } as CSSProperties} />
+                        </svg>
+                    )}
                 </div>
             ) : (
                 <TryWriting char={char} />
             )}
 
-            {mode === "view" && (
-                <>
-                    <p className="min-h-5 text-sm text-ink-2" aria-live="polite">
-                        {finished ? `${total} strokes` : `Stroke ${shown} of ${total}`}
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                        <button type="button" className={control} onClick={() => step(-1)} disabled={shown <= 1 && !finished} aria-label="Previous stroke">
-                            <ChevronLeft size={18} aria-hidden />
-                        </button>
-                        <button type="button" className={cn(control, "px-5")} onClick={play}>
-                            <Play size={15} aria-hidden /> {playing ? "Restart" : "Replay"}
-                        </button>
-                        <button type="button" className={control} onClick={() => step(1)} disabled={finished} aria-label="Next stroke">
-                            <ChevronRight size={18} aria-hidden />
-                        </button>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                {mode === "view" ? (
+                    <div className="flex items-center gap-1.5">
+                        <Button size="sm" iconOnly aria-label="Previous stroke" onClick={() => step(-1)} disabled={current === 0}>
+                            <ChevronLeft aria-hidden />
+                        </Button>
+                        <span aria-live={playing ? "off" : "polite"} className="min-w-24 text-center text-sm text-ink-2">
+                            {status}
+                        </span>
+                        <Button size="sm" iconOnly aria-label="Next stroke" onClick={() => step(1)} disabled={current === null}>
+                            <ChevronRight aria-hidden />
+                        </Button>
+                        <Button size="sm" variant="quiet" iconOnly aria-label={playing ? "Restart the stroke order" : "Play the stroke order"} onClick={play}>
+                            <RotateCcw aria-hidden />
+                        </Button>
                     </div>
-                </>
-            )}
-
-            {writing && (
-                <button
-                    type="button"
-                    onClick={switchMode}
-                    aria-pressed={mode === "write"}
-                    className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm text-ink-2 transition-colors hover:text-[var(--c)]"
-                >
-                    {mode === "view" ? (
-                        <>
-                            <PenLine size={16} aria-hidden /> Try writing
-                        </>
-                    ) : (
-                        <>
-                            <Eye size={16} aria-hidden /> Back to the animation
-                        </>
-                    )}
-                </button>
-            )}
+                ) : (
+                    <span />
+                )}
+                <Button size="sm" onClick={write} aria-pressed={mode === "write"}>
+                    {mode === "view" ? "Try writing it" : "Back to the strokes"}
+                </Button>
+            </div>
         </div>
     );
 }

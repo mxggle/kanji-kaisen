@@ -10,6 +10,7 @@ import {
     getAllKanji,
     getAllRadicals,
     getKanji,
+    getKanjiByRadical,
     getKanjiWithComponent,
     getLookAlikes,
     getNeighbors,
@@ -21,15 +22,16 @@ import {
 } from "@/lib/atlas";
 import type { AtlasKanji, AtlasRadical, KanjiComponent } from "@/lib/atlas/types";
 import { kanjivgFileName } from "@/lib/atlas/kanjivg-svg";
-import { getThemeColor } from "@/lib/atlas/categories";
-import { kanjiPath, radicalPath, searchPath } from "@/lib/atlas/paths";
+import { getThemeColor, isCategoryName, THEME_SHORT } from "@/lib/atlas/categories";
+import { categoryPath, kanjiPath, radicalPath, searchPath } from "@/lib/atlas/paths";
+import { compareByFrequency } from "@/components/Theme/order";
 import { plainReading, readingToRomaji } from "@/lib/atlas/readings";
 import { buildMeaningOptions, type QuizCandidate } from "@/lib/atlas/quiz";
 import unihanData from "@/lib/core/unihan.json";
 import type { UnihanEntry } from "@/lib/core/zh";
 import { firstSentences, truncate } from "@/components/Atlas/kanji/summary";
 import { displayMeanings, gradeLabel, layoutReadings, meaningHeadline, partGloss, titleReadings } from "@/components/Kanji/readings";
-import { extractStrokes, partOffsets, rangeIndexes, strokeOwners, type Stroke } from "@/components/Kanji/strokes";
+import { extractStrokeNumbers, extractStrokes, partOffsets, rangeIndexes, strokeOwners, type Stroke } from "@/components/Kanji/strokes";
 import { compareParts } from "@/components/Kanji/compare";
 import { zhFacts, type ZhFacts } from "@/components/Kanji/zh";
 import { isAccentRole, partsCaption, ROLE_LABELS, uniqueParts } from "@/components/Kanji/parts";
@@ -44,7 +46,9 @@ import type {
     LookAlikeView,
     MemoryStoryView,
     PartView,
+    PathView,
     SameOnView,
+    SiblingView,
     SoundFamilyView,
     StrokeData,
 } from "@/components/Kanji/types";
@@ -56,14 +60,15 @@ const KANJIVG_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "public
 
 const kanjivgPath = (char: string) => path.join(/* turbopackIgnore: true */ KANJIVG_DIR, kanjivgFileName(char));
 
-function readStrokes(char: string): Stroke[] {
+function readKanjiVG(char: string): string {
     try {
-        const raw = fs.readFileSync(/* turbopackIgnore: true */ kanjivgPath(char), "utf8");
-        return extractStrokes(raw);
+        return fs.readFileSync(/* turbopackIgnore: true */ kanjivgPath(char), "utf8");
     } catch {
-        return [];
+        return "";
     }
 }
+
+const readStrokes = (char: string): Stroke[] => extractStrokes(readKanjiVG(char));
 
 const unihan = (unihanData as unknown as { chars: Record<string, UnihanEntry> }).chars;
 const getUnihan = (char: string) => unihan[char];
@@ -78,7 +83,47 @@ function lite(k: AtlasKanji): KanjiLite {
         char: k.char,
         meaning: displayMeanings(k.meanings)[0] ?? "",
         reading: plainReading(k.onyomi[0] ?? k.kunyomi[0] ?? ""),
+        category: k.category,
     };
+}
+
+/** A radical's kanji, most common first (seals fill from the first eight). */
+function radicalChars(key: string): string {
+    return [...(getRadical(key)?.kanji ?? [])]
+        .sort(compareByFrequency)
+        .map((k) => k.char)
+        .join("");
+}
+
+// ---------------------------------------------------------------------------
+// Atlas path and siblings: theme › radical › kanji, ‹ › in the same radical.
+
+function atlasPath(kanji: AtlasKanji): PathView {
+    const category = isCategoryName(kanji.category) ? kanji.category : null;
+    const summary = kanji.radical ? getRadicalSummary(kanji.radical.key) : null;
+    return {
+        theme: category ? { name: category, short: THEME_SHORT[category], href: categoryPath(category) } : null,
+        radical: summary
+            ? {
+                  key: summary.key,
+                  char: summary.char,
+                  label: partGloss(summary.meaning) || summary.name,
+                  href: radicalPath(summary.key),
+                  category: summary.category,
+                  chars: radicalChars(summary.key),
+              }
+            : null,
+    };
+}
+
+function siblings(kanji: AtlasKanji): { prev: SiblingView | null; next: SiblingView | null } {
+    if (!kanji.radical) return { prev: null, next: null };
+    const list = [...getKanjiByRadical(kanji.radical.key)].sort(compareByFrequency);
+    const at = list.findIndex((k) => k.char === kanji.char);
+    const view = (k: AtlasKanji | undefined): SiblingView | null =>
+        k ? { char: k.char, meaning: displayMeanings(k.meanings)[0] ?? "", href: kanjiPath(k.char) } : null;
+    if (at < 0) return { prev: null, next: null };
+    return { prev: view(list[at - 1]), next: view(list[at + 1]) };
 }
 
 // ---------------------------------------------------------------------------
@@ -136,7 +181,7 @@ function memoryStory(kanji: AtlasKanji, radical: AtlasRadical | null): MemorySto
     return {
         text,
         specific: Boolean(line),
-        radical: { key: source.key, char: source.char, name: source.name, href: radicalPath(source.key) },
+        radical: { key: source.key, char: source.char, name: source.name, href: radicalPath(source.key), label: partGloss(source.meaning) || source.name },
     };
 }
 
@@ -175,7 +220,9 @@ function alsoBuiltOn(kanji: AtlasKanji, parts: PartView[]): AlsoBuiltOn[] {
             const all = getKanjiWithComponent(part.char, { exclude: kanji.char });
             const component = kanji.components.find((c) => c.char === part.char);
             const moreHref = component?.radicalKey ? radicalPath(component.radicalKey) : part.href;
-            return { part, kanji: all.slice(0, ALSO_BUILT_LIMIT).map(lite), total: all.length, moreHref };
+            const summary = component?.radicalKey ? getRadicalSummary(component.radicalKey) : null;
+            const radical = summary ? { key: summary.key, category: summary.category, chars: radicalChars(summary.key) } : null;
+            return { part, kanji: all.slice(0, ALSO_BUILT_LIMIT).map(lite), total: all.length, moreHref, radical };
         })
         .filter((group) => group.total > 0);
 }
@@ -292,6 +339,10 @@ export interface KanjiPageData {
     description: string;
     titleReadings: string[];
     learn: LearnData;
+    /** Theme and radical for the atlas path. */
+    path: PathView;
+    /** Previous and next kanji in the same radical, most common first. */
+    siblings: { prev: SiblingView | null; next: SiblingView | null };
 }
 
 /** The page's data for `char` (memoised per request: metadata and page share it). */
@@ -305,7 +356,9 @@ function buildKanjiPageData(char: string): KanjiPageData | null {
     const meanings = displayMeanings(kanji.meanings);
     const headline = meaningHeadline(kanji.meanings);
     const themeColor = getThemeColor(kanji.category);
-    const strokes = readStrokes(kanji.char);
+    const svg = readKanjiVG(kanji.char);
+    const strokes = extractStrokes(svg);
+    const numbers = extractStrokeNumbers(svg);
     const parts = kanji.components.map((c) => toPart(c, strokes.length || kanji.strokeCount));
     const owners = strokeOwners(strokes.length, parts.map((p) => p.strokes));
     const paths = strokes.map((s) => s.d);
@@ -377,7 +430,7 @@ function buildKanjiPageData(char: string): KanjiPageData | null {
         themeColor,
         radical,
         parts,
-        strokes: { strokes, owners },
+        strokes: { strokes, owners, numbers: numbers.length === strokes.length ? numbers : undefined },
         build,
         memory,
         etymology,
@@ -392,5 +445,7 @@ function buildKanjiPageData(char: string): KanjiPageData | null {
         description: describe(kanji, parts),
         titleReadings: titleReadings(kanji),
         learn,
+        path: atlasPath(kanji),
+        siblings: siblings(kanji),
     };
 }

@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
-import { getAllKanji, getNeighbors } from "@/lib/atlas";
-import { getStrokeDiagramSvg } from "@/lib/atlas/kanjivg";
+import { getAllKanji } from "@/lib/atlas";
 import { browsePath, kanjiPath } from "@/lib/atlas/paths";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { Breadcrumbs, PageShell } from "@/components/Atlas/PageShell";
-import { PrevNextNav } from "@/components/Atlas/PrevNextNav";
+import { PageShell } from "@/components/Atlas/PageShell";
 import { TrackEvent } from "@/components/Atlas/TrackEvent";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
+import { InkPaint } from "@/components/Ink/InkPaint";
+import { AtlasPath, type PathStep } from "@/components/Layout/AtlasPath";
+import { Plate } from "@/components/Layout/Plate";
 import { kanjiTitle, layoutReadings } from "@/components/Kanji/readings";
-import { ActionRow, KanjiHero } from "@/components/Kanji/KanjiHero";
-import { ReadingBlocks } from "@/components/Kanji/ReadingBlocks";
-import { KanjiStory } from "@/components/Kanji/KanjiStory";
+import { KanjiHero } from "@/components/Kanji/KanjiHero";
+import { KanjiReadings } from "@/components/Kanji/ReadingBlocks";
+import { KanjiActionBar, KanjiActions } from "@/components/Kanji/KanjiActions";
+import { KanjiView, KanjiViewPanel, KanjiViewTabs, type KanjiViewValue } from "@/components/Kanji/KanjiView";
+import { BuildPlayer } from "@/components/Kanji/BuildPlayer";
 import { StrokePlayer } from "@/components/Kanji/StrokePlayer";
-import { Etymology, MemoryStory } from "@/components/Kanji/StoryBlocks";
-import { AlsoBuiltOnBlocks, SameOnBlocks, SoundFamily } from "@/components/Kanji/KanjiLinks";
-import { LookAlikeCompare } from "@/components/Kanji/LookAlikeCompare";
+import { AncientTab } from "@/components/Kanji/AncientTab";
+import { KanjiOrigin } from "@/components/Kanji/KanjiOrigin";
+import { KanjiConnections } from "@/components/Kanji/KanjiLinks";
 import { KanjiZh } from "@/components/Kanji/KanjiZh";
+import { KanjiNeighbours } from "@/components/Kanji/KanjiNeighbours";
 import { LearnLauncher } from "@/components/Learn/LearnLauncher";
-import { ShareCardButton } from "@/components/ShareCard/ShareCardButton";
 import { getShareCardProps } from "@/components/ShareCard/getShareCardProps";
 import { getKanjiPageData } from "./data";
 
@@ -67,170 +70,103 @@ function jsonLd(data: NonNullable<ReturnType<typeof getKanjiPageData>>): string 
     return JSON.stringify(ld).replace(/</g, "\\u003c");
 }
 
-const sectionTitle = "font-disp text-[28px] font-bold leading-tight text-ink";
-
 export default async function KanjiPage({ params }: PageProps) {
     const data = getKanjiPageData((await params).char);
     if (!data) notFound();
 
-    const { kanji, build, journey } = data;
+    const { kanji, build, journey, path, siblings } = data;
     const layout = layoutReadings(kanji.wordsByReading);
-    const { prev, next } = getNeighbors(kanji.char);
-    const strokeSvg = getStrokeDiagramSvg(kanji.char);
     const paths = data.strokes.strokes.map((s) => s.d);
-    // With no parts to build from and no ancient forms, the stroke animation takes the stage.
-    const hasStory = Boolean(build || journey);
-    const strokeOnStage = !hasStory && paths.length > 0;
-    const hasLinks = data.alsoBuiltOn.length > 0 || data.soundFamily || data.headedFamily || data.sameOn.length > 0 || data.lookAlikes.length > 0;
-    const firstReading = layout.main[0];
+    const card = getShareCardProps(kanji);
+    const meaning = data.meanings[0] ?? data.headline;
+
+    // Specimen tabs: Parts · Strokes · Ancient on desktop, Readings · Strokes · Ancient on phones.
+    const deskTabs = [build && "parts", paths.length > 0 && "strokes", journey && "ancient"].filter((v): v is KanjiViewValue => Boolean(v));
+    const phoneCount = deskTabs.filter((v) => v !== "parts").length + 1;
+    const tabs: KanjiViewValue[] = deskTabs[0] === "parts" ? ["parts", "readings", ...deskTabs.slice(1)] : ["readings", ...deskTabs];
+
+    const steps: PathStep[] = [];
+    if (path.theme) steps.push({ label: path.theme.name, short: path.theme.short, href: path.theme.href, mark: { kind: "dot", category: path.theme.name } });
+    if (path.radical) {
+        steps.push({
+            label: path.radical.label,
+            href: path.radical.href,
+            mark: { kind: "seal", char: path.radical.char, category: path.radical.category, chars: path.radical.chars },
+        });
+    }
+    steps.push({ label: meaning, mark: { kind: "glyph", char: kanji.char } });
+    const within = path.radical ? ` in ${path.radical.char}` : "";
+    const neighbour = (s: typeof siblings.prev, dir: string) =>
+        s && { href: s.href, glyph: s.char, label: `${dir}${within}: ${s.char} ${s.meaning}` };
 
     return (
-        <PageShell className="max-w-6xl" style={{ "--tc": data.themeColor } as CSSProperties}>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(data) }} />
-            <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
-            <LearnLauncher data={data.learn} />
+        <InkPaint>
+            <PageShell className="max-lg:pt-3" style={themeVars(kanji.category)}>
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(data) }} />
+                <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
+                <LearnLauncher data={data.learn} />
 
-            <Breadcrumbs
-                items={[
-                    { href: "/", label: "Home" },
-                    { href: browsePath({ jlpt: kanji.jlpt }), label: `JLPT ${kanji.jlpt}` },
-                    { label: `${kanji.char} ${data.headline}` },
-                ]}
-            />
+                <AtlasPath steps={steps} prev={neighbour(siblings.prev, "Previous")} next={neighbour(siblings.next, "Next")} />
 
-            {/* Hero: on phones glyph, meaning and readings come first; on desktop the build (or stroke order) sits on the left. */}
-            <div className="grid gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)]">
-                <div className="lg:col-start-2">
-                    <KanjiHero kanji={kanji} headline={data.headline} meanings={data.meanings} parts={data.parts} />
-                </div>
+                <KanjiView desk={deskTabs[0] ?? "strokes"}>
+                    <Plate
+                        phoneOrder="after-hero"
+                        hero={<KanjiHero kanji={kanji} headline={data.headline} meanings={data.meanings} parts={data.parts} />}
+                        specimen={
+                            deskTabs.length ? (
+                                <div className="flex flex-col gap-4 min-[960px]:rounded-2xl min-[960px]:border min-[960px]:border-line min-[960px]:bg-card min-[960px]:p-5">
+                                    <KanjiViewTabs
+                                        values={tabs}
+                                        className={[deskTabs.length < 2 && "min-[960px]:hidden", phoneCount < 2 && "max-[959px]:hidden"].filter(Boolean).join(" ")}
+                                    />
+                                    {build && (
+                                        <KanjiViewPanel value="parts">
+                                            <BuildPlayer build={build} />
+                                        </KanjiViewPanel>
+                                    )}
+                                    {paths.length > 0 && (
+                                        <KanjiViewPanel value="strokes">
+                                            <StrokePlayer char={kanji.char} paths={paths} numbers={data.strokes.numbers} />
+                                        </KanjiViewPanel>
+                                    )}
+                                    {journey && (
+                                        <KanjiViewPanel value="ancient">
+                                            <AncientTab char={kanji.char} journey={journey} todayStrokes={paths} />
+                                        </KanjiViewPanel>
+                                    )}
+                                </div>
+                            ) : null
+                        }
+                        reading={
+                            <div className="flex flex-col gap-[22px]">
+                                <KanjiViewPanel value="readings">
+                                    <KanjiReadings char={kanji.char} layout={layout} />
+                                </KanjiViewPanel>
+                                <KanjiActions char={kanji.char} card={card} />
+                            </div>
+                        }
+                    />
+                </KanjiView>
+                <KanjiActionBar char={kanji.char} card={card} />
 
-                <div className="lg:col-start-2">
-                    <ReadingBlocks char={kanji.char} layout={layout} id="readings" />
-                </div>
+                <KanjiOrigin etymology={data.etymology} memory={data.memory} className="mt-16 min-[960px]:mt-24" />
 
-                <div className="lg:col-start-2">
-                    <ActionRow char={kanji.char} shareCard={<ShareCardButton {...getShareCardProps(kanji)} />} />
-                </div>
+                <KanjiConnections
+                    char={kanji.char}
+                    meaning={meaning}
+                    paths={paths}
+                    alsoBuiltOn={data.alsoBuiltOn}
+                    soundFamily={data.soundFamily}
+                    headedFamily={data.headedFamily}
+                    sameOn={data.sameOn}
+                    lookAlikes={data.lookAlikes}
+                    className="mt-16 min-[960px]:mt-24"
+                />
 
-                {(hasStory || strokeOnStage) && (
-                    <section aria-labelledby="stage-title" className="lg:col-start-1 lg:row-span-3 lg:row-start-1">
-                        {hasStory ? (
-                            <KanjiStory
-                                char={kanji.char}
-                                build={build}
-                                journey={journey}
-                                todayStrokes={paths}
-                                title={
-                                    <h2 id="stage-title" className="flex flex-wrap items-baseline gap-x-3">
-                                        <span lang="ja" className="font-jp text-lg text-[var(--c)]">
-                                            成り立ち
-                                        </span>
-                                        <span className="font-disp text-[22px] italic text-ink-2">How {kanji.char} was built</span>
-                                    </h2>
-                                }
-                            />
-                        ) : (
-                            <>
-                                <h2 id="stage-title" className="mb-4 flex flex-wrap items-baseline gap-x-3">
-                                    <span lang="ja" className="font-jp text-lg text-[var(--c)]">
-                                        筆順
-                                    </span>
-                                    <span className="font-disp text-[22px] italic text-ink-2">How to write {kanji.char}</span>
-                                </h2>
-                                <StrokePlayer char={kanji.char} paths={paths} className="lg:[&>div:first-child]:max-w-[420px]" />
-                            </>
-                        )}
-                    </section>
-                )}
-            </div>
+                {data.zh && <KanjiZh char={kanji.char} facts={data.zh} className="mt-16" />}
 
-            {/* Etymology (sourced) and Memory story (mnemonic) stay apart. */}
-            {(data.etymology || data.memory) && (
-                <div className="mt-12 grid gap-4 md:grid-cols-2">
-                    <Etymology etymology={data.etymology} className={data.memory ? "" : "md:col-span-2 md:max-w-3xl"} />
-                    {data.memory && <MemoryStory story={data.memory} className={data.etymology ? "" : "md:col-span-2 md:max-w-3xl"} />}
-                </div>
-            )}
-
-            {/* Stroke order: glowing animation (unless it is already on stage), the static numbered diagram, Try writing. */}
-            <section id="stroke-order" aria-labelledby="stroke-title" className="mt-12">
-                <h2 id="stroke-title" className={sectionTitle}>
-                    Stroke order
-                </h2>
-                {paths.length ? (
-                    <div className="mt-5 grid items-start gap-8 md:grid-cols-2">
-                        {!strokeOnStage && <StrokePlayer char={kanji.char} paths={paths} />}
-                        {strokeSvg && (
-                            <figure className={strokeOnStage ? "md:col-span-2 flex flex-col items-center gap-2 md:flex-row md:items-start md:gap-8" : "flex flex-col items-center gap-2"}>
-                                <div
-                                    className="aspect-square w-full max-w-[300px] rounded-xl border border-line bg-card p-2 text-ink [&>svg]:h-full [&>svg]:w-full"
-                                    dangerouslySetInnerHTML={{ __html: strokeSvg }}
-                                />
-                                <figcaption className="text-center text-xs text-ink-3 md:max-w-[300px]">
-                                    Numbers show the stroke order. Diagram:{" "}
-                                    <a href="https://kanjivg.tagaini.net" className="underline underline-offset-2 hover:text-ink" rel="noopener">
-                                        KanjiVG
-                                    </a>{" "}
-                                    (CC BY-SA 3.0)
-                                </figcaption>
-                            </figure>
-                        )}
-                    </div>
-                ) : (
-                    <p className="mt-3 text-sm text-ink-3">No stroke order data is available for this kanji yet.</p>
-                )}
-            </section>
-
-            {hasLinks && (
-                <section aria-labelledby="links-title" className="mt-12 flex flex-col gap-8">
-                    <h2 id="links-title" className={sectionTitle}>
-                        Kanji connected to {kanji.char}
-                    </h2>
-
-                    {data.alsoBuiltOn.length > 0 && <AlsoBuiltOnBlocks groups={data.alsoBuiltOn} />}
-
-                    {(data.soundFamily || data.headedFamily) && (
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-sm font-bold text-ink">Same sound part</h3>
-                            {data.soundFamily && <SoundFamily char={kanji.char} family={data.soundFamily} />}
-                            {data.headedFamily && <SoundFamily char={kanji.char} family={data.headedFamily} heads />}
-                        </div>
-                    )}
-
-                    {data.sameOn.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-sm font-bold text-ink">Same on&apos;yomi</h3>
-                            <SameOnBlocks groups={data.sameOn} />
-                        </div>
-                    )}
-
-                    {data.lookAlikes.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-sm font-bold text-ink">Look-alikes</h3>
-                            <LookAlikeCompare
-                                char={kanji.char}
-                                meaning={data.meanings[0] ?? ""}
-                                reading={firstReading ? firstReading.reading.replace(/[.\-]/g, "") : ""}
-                                paths={paths}
-                                items={data.lookAlikes}
-                            />
-                        </div>
-                    )}
-                </section>
-            )}
-
-            {data.zh && (
-                <div className="mt-12 max-w-3xl">
-                    <KanjiZh char={kanji.char} facts={data.zh} />
-                </div>
-            )}
-
-            <PrevNextNav
-                ariaLabel={`More JLPT ${kanji.jlpt} kanji`}
-                caption={`More JLPT ${kanji.jlpt} kanji, by frequency`}
-                prev={prev && { href: kanjiPath(prev.char), char: prev.char, label: prev.meanings[0] }}
-                next={next && { href: kanjiPath(next.char), char: next.char, label: next.meanings[0] }}
-            />
-        </PageShell>
+                {path.radical && <KanjiNeighbours prev={siblings.prev} next={siblings.next} radical={path.radical} className="mt-10" />}
+            </PageShell>
+        </InkPaint>
     );
 }

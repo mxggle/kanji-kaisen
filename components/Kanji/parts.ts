@@ -48,3 +48,59 @@ export function uniqueParts<T extends CaptionPart>(parts: readonly T[]): T[] {
     }
     return parts.filter((p) => byChar.get(p.char) === p);
 }
+
+/** Rule 2's three lines: what a component role draws as (both carries meaning). */
+export type PartLine = "meaning" | "sound" | "form";
+
+export function partLine(role: ComponentRole): PartLine {
+    if (role === "meaning" || role === "both") return "meaning";
+    return role;
+}
+
+/** The small word after a part chip: "meaning", "sound", "form", "meaning · sound". */
+export function partNote(role: ComponentRole): string {
+    return role === "both" ? "meaning · sound" : role;
+}
+
+export interface BuildClause {
+    chars: string[];
+    line: PartLine;
+    /** "carries the meaning", "give the sound", "are drawn in". */
+    text: string;
+}
+
+const CLAUSE_ORDER: ComponentRole[] = ["meaning", "both", "sound", "form"];
+
+const CLAUSE_TEXT: Record<ComponentRole, [one: string, many: string]> = {
+    meaning: ["carries the meaning", "carry the meaning"],
+    both: ["carries meaning and sound", "carry meaning and sound"],
+    sound: ["gives the sound", "give the sound"],
+    form: ["is drawn in", "are drawn in"],
+};
+
+/**
+ * The build caption as clauses, one per role: "亻 carries the meaning · 木 is
+ * drawn in", "氵 carries the meaning · 毎 gives the sound". Repeated parts count once.
+ */
+export function buildClauses(parts: readonly CaptionPart[]): BuildClause[] {
+    const unique = uniqueParts(parts);
+    return CLAUSE_ORDER.flatMap((role) => {
+        const chars = unique.filter((p) => p.role === role).map((p) => p.char);
+        if (!chars.length) return [];
+        const [one, many] = CLAUSE_TEXT[role];
+        return [{ chars, line: partLine(role), text: chars.length === 1 ? one : many }];
+    });
+}
+
+/** "亻", "木 and 口", "一, 口 and 木". */
+export function joinChars(chars: readonly string[]): string {
+    if (chars.length <= 1) return chars.join("");
+    return `${chars.slice(0, -1).join(", ")} and ${chars[chars.length - 1]}`;
+}
+
+/** The clauses as plain text, for aria labels. */
+export function buildCaptionText(parts: readonly CaptionPart[]): string {
+    return buildClauses(parts)
+        .map((c) => `${joinChars(c.chars)} ${c.text}`)
+        .join(" · ");
+}

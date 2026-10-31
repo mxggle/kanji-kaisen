@@ -1,20 +1,16 @@
-import { cn } from "@/lib/utils";
-import type { ReadingBlock, ReadingLayout, WordView } from "./readings";
-import { wordSegments } from "./readings";
-import styles from "./kanji.module.css";
+import { Fragment } from "react";
+import { ReadingBlock } from "@/components/ui/ReadingBlock";
+import { readingsHeading, wordSegments, wordsCredit, type ReadingBlock as Reading, type ReadingLayout, type WordView } from "./readings";
 
-const KIND_LABEL = {
-    on: { short: "on", long: "on'yomi · in compounds" },
-    kun: { short: "kun", long: "kun'yomi · on its own" },
+const KIND = {
+    on: { name: "on'yomi", note: "in compounds" },
+    kun: { name: "kun'yomi", note: "on its own" },
 } as const;
 
-const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
-const countWord = (n: number) => COUNT_WORDS[n] ?? String(n);
-
-/** The kana of a reading: stem large, okurigana faded after a dot, affix dashes kept. */
-export function ReadingKana({ block, className }: { block: Pick<ReadingBlock, "stem" | "okurigana" | "prefix" | "suffix">; className?: string }) {
+/** The kana of a reading inline: stem, okurigana after a dot in ink-3, affix dashes kept. */
+export function ReadingKana({ block, className }: { block: Pick<Reading, "stem" | "okurigana" | "prefix" | "suffix">; className?: string }) {
     return (
-        <span lang="ja" className={cn("font-jp font-extrabold leading-none", className)}>
+        <span lang="ja" className={className}>
             {block.suffix && <span className="text-ink-3">-</span>}
             {block.stem}
             {block.okurigana && (
@@ -28,128 +24,96 @@ export function ReadingKana({ block, className }: { block: Pick<ReadingBlock, "s
     );
 }
 
-function Word({ word, char }: { word: WordView; char: string }) {
+/** Irregular words (今日, 海老), read as a whole: a card like a reading's, without kana. */
+function SpecialWords({ char, words, alone }: { char: string; words: WordView[]; alone: boolean }) {
     return (
-        <li className="flex flex-wrap items-baseline gap-x-2 min-w-0">
-            <span lang="ja" className="font-jp font-bold text-lg text-ink">
-                {wordSegments(word.word, char).map((seg, i) =>
-                    seg.hit ? (
-                        <span key={i} className={styles.hit}>
-                            {seg.text}
-                        </span>
-                    ) : (
-                        <span key={i}>{seg.text}</span>
-                    ),
-                )}
-            </span>
-            <span lang="ja" className="text-sm text-ink-2">
-                {word.reading}
-            </span>
-            <span className="text-sm text-ink-2">{word.meaning}</span>
-        </li>
-    );
-}
-
-function WordList({ words, char }: { words: WordView[]; char: string }) {
-    return (
-        <ul className="grid gap-x-5 gap-y-1.5 sm:grid-cols-2">
-            {words.map((w) => (
-                <Word key={`${w.word}-${w.reading}`} word={w} char={char} />
-            ))}
-        </ul>
-    );
-}
-
-function Block({ block, char }: { block: ReadingBlock; char: string }) {
-    const label = KIND_LABEL[block.kind];
-    return (
-        <li className="rounded-xl border border-line bg-card px-4 py-3.5">
-            <p className="mb-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <ReadingKana block={block} className="text-[28px]" />
-                <span className="text-sm text-ink-3">
-                    {block.romaji} · {label.long}
-                </span>
+        <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-line-2 px-5 py-[18px]">
+            <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="text-[15px] font-bold text-ink">{alone ? `Words with ${char}` : "Special readings"}</span>
+                <span className="text-[13px] text-ink-3">{alone ? "It is read as part of each word." : "These words are read as a whole, not from the readings above."}</span>
             </p>
-            {block.words.length > 0 ? (
-                <WordList words={block.words} char={char} />
-            ) : (
-                <p className="text-sm text-ink-3">No common words use this reading.</p>
-            )}
-        </li>
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(240px,100%),1fr))] gap-x-6 gap-y-0.5">
+                {words.map((w) => (
+                    <li key={`${w.word}-${w.reading}`} className="flex min-w-0 items-baseline gap-2.5 py-[5px] text-sm text-ink-2">
+                        <span lang="ja" className="whitespace-nowrap font-jp text-[19px] font-extrabold text-ink">
+                            {wordSegments(w.word, char).map((seg, i) =>
+                                seg.hit ? (
+                                    <b key={i} className="font-extrabold text-c">
+                                        {seg.text}
+                                    </b>
+                                ) : (
+                                    <Fragment key={i}>{seg.text}</Fragment>
+                                ),
+                            )}
+                        </span>
+                        <span lang="ja" className="whitespace-nowrap text-[13px] text-ink-3">
+                            {w.reading}
+                        </span>
+                        <span className="min-w-0">{w.meaning}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
-}
-
-function sourcesCredit(words: WordView[]): string | null {
-    const sources = new Set(words.map((w) => w.source));
-    const credits = [];
-    if (sources.has("kanjialive")) credits.push("Kanji alive (CC BY 4.0)");
-    if (sources.has("jmdict")) credits.push("JMdict, EDRDG (CC BY-SA 4.0)");
-    return credits.length ? `Words: ${credits.join(" · ")}` : null;
 }
 
 /**
- * Readings first: one block per reading with the words that use it, readings
- * without words collapsed, irregular words under "Special readings".
+ * Readings first: each reading beside the words that use it. Readings without
+ * words fold into one "Also read" line with the words' credit; irregular words
+ * get their own card.
  */
-export function ReadingBlocks({ char, layout, id }: { char: string; layout: ReadingLayout; id?: string }) {
-    const withWords = layout.main.filter((b) => b.words.length > 0).length;
-    const allWords = [...layout.main.flatMap((b) => b.words), ...layout.special];
-    const credit = sourcesCredit(allWords);
+export function KanjiReadings({ char, layout }: { char: string; layout: ReadingLayout }) {
     const noReadings = layout.main.length === 0;
+    const credit = wordsCredit([...layout.main.flatMap((b) => b.words), ...layout.special]);
+    const seen = new Set<string>();
 
     return (
-        <section id={id} aria-labelledby="readings-title" className="flex flex-col gap-2.5">
-            <h2 id="readings-title" className="text-sm text-ink-3">
-                {noReadings
-                    ? `${char} has no reading of its own`
-                    : withWords > 0
-                      ? `${countWord(withWords)} reading${withWords === 1 ? "" : "s"}, and the words that use ${withWords === 1 ? "it" : "each"}`
-                      : `${countWord(layout.main.length)} reading${layout.main.length === 1 ? "" : "s"}`}
+        <section aria-labelledby="readings-title" className="flex flex-col gap-2.5">
+            <h2 id="readings-title" className="type-label">
+                {readingsHeading(char, layout)}
             </h2>
 
-            {!noReadings && (
-                <ul className="flex flex-col gap-2.5">
-                    {layout.main.map((block) => (
-                        <Block key={block.reading} block={block} char={char} />
-                    ))}
-                </ul>
-            )}
+            {layout.main.map((block) => {
+                const kind = KIND[block.kind];
+                const first = !seen.has(block.kind);
+                seen.add(block.kind);
+                return (
+                    <ReadingBlock
+                        key={block.reading}
+                        char={char}
+                        stem={block.stem}
+                        okurigana={block.okurigana}
+                        prefix={block.prefix}
+                        suffix={block.suffix}
+                        label={[block.romaji, kind.name, first ? kind.note : null].filter(Boolean).join(" · ")}
+                        words={block.words.map(({ word, reading, meaning }) => ({ word, reading, meaning }))}
+                        empty="No common words use this reading."
+                        className="max-[959px]:gap-2 max-[959px]:px-4 max-[959px]:py-3.5"
+                    />
+                );
+            })}
 
-            {layout.more.length > 0 && (
-                <details className="group rounded-xl border border-line px-4 py-2.5 text-sm">
-                    <summary className="cursor-pointer text-ink-2 hover:text-ink marker:text-ink-3">
-                        {layout.more.length} more reading{layout.more.length === 1 ? "" : "s"}, without common words
-                    </summary>
-                    <ul className="mt-3 mb-1 flex flex-wrap gap-x-5 gap-y-2.5">
-                        {layout.more.map((block) => (
-                            <li key={block.reading} className="flex items-baseline gap-2">
-                                <ReadingKana block={block} className="text-xl" />
-                                <span className="text-xs text-ink-3">
-                                    {block.romaji} · {KIND_LABEL[block.kind].short}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </details>
-            )}
+            {layout.special.length > 0 && <SpecialWords char={char} words={layout.special} alone={noReadings} />}
 
-            {layout.special.length > 0 && (
-                <div className="rounded-xl border border-dashed border-line-2 px-4 py-3.5">
-                    <h3 className="mb-1 text-sm font-bold text-ink">{noReadings ? "Words with " + char : "Special readings"}</h3>
-                    <p className="mb-2.5 text-xs text-ink-3">
-                        {noReadings
-                            ? "It is read as part of each word."
-                            : "These words are read as a whole, not from the readings above."}
-                    </p>
-                    <WordList words={layout.special} char={char} />
-                </div>
-            )}
+            {noReadings && layout.special.length === 0 && <p className="text-sm text-ink-3">No readings or example words are recorded for this character yet.</p>}
 
-            {noReadings && layout.special.length === 0 && (
-                <p className="text-sm text-ink-3">No readings or example words are recorded for this character yet.</p>
+            {(layout.more.length > 0 || credit) && (
+                <p className="text-xs leading-normal text-ink-3">
+                    {layout.more.length > 0 && (
+                        <>
+                            Also read{" "}
+                            {layout.more.map((block, i) => (
+                                <Fragment key={block.reading}>
+                                    {i > 0 && ", "}
+                                    <ReadingKana block={block} className="text-ink-2" />
+                                </Fragment>
+                            ))}
+                            , with no example words in our sources.{" "}
+                        </>
+                    )}
+                    {credit && `${credit}.`}
+                </p>
             )}
-
-            {credit && <p className="text-xs text-ink-3">{credit}</p>}
         </section>
     );
 }
