@@ -40,7 +40,7 @@ export function PaintedBar({ chars, painted, known = 0, total, caption = false, 
             style={{ "--painted": `${pct}%`, ...style } as CSSProperties}
         >
             {caption ? (
-                <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-[13px]">
                     {label && <span className="min-w-0 truncate">{label}</span>}
                     <span data-paint-caption="" className="ml-auto shrink-0 text-ink-3">
                         {text}

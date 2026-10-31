@@ -137,7 +137,6 @@ function InkRail({ atlas, all, ink, ready }: { atlas: AtlasIndex; all: string; i
                                         total={progress.total}
                                         caption
                                         label={short(theme.name)}
-                                        className="[&>div]:flex-wrap [&>div]:gap-y-0.5"
                                     />
                                 </Link>
                             </li>
