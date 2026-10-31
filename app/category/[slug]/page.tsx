@@ -1,14 +1,25 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getCategories, getCategory } from "@/lib/atlas";
-import { categoryPath } from "@/lib/atlas/paths";
-import { Breadcrumbs } from "@/components/Atlas/PageShell";
+import { CATEGORIES, isCategoryName, THEME_MARK } from "@/lib/atlas/categories";
+import { categoryPath, radicalPath } from "@/lib/atlas/paths";
+import type { AtlasRadicalSummary } from "@/lib/atlas/types";
+import { PageShell } from "@/components/Atlas/PageShell";
 import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
-import { getThemeOrder, panelRadicals } from "@/components/Theme/data";
-import { Fog, shadeGradient, ThemeImage } from "@/components/Theme/parts";
-import { ThemeExplorer, ThemeKnown, ThemeProvider } from "@/components/Theme/ThemeExplorer";
-import { ThemeKanjiIndex } from "@/components/Theme/ThemeKanjiIndex";
-import { ThemeStory } from "@/components/Theme/ThemeStory";
+import { InkPaint } from "@/components/Ink/InkPaint";
+import { AtlasPath, type PathNeighbour } from "@/components/Layout/AtlasPath";
+import { Plate } from "@/components/Layout/Plate";
+import { Chip } from "@/components/ui/Chip";
+import { PaintedBar } from "@/components/ui/PaintedBar";
+import { KindLabel, SectionHeader } from "@/components/ui/SectionHeader";
+import { Tag } from "@/components/ui/Tag";
+import { ThemeGate } from "@/components/ui/ThemeGate";
+import { getThemeOrder, themeChars, themeRadicals } from "@/components/Theme/data";
+import { flattenOrder } from "@/components/Theme/order";
+import { ThemeImage } from "@/components/Theme/parts";
+import { RadicalPreview, ThemeActionBar, ThemeActions, ThemeAtlas, ThemeSeals } from "@/components/Theme/ThemeAtlas";
+import { levelCounts, ringNeighbours } from "@/components/Theme/view";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -29,90 +40,143 @@ export async function generateMetadata({ params }: Params) {
     });
 }
 
+function neighbour(name: string, dir: "Previous" | "Next"): PathNeighbour {
+    return {
+        href: categoryPath(name),
+        glyph: isCategoryName(name) ? THEME_MARK[name] : name.slice(0, 1),
+        label: `${dir} theme: ${name}`,
+    };
+}
+
+const SideFormLinks = ({ forms }: { forms: AtlasRadicalSummary[] }) =>
+    forms.map((form, i) => (
+        <span key={form.key}>
+            {i > 0 && ", "}
+            <Link href={radicalPath(form.key)} className="text-ink-2 underline decoration-line-2 underline-offset-4 transition-colors hover:text-ink">
+                <span lang="ja">{form.char}</span> {form.name}
+            </Link>
+        </span>
+    ));
+
 export default async function CategoryPage({ params }: Params) {
     const slug = (await params).slug;
-    const order = getThemeOrder(slug);
-    const story = getCategory(slug)?.story ?? null;
-    if (!order) notFound();
+    const theme = getThemeOrder(slug);
+    const category = getCategory(slug);
+    if (!theme || !category) notFound();
 
-    const { meta, groups, sideForms, otherSideForms } = order;
+    const { meta, groups, sideForms, otherSideForms } = theme;
+    const radicals = themeRadicals(groups);
+    const order = flattenOrder(groups).join("");
+    const levels = levelCounts(category.kanji.map((k) => k.jlpt));
+    const n5 = levels.find((l) => l.level === "N5")?.count ?? 0;
+    const folded = [...sideForms.values()].flat();
+    const ring = ringNeighbours<string>(CATEGORIES, meta.name);
+    const chars = themeChars();
+    const others = getCategories().filter((c) => c.slug !== slug);
+    const browse = `/browse?theme=${meta.slug}`;
+
+    const specimen = (
+        <div className="relative isolate mx-auto h-[440px] w-full max-w-[460px] overflow-hidden rounded-[999px_999px_14px_14px] border border-line bg-card sm:h-[540px] min-[60rem]:h-[620px] min-[60rem]:max-w-none">
+            <ThemeImage src={meta.image} sizes="(min-width: 960px) 460px, (min-width: 500px) 460px, 100vw" preload />
+            <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_50%,rgba(var(--shade),.92)_92%)]" />
+            <div className="absolute inset-x-5 bottom-5 flex flex-col gap-2 sm:inset-x-6 sm:bottom-[22px]">
+                <PaintedBar chars={order} caption label={`Your ink in ${meta.short}`} />
+                <p className="text-xs text-ink-3">The bar fills as this theme&apos;s kanji darken.</p>
+            </div>
+        </div>
+    );
+
+    const reading = (
+        <div className="flex flex-col gap-[22px]">
+            <div className="flex flex-col gap-3.5">
+                <KindLabel jp={meta.jp}>Theme · one of ten</KindLabel>
+                <h1 className="type-title text-balance min-[60rem]:text-[72px] min-[60rem]:leading-[.98]">{meta.name}</h1>
+            </div>
+            <p className="max-w-[600px] text-base leading-[1.65] text-ink-2 sm:text-lg sm:leading-[1.65]">{meta.lore}</p>
+            <div className="flex flex-wrap items-center gap-2">
+                <Tag>{radicals.length} radicals</Tag>
+                <Tag>{meta.kanjiCount.toLocaleString("en")} kanji</Tag>
+                {n5 > 0 && <Tag>{n5} at N5</Tag>}
+            </div>
+            <RadicalPreview />
+            <ThemeActions />
+        </div>
+    );
 
     return (
-        <ThemeProvider theme={meta} radicals={panelRadicals(groups)}>
-            <div style={themeVars(meta.name)} className="relative isolate text-ink">
-                {/* Theme art: a banner on phones (M-Theme), the right of a wide hero on desktop (Theme). */}
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[380px] overflow-hidden sm:h-[460px] lg:h-[860px]">
-                    <div className="absolute inset-0 bg-bg lg:left-auto lg:w-[78%]">
-                        <ThemeImage src={meta.image} sizes="(min-width: 1024px) 78vw, 100vw" preload className="object-[50%_30%]" />
-                    </div>
-                    <div
-                        className="absolute inset-0 lg:hidden"
-                        style={{ background: shadeGradient("180deg", [[0.55, 0], [0.05, 30], [0.75, 70], [1, 100]]) }}
+        <InkPaint>
+            <PageShell style={themeVars(meta.name)}>
+                <ThemeAtlas theme={{ name: meta.name, slug: meta.slug }} radicals={radicals} order={order}>
+                    <AtlasPath
+                        steps={[{ label: meta.name, short: meta.short, mark: { kind: "dot", category: meta.name } }]}
+                        prev={ring ? neighbour(ring.prev, "Previous") : null}
+                        next={ring ? neighbour(ring.next, "Next") : null}
                     />
-                    <div
-                        className="absolute inset-0 hidden lg:block"
-                        style={{
-                            background: `${shadeGradient("0deg", [[1, 0], [0, 45]])}, ${shadeGradient("90deg", [[0.97, 0], [0.85, 34], [0.25, 70], [0.55, 100]])}`,
-                        }}
-                    />
-                    <Fog className="top-[48%] h-[160px] lg:left-[20%] lg:top-[40%] lg:h-[200px]" />
-                    <span
-                        lang="ja"
-                        className="absolute -right-3.5 top-16 select-none font-jp text-[220px] font-extrabold leading-none text-c opacity-[.14] lg:right-[30%] lg:top-20 lg:text-[440px] lg:opacity-[.11]"
-                    >
-                        {meta.mark}
-                    </span>
-                </div>
+                    <Plate specimen={specimen} specimenLabel="Theme art" reading={reading} className="max-lg:pt-4" />
 
-                <div className="mx-auto w-full max-w-7xl px-4 pb-16 lg:px-8">
-                    <header className="flex min-h-[340px] flex-col justify-between pt-3 sm:min-h-[420px] lg:block lg:min-h-0 lg:pt-8">
-                        <Breadcrumbs
-                            items={[
-                                { href: "/", label: "Home" },
-                                { href: "/categories", label: "Themes" },
-                                { label: meta.name },
-                            ]}
+                    <section aria-labelledby="theme-radicals" className="mt-16 flex flex-col gap-[22px] lg:mt-24">
+                        <SectionHeader
+                            id="theme-radicals"
+                            jp="部首"
+                            title={`${radicals.length} radicals, most useful first`}
+                            aside="Pick one to preview it above. The order is a suggestion; start anywhere."
                         />
-                        <div className="max-w-[640px] lg:pt-8">
-                            <p className="flex items-center gap-3.5">
-                                <span lang="ja" className="font-jp text-sm text-c lg:text-lg">{meta.jp}</span>
-                                <span aria-hidden className="h-px w-12 bg-c opacity-60" />
-                                <span className="font-disp text-base italic text-ink-2 lg:text-[19px]">{meta.sub}</span>
+                        <ThemeSeals />
+                        {(folded.length > 0 || otherSideForms.length > 0) && (
+                            <p className="text-xs leading-relaxed text-ink-3">
+                                {folded.length > 0 && (
+                                    <>
+                                        Side forms with no kanji of their own (<SideFormLinks forms={folded} />) are folded into their main radical.
+                                    </>
+                                )}
+                                {folded.length > 0 && otherSideForms.length > 0 && " "}
+                                {otherSideForms.length > 0 && (
+                                    <>
+                                        Also filed under {meta.short}: <SideFormLinks forms={otherSideForms} />.
+                                    </>
+                                )}
                             </p>
-                            <h1 className="glow mt-2 text-balance font-disp text-[46px] font-bold leading-[.95] text-c lg:mt-[18px] lg:text-[88px] lg:leading-[.92]">
-                                {meta.name}
-                            </h1>
-                        </div>
-                    </header>
-                    <div className="max-w-[640px]">
-                        <p className="mt-4 text-[15px] leading-relaxed text-ink-2 lg:mt-[22px] lg:text-[17px]">{meta.lore}</p>
-                        <p className="mt-2.5 text-sm text-ink-3 lg:mt-3.5">
-                            {meta.radicalCount} radicals · {meta.kanjiCount} kanji
-                            <ThemeKnown />
-                        </p>
-                    </div>
+                        )}
+                    </section>
 
-                    <div className="mt-8 lg:mt-14">
-                        <ThemeExplorer />
-                    </div>
-
-                    <div className="mt-16 lg:mt-24">
-                        <ThemeKanjiIndex
-                            name={meta.name}
-                            kanjiCount={meta.kanjiCount}
-                            groups={groups}
-                            sideForms={sideForms}
-                            otherSideForms={otherSideForms}
+                    <section aria-labelledby="theme-levels" className="mt-14 flex flex-col gap-[18px] lg:mt-20">
+                        <SectionHeader
+                            id="theme-levels"
+                            jp="全部"
+                            title={`All ${meta.kanjiCount.toLocaleString("en")} kanji`}
+                            aside="Opens Browse with this theme already filtered"
                         />
-                    </div>
-
-                    {story && (
-                        <div className="mt-16 lg:mt-24">
-                            <ThemeStory story={story} name={meta.name} />
+                        <div className="flex flex-wrap items-center gap-2">
+                            {levels.map(({ level, count }) => (
+                                <Chip key={level} href={`${browse}&jlpt=${level}`} count={count.toLocaleString("en")}>
+                                    {level}
+                                </Chip>
+                            ))}
+                            <Chip href={browse} count={meta.kanjiCount.toLocaleString("en")}>
+                                All levels
+                            </Chip>
                         </div>
-                    )}
-                </div>
-            </div>
-        </ThemeProvider>
+                    </section>
+
+                    <section aria-labelledby="other-themes" className="mt-16 flex flex-col gap-[22px] lg:mt-24">
+                        <SectionHeader id="other-themes" jp="他の主題" title={`The other ${others.length === 9 ? "nine" : others.length} themes`} aside="No order, no levels" />
+                        <ul className="grid grid-cols-3 gap-2.5 sm:grid-cols-[repeat(auto-fill,minmax(112px,1fr))] sm:gap-3.5">
+                            {others.map((other) => (
+                                <li key={other.slug} className="min-w-0">
+                                    <ThemeGate
+                                        category={other.name}
+                                        chars={chars[other.slug] ?? ""}
+                                        source="theme"
+                                        sizes="(min-width: 640px) 120px, 33vw"
+                                        className="w-full"
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                    <ThemeActionBar />
+                </ThemeAtlas>
+            </PageShell>
+        </InkPaint>
     );
 }

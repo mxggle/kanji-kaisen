@@ -7,13 +7,19 @@ import { SHADE_NAMES, type Shade } from "@/lib/ink";
 import type { SealState } from "./order";
 import styles from "./theme.module.css";
 
-/** Class names for a radical seal in the given ink state (size classes come from the caller). */
+/**
+ * Class names for a radical seal in the given ink state (size classes come from the caller).
+ * @deprecated One Atlas: components/ui/RadicalSeal with `chars`, painted by <InkPaint>.
+ */
 export function sealClass(state: SealState | null, className?: string): string {
     return cn(styles.seal, styles[state ?? "blank"], className);
 }
 
-/** Visible keyboard focus for seals, gates and cells. */
-export const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]";
+/**
+ * Visible keyboard focus for seals, gates and cells.
+ * @deprecated One Atlas: the global :focus-visible outline (ink, 2px) covers every control.
+ */
+export const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink";
 
 // Kanji cells darken with ink: dashed paper, two greys, then the theme colour.
 const CELL: Record<Shade, string> = {
@@ -24,11 +30,15 @@ const CELL: Record<Shade, string> = {
     4: "border-transparent bg-c text-onacc",
 };
 
+/** @deprecated One Atlas: components/ui/KanjiTile, painted by <InkPaint>. */
 export function cellClass(shade: Shade, className?: string): string {
     return cn("border transition-colors duration-500", CELL[shade], className);
 }
 
-/** Five swatches for "darker = better known". */
+/**
+ * Five swatches for "darker = better known".
+ * @deprecated One Atlas: InkLegend in components/ui/InkLegend.
+ */
 export function InkLegend({ className }: { className?: string }) {
     return (
         <span className={cn("inline-flex gap-[3px]", className)} aria-hidden>
@@ -39,7 +49,10 @@ export function InkLegend({ className }: { className?: string }) {
     );
 }
 
-/** The painted% ring. `pct` is null until the ink store hydrates: the ring is empty and the number hidden. */
+/**
+ * The painted% ring. `pct` is null until the ink store hydrates: the ring is empty and the number hidden.
+ * @deprecated One Atlas: a group shows one PaintedBar (rule 3), never a ring.
+ */
 export function InkRing({ pct, className, numberClassName }: { pct: number | null; className?: string; numberClassName?: string }) {
     const value = pct ?? 0;
     return (
@@ -72,7 +85,10 @@ export function InkRing({ pct, className, numberClassName }: { pct: number | nul
     );
 }
 
-/** A thin progress bar in the theme colour. `pct` 0–100. */
+/**
+ * A thin progress bar in the theme colour. `pct` 0–100.
+ * @deprecated One Atlas: components/ui/PaintedBar.
+ */
 export function InkBar({ pct, className }: { pct: number; className?: string }) {
     return (
         <span aria-hidden className={cn("block h-[3px] rounded-sm bg-line-2", className)}>
@@ -99,7 +115,10 @@ export function ThemeImage({
     return <Image src={src} alt="" fill sizes={sizes} preload={preload} className={cn("ink-art object-cover", className)} />;
 }
 
-/** Drifting mist over theme art. Position and size come from `className`. */
+/**
+ * Drifting mist over theme art. Position and size come from `className`.
+ * @deprecated One Atlas: theme art sits plain in its arch (ThemeGate, the theme page's specimen).
+ */
 export function Fog({ className }: { className?: string }) {
     return <div aria-hidden className={cn(styles.fog, "-inset-x-[10%]", className)} />;
 }

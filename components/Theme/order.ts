@@ -1,5 +1,5 @@
-// Suggested order inside a theme, and the ink states that home and theme
-// pages derive from it. Pure and client-safe; tests in order.test.mjs.
+// Suggested order inside a theme, and the next kanji that home, theme and
+// radical pages derive from it. Pure and client-safe; tests in order.test.mjs.
 
 import type { Shade } from "../../lib/ink.ts";
 
@@ -103,18 +103,35 @@ export function nextKanji(chars: readonly string[], shadeOf: ShadeOf): NextKanji
     return { char: chars[0], mode: "revisit" };
 }
 
-/** "Start with 決", "Continue with 海", "Revisit 木". */
-export function nextLabel(next: NextKanji): string {
-    if (next.mode === "start") return `Start with ${next.char}`;
-    if (next.mode === "continue") return `Continue with ${next.char}`;
-    return `Revisit ${next.char}`;
+/** The words before the kanji in a next-kanji action: "Start with", "Continue with", "Revisit". */
+export function nextVerb(mode: NextMode): string {
+    if (mode === "start") return "Start with";
+    if (mode === "continue") return "Continue with";
+    return "Revisit";
 }
 
+/** "Start with 決", "Continue with 海", "Revisit 木". */
+export function nextLabel(next: NextKanji): string {
+    return `${nextVerb(next.mode)} ${next.char}`;
+}
+
+/** The index of the group holding `char`; 0 (the first, most useful group) when none does. */
+export function groupOf(groups: readonly (readonly string[])[], char: string | null | undefined): number {
+    if (!char) return 0;
+    const index = groups.findIndex((group) => group.includes(char));
+    return index < 0 ? 0 : index;
+}
+
+/** @deprecated One Atlas: RadicalSeal `chars` + <InkPaint> fill seals (sealShade in lib/ink-paint). */
 export type SealState = "blank" | "met" | "now" | "familiar" | "sealed";
 
-/** A radical's common kanji: its first (most frequent) SEAL_COMMON kanji. */
+/**
+ * A radical's common kanji: its first (most frequent) SEAL_COMMON kanji.
+ * @deprecated One Atlas: SEAL_KANJI in lib/ink-paint.
+ */
 export const SEAL_COMMON = 8;
 
+/** @deprecated One Atlas: seals show ink as their fill (RadicalSeal `chars`), with no named states. */
 export const SEAL_LABELS: Record<SealState, string> = {
     blank: "not started",
     met: "started",
@@ -130,6 +147,7 @@ export const SEAL_LABELS: Record<SealState, string> = {
  * - familiar: at least half of the common kanji are 濃 or above
  * - met: any of its kanji has ink
  * - blank: none has
+ * @deprecated One Atlas: RadicalSeal `chars` + <InkPaint> (sealShade in lib/ink-paint).
  */
 export function sealState(chars: readonly string[], shadeOf: ShadeOf, isNext = false): SealState {
     const common = chars.slice(0, SEAL_COMMON);
