@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         { url: url("/browse"), changeFrequency: "weekly", priority: 0.9 },
         { url: url("/radicals"), changeFrequency: "monthly", priority: 0.8 },
         { url: url("/categories"), changeFrequency: "monthly", priority: 0.8 },
+        { url: url("/teach"), changeFrequency: "monthly", priority: 0.7 },
         { url: url("/practice"), changeFrequency: "monthly", priority: 0.4 },
         { url: url("/about"), changeFrequency: "yearly", priority: 0.3 },
         ...(["N5", "N4", "N3", "N2", "N1"] as const).map((level) => ({

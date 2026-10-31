@@ -27,7 +27,7 @@ const TRACE_OPACITY = [0.3, 0.19, 0.11];
 
 // Example words come from the atlas's examples. Update this line when the
 // data layer adds other word sources (e.g. JMdict).
-const WORD_CREDIT = "Words: Kanji alive (CC BY 4.0)";
+const WORD_CREDIT = "Words: Kanji alive (CC BY 4.0), JMdict/EDRDG (CC BY-SA 4.0)";
 const CELLS_PER_ROW = 8;
 
 export const worksheetMeaning = (entry: SearchIndexEntry | undefined) => entry?.m.slice(0, 3).join(", ") ?? "";
