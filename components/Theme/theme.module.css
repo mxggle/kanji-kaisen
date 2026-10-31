@@ -2,6 +2,10 @@
  * Gates, seals, fog and the "now" pulse from the Today and Theme boards.
  * Colours come from skin tokens only; --c is the theme colour in 夜 and
  * vermilion in 墨. Glows read --glow-off, so they vanish in 墨.
+ *
+ * Deprecated (One Atlas): the theme page no longer uses these. Themes are
+ * components/ui/ThemeGate, radicals components/ui/RadicalSeal, and nothing
+ * but a live stroke glows. Kept until the home deck and radical pages move off.
  */
 
 /* Arched theme card. */

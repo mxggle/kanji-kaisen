@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import {
     compareByFrequency,
     flattenOrder,
+    groupOf,
     mostPainted,
     nextKanji,
     nextLabel,
+    nextVerb,
     sealState,
     SEAL_COMMON,
     sliceGroups,
@@ -86,6 +88,21 @@ test("nextLabel words each mode", () => {
     assert.equal(nextLabel({ char: "決", mode: "start" }), "Start with 決");
     assert.equal(nextLabel({ char: "海", mode: "continue" }), "Continue with 海");
     assert.equal(nextLabel({ char: "木", mode: "revisit" }), "Revisit 木");
+});
+
+test("nextVerb words each mode without the kanji", () => {
+    assert.equal(nextVerb("start"), "Start with");
+    assert.equal(nextVerb("continue"), "Continue with");
+    assert.equal(nextVerb("revisit"), "Revisit");
+});
+
+test("groupOf finds the group holding a kanji, else the first", () => {
+    const groups = [["決", "法"], ["本", "東"], ["日"]];
+    assert.equal(groupOf(groups, "東"), 1);
+    assert.equal(groupOf(groups, "日"), 2);
+    assert.equal(groupOf(groups, "海"), 0);
+    assert.equal(groupOf(groups, null), 0);
+    assert.equal(groupOf([], "海"), 0);
 });
 
 test("sealState is blank without ink and met with any", () => {
