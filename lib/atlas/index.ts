@@ -24,7 +24,6 @@ export const {
     getRadicalNeighbors,
     getCategories,
     getCategory,
-    getKanjiOfTheDay,
     getPhoneticSeries,
     getSoundFamily,
     getSameOn,

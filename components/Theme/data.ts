@@ -1,8 +1,8 @@
-// Server-side view models for the home deck, the theme page and /categories.
+// Server-side view models for the theme page.
 
 import "server-only";
 
-import { getCategories, getCategory, getRadical } from "@/lib/atlas";
+import { getCategories, getCategory } from "@/lib/atlas";
 import type { AtlasCategorySummary, AtlasKanji, AtlasRadicalSummary } from "@/lib/atlas/types";
 import {
     getThemeColor,
@@ -12,9 +12,9 @@ import {
     THEME_MARK,
     THEME_SHORT,
 } from "@/lib/atlas/categories";
-import { storyExcerpt, suggestedOrder, type RadicalGroup } from "./order";
+import { suggestedOrder, type RadicalGroup } from "./order";
 import { radicalGloss } from "./view";
-import { PANEL_CELLS, PREVIEW_TILES, type DeckTheme, type PanelRadical, type ThemeMeta, type ThemeRadical } from "./types";
+import { PREVIEW_TILES, type ThemeMeta, type ThemeRadical } from "./types";
 
 export function themeMeta(summary: AtlasCategorySummary): ThemeMeta {
     const known = isCategoryName(summary.name) ? summary.name : null;
@@ -63,24 +63,6 @@ export function getThemeOrder(slug: string): ThemeOrder | null {
 
 const joinChars = (kanji: AtlasKanji[]) => kanji.map((k) => k.char).join("");
 
-/** All ten themes for the home deck. */
-export function getDeckThemes(): DeckTheme[] {
-    return getCategories().flatMap((summary) => {
-        const order = getThemeOrder(summary.slug);
-        if (!order) return [];
-        return [{
-            ...order.meta,
-            radicals: order.groups.map((g) => ({
-                key: g.radical.key,
-                char: g.radical.char,
-                name: g.radical.name,
-                count: g.kanji.length,
-            })),
-            order: order.groups.map((g) => joinChars(g.kanji)).join(""),
-        }];
-    });
-}
-
 /** Seal and preview data for each radical of a theme, in the suggested order. */
 export function themeRadicals(groups: ThemeGroup[]): ThemeRadical[] {
     return groups.map(({ radical, kanji }) => ({
@@ -95,22 +77,6 @@ export function themeRadicals(groups: ThemeGroup[]): ThemeRadical[] {
             onyomi: k.onyomi.slice(0, 1),
             kunyomi: k.kunyomi.slice(0, 1),
         })),
-    }));
-}
-
-/**
- * Seal and panel data for each radical of a theme, in the suggested order.
- * @deprecated One Atlas: themeRadicals.
- */
-export function panelRadicals(groups: ThemeGroup[]): PanelRadical[] {
-    return groups.map(({ radical, kanji }) => ({
-        key: radical.key,
-        char: radical.char,
-        name: radical.name,
-        meaning: radical.meaning,
-        story: storyExcerpt(getRadical(radical.key)?.story ?? ""),
-        chars: joinChars(kanji),
-        meanings: kanji.slice(0, PANEL_CELLS).map((k) => k.meanings[0] ?? ""),
     }));
 }
 

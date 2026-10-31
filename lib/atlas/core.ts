@@ -233,15 +233,6 @@ export function createAtlas(data: AtlasData, stories: StoriesData) {
         return resolve(unique);
     }
 
-    /** Deterministic daily pick from N5–N3, keyed by the UTC date. */
-    function getKanjiOfTheDay(date: Date = new Date()): AtlasKanji {
-        const pool = [...getKanjiByJlpt("N5"), ...getKanjiByJlpt("N4"), ...getKanjiByJlpt("N3")];
-        const day = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86_400_000);
-        // Multiplying by a prime coprime with the pool size walks the whole pool
-        // without neighbouring days landing on neighbouring kanji.
-        return pool[(day * 7919) % pool.length];
-    }
-
     return {
         getAllKanji,
         getKanji,
@@ -255,7 +246,6 @@ export function createAtlas(data: AtlasData, stories: StoriesData) {
         getRadicalNeighbors,
         getCategories,
         getCategory,
-        getKanjiOfTheDay,
         getPhoneticSeries,
         getSoundFamily,
         getSameOn,

@@ -4,14 +4,9 @@ import {
     compareByFrequency,
     flattenOrder,
     groupOf,
-    mostPainted,
     nextKanji,
     nextLabel,
     nextVerb,
-    sealState,
-    SEAL_COMMON,
-    sliceGroups,
-    storyExcerpt,
     suggestedOrder,
 } from "./order.ts";
 
@@ -62,11 +57,6 @@ test("suggestedOrder does not mutate its inputs", () => {
     assert.deepEqual(kanji.map((x) => x.char), ["2", "1", "3"]);
 });
 
-test("sliceGroups splits a flat order by group sizes", () => {
-    assert.deepEqual(sliceGroups(["a", "b", "c", "d", "e"], [3, 1, 1]), [["a", "b", "c"], ["d"], ["e"]]);
-    assert.deepEqual(sliceGroups([], []), []);
-});
-
 test("nextKanji starts at the first kanji when nothing has ink", () => {
     assert.deepEqual(nextKanji(["決", "法", "海"], shades({})), { char: "決", mode: "start" });
     assert.equal(nextKanji([], shades({})), null);
@@ -103,54 +93,4 @@ test("groupOf finds the group holding a kanji, else the first", () => {
     assert.equal(groupOf(groups, "海"), 0);
     assert.equal(groupOf(groups, null), 0);
     assert.equal(groupOf([], "海"), 0);
-});
-
-test("sealState is blank without ink and met with any", () => {
-    assert.equal(sealState(["a", "b", "c"], shades({})), "blank");
-    assert.equal(sealState(["a", "b", "c"], shades({ c: 1 })), "met");
-    assert.equal(sealState(["a", "b", "c"], shades({ a: 2, b: 2 })), "met");
-});
-
-test("sealState marks the radical holding the next kanji as now", () => {
-    assert.equal(sealState(["a", "b"], shades({}), true), "now");
-    // now wins over familiar, so the learner sees where they are.
-    assert.equal(sealState(["a", "b", "c", "d"], shades({ a: 3, b: 3 }), true), "now");
-});
-
-test("sealState is familiar when half the common kanji are known", () => {
-    assert.equal(sealState(["a", "b", "c", "d"], shades({ a: 3, b: 4 })), "familiar");
-    assert.equal(sealState(["a", "b", "c", "d"], shades({ a: 3 })), "met");
-});
-
-test("sealState seals a radical when all its common kanji are known", () => {
-    const chars = Array.from({ length: SEAL_COMMON + 4 }, (_, i) => `k${i}`);
-    const map = Object.fromEntries(chars.slice(0, SEAL_COMMON).map((c) => [c, 3]));
-    // Rarer kanji past the common ones don't block the seal, even when it holds the next kanji.
-    assert.equal(sealState(chars, shades(map), true), "sealed");
-    assert.equal(sealState(["a"], shades({ a: 4 })), "sealed");
-    assert.equal(sealState([], shades({})), "blank");
-});
-
-test("mostPainted picks the highest share and keeps the first on ties", () => {
-    const themes = [{ name: "A", painted: 0.1 }, { name: "B", painted: 0.3 }, { name: "C", painted: 0.3 }];
-    assert.equal(mostPainted(themes)?.name, "B");
-    assert.equal(mostPainted([{ name: "A", painted: 0 }]), null);
-    assert.equal(mostPainted([]), null);
-});
-
-test("storyExcerpt keeps whole sentences that fit", () => {
-    const story = "Imagine three raindrops falling—that's sanzui! Whenever you see these three dots on the left side of a kanji, think of water. A third sentence that will not fit.";
-    assert.equal(
-        storyExcerpt(story, 140),
-        "Imagine three raindrops falling—that's sanzui! Whenever you see these three dots on the left side of a kanji, think of water.",
-    );
-    assert.equal(storyExcerpt(story, 60), "Imagine three raindrops falling—that's sanzui!");
-    assert.equal(storyExcerpt("  ", 60), "");
-});
-
-test("storyExcerpt cuts a long first sentence at a word", () => {
-    const out = storyExcerpt("one two three four five six seven eight nine ten.", 20);
-    assert.ok(out.length <= 20);
-    assert.ok(out.endsWith("…"));
-    assert.equal(out, "one two three four…");
 });

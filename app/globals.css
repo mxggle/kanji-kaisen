@@ -36,8 +36,6 @@
   /* 濃 fill strength: 45% keeps 12px text ≥ 4.5:1 on every theme (scripts/check-ink-contrast.mjs). */
   --i3: 45%;
   --shade: 6, 7, 10;
-  /* Deprecated: the old mint accent now resolves to ink. Removed in Phase 3. */
-  --accent: var(--ink);
   /* Feedback colours. */
   --ok: #34D399;
   --bad: #F87171;
@@ -46,8 +44,6 @@
   --skin-c: initial;
   --skin-sc: initial;
   --live-off: initial;
-  /* Deprecated alias of --live-off for module CSS that predates it. */
-  --glow-off: initial;
   --art-filter: none;
   --art-blend: normal;
   --art-overlay: overlay;
@@ -69,7 +65,6 @@
   --on3: #F7F3EA;
   --i3: 60%;
   --shade: 238, 233, 223;
-  --accent: var(--ink);
   --ok: #166534;
   --bad: #B91C1C;
   --tip: #854D0E;
@@ -77,7 +72,6 @@
   --skin-c: #B5341E;
   --skin-sc: #1B1915;
   --live-off: none;
-  --glow-off: none;
   --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
   --art-blend: multiply;
   --art-overlay: multiply;
@@ -119,7 +113,6 @@
   --color-onacc: var(--onacc);
   --color-on3: var(--on3);
   --color-shade: rgb(var(--shade));
-  --color-accent: var(--accent);
   --color-c: var(--c);
   --color-sc: var(--sc);
   --color-ok: var(--ok);
@@ -143,14 +136,6 @@
 /* Legacy name used by components that predate the skins. */
 .font-japanese {
   font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
-}
-
-/* Deprecated no-ops until Phase 2 removes their last uses (rule 5: only `live` lights up). */
-@utility glow {
-  --deprecated: 1;
-}
-@utility halo {
-  --deprecated: 1;
 }
 
 /*
@@ -346,14 +331,12 @@ a[data-tile]:hover {
     --on3: #F7F3EA;
     --i3: 60%;
     --shade: 255, 255, 255;
-    --accent: var(--ink);
-    --ok: #166534;
+      --ok: #166534;
     --bad: #B91C1C;
     --tip: #854D0E;
     --skin-c: #B5341E;
     --skin-sc: #1B1915;
     --live-off: none;
-    --glow-off: none;
     --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
     --art-blend: multiply;
     --art-overlay: multiply;

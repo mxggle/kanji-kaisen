@@ -4,12 +4,6 @@ import { cn } from "@/lib/utils";
 import { buttonClass, type ButtonSize } from "@/components/ui/Button";
 import { LEARN_HASH, openLearn } from "./learn-hash";
 
-/**
- * @deprecated One Atlas: LearnButton no longer sets a fixed id (a page can have
- * two); the layer refocuses its opener or the shown `[data-learn-button]`.
- */
-export const LEARN_BUTTON_ID = "learn-it";
-
 interface LearnButtonProps {
     char: string;
     className?: string;

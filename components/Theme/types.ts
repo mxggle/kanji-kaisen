@@ -18,45 +18,6 @@ export interface ThemeMeta {
     kanjiCount: number;
 }
 
-export interface DeckRadical {
-    key: string;
-    char: string;
-    name: string;
-    /** Kanji of this radical in the theme; its slice of `order`. */
-    count: number;
-}
-
-/** A theme for the home deck (featured card and gates). */
-export interface DeckTheme extends ThemeMeta {
-    /** Radicals in the suggested order. */
-    radicals: DeckRadical[];
-    /** Every kanji of the theme in the suggested order, concatenated. */
-    order: string;
-}
-
-/**
- * A radical for the theme page's seals and selection panel.
- * @deprecated One Atlas: ThemeRadical (themeRadicals in data.ts).
- */
-export interface PanelRadical {
-    key: string;
-    char: string;
-    name: string;
-    meaning: string;
-    /** Opening of the radical's memory story ("" when it has none). */
-    story: string;
-    /** Its kanji in the theme, by frequency, concatenated. */
-    chars: string;
-    /** Meanings of the first PANEL_CELLS kanji, for their accessible names. */
-    meanings: string[];
-}
-
-/**
- * Kanji cells shown in the selection panel (three rows of eight).
- * @deprecated One Atlas: PREVIEW_TILES.
- */
-export const PANEL_CELLS = 24;
-
 /** A kanji tile in the theme page's radical preview: first meaning and first readings only. */
 export interface PreviewKanji {
     char: string;

@@ -48,7 +48,7 @@ export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: 
                         <H className="text-lg font-semibold text-ink">Memory story</H>
                         <span className="text-xs text-ink-3">A mnemonic, not a history</span>
                     </div>
-                    {story.story && <p className="text-ink leading-relaxed text-lg italic">&ldquo;{story.story}&rdquo;</p>}
+                    {story.story && <p className="type-story">&ldquo;{story.story}&rdquo;</p>}
                     {story.origin && <p className={`text-ink-2 leading-relaxed text-sm${story.story ? " mt-3" : ""}`}>{story.origin}</p>}
                 </section>
             )}
@@ -96,7 +96,7 @@ export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: 
                                         <span className="block text-ink-3 text-sm">{example.explanation}</span>
                                     </span>
                                     {example.exists && (
-                                        <ArrowRight size={18} className="text-ink-3 group-hover:text-[var(--accent)] flex-shrink-0 transition-colors" aria-hidden />
+                                        <ArrowRight size={18} className="text-ink-3 group-hover:text-[var(--classic-accent)] flex-shrink-0 transition-colors" aria-hidden />
                                     )}
                                 </>
                             );
@@ -104,7 +104,7 @@ export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: 
                             return (
                                 <li key={index}>
                                     {example.exists ? (
-                                        <Link href={kanjiPath(example.char)} className={`${rowClass} hover:border-[var(--accent)]`}>
+                                        <Link href={kanjiPath(example.char)} className={`${rowClass} hover:border-[var(--classic-accent)]`}>
                                             {body}
                                         </Link>
                                     ) : (
