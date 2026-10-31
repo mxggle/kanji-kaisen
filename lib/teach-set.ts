@@ -142,6 +142,33 @@ export interface TeachWord {
 /** Shape of each words shard: at most two words per kanji. */
 export type TeachWords = Record<string, TeachWord[]>;
 
+export const MAX_TEACH_WORDS = 2;
+const MAX_WORD_MEANING = 32;
+
+// Two-kanji compounds make the best reading exercise, then longer words, then
+// the kanji on its own (usually its kun'yomi).
+const LENGTH_RANK = [Infinity, 2, 0, 1, 3];
+
+/** First gloss of a meaning ("sea; ocean, marine" -> "sea"), shortened for a worksheet line. */
+export function shortGloss(meaning: string): string {
+    const gloss = meaning.split(/[;,]/)[0].replace(/\s+/g, " ").trim();
+    return gloss.length > MAX_WORD_MEANING ? `${gloss.slice(0, MAX_WORD_MEANING - 1).trimEnd()}…` : gloss;
+}
+
+/**
+ * Up to two words for "Read these words": regular readings only (no
+ * jukujikun), containing the kanji, at most four characters; the source order
+ * (most useful first) breaks ties.
+ */
+export function pickTeachWords(char: string, examples: readonly { word: string; reading: string; meaning: string; special?: boolean }[]): TeachWord[] {
+    return examples
+        .map((e, index) => ({ e, index, length: Array.from(e.word).length }))
+        .filter(({ e, length }) => !e.special && e.word.includes(char) && e.reading && length <= 4)
+        .sort((a, b) => LENGTH_RANK[a.length] - LENGTH_RANK[b.length] || a.index - b.index)
+        .slice(0, MAX_TEACH_WORDS)
+        .map(({ e }) => ({ word: e.word, reading: e.reading, meaning: shortGloss(e.meaning) }));
+}
+
 // Saved sets (localStorage "kanji-teach-sets").
 
 export const SAVED_SETS_KEY = "kanji-teach-sets";
