@@ -1,17 +1,16 @@
-import Link from "next/link";
-import { PageShell } from "@/components/Atlas/PageShell";
+import { DocumentPage } from "@/components/Layout/Document";
+import { Button } from "@/components/ui/Button";
 
 // Token-styled 404 so both skins apply (Next's default page sets its own colours).
 export default function NotFound() {
     return (
-        <PageShell className="text-center space-y-6 pt-16">
-            <p lang="ja" className="font-jp text-8xl text-ink-3" aria-hidden>無</p>
-            <h1 className="font-disp text-4xl font-bold">Page not found</h1>
-            <p className="text-ink-2">This page doesn&apos;t exist. Try searching for a kanji instead.</p>
-            <div className="flex flex-wrap justify-center gap-3">
-                <Link href="/" className="px-5 py-2 rounded-full bg-ink text-bg font-bold">Go to Learn</Link>
-                <Link href="/search" className="px-5 py-2 rounded-full border border-line-2 hover:border-ink">Search</Link>
+        <DocumentPage jp="無" kind="Not found" title="Page not found" lede={<p>This page doesn&apos;t exist. Try searching for a kanji instead.</p>}>
+            <div className="-mt-6 flex flex-wrap gap-2.5">
+                <Button variant="primary" href="/">
+                    Go to Learn
+                </Button>
+                <Button href="/search">Search</Button>
             </div>
-        </PageShell>
+        </DocumentPage>
     );
 }

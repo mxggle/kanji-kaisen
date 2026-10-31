@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "one-atlas",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "/Users/harry/code/kanji-kaisen/.claude/worktrees/one-atlas-fe1588",
+        "dev",
+        "-p",
+        "3400"
+      ],
+      "port": 3400
+    }
+  ]
+}

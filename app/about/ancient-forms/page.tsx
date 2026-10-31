@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Breadcrumbs, PageShell } from "@/components/Atlas/PageShell";
 import { getAncientFormCredits } from "@/lib/story";
+import { DocumentPage, PROSE_LINK } from "@/components/Layout/Document";
 
 export const metadata: Metadata = {
     title: "Ancient form credits",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const STAGE_LABEL: Record<string, string> = { oracle: "Oracle bone", bronze: "Bronze", seal: "Seal" };
 const XIAOXUE_LICENSE_URL = "https://xiaoxue.iis.sinica.edu.tw/License/License";
-const LINK = "text-[var(--accent)] hover:underline";
+const LINK = PROSE_LINK;
 
 export default function AncientFormCreditsPage() {
     // Only the files the site hosts and shows (oracle, bronze, seal); the
@@ -30,10 +30,13 @@ export default function AncientFormCreditsPage() {
     const xiaoxueCount = files.filter((f) => f.provider === "xiaoxue").length;
 
     return (
-        <PageShell className="max-w-4xl">
-            <Breadcrumbs items={[{ href: "/", label: "Home" }, { href: "/about", label: "About" }, { label: "Ancient form credits" }]} />
-            <h1 className="font-disp text-4xl font-bold mb-4">Ancient form credits</h1>
-            <p className="text-ink-2 leading-relaxed">
+        <DocumentPage
+            jp="古文字"
+            kind="About · credits"
+            title="Ancient form credits"
+            wide
+            lede={
+            <p className="text-base">
                 The oracle bone, bronze and seal forms in the journeys come from two sources. The first is the{" "}
                 <a href="https://commons.wikimedia.org/wiki/Commons:Ancient_Chinese_characters_project" target="_blank" rel="noopener noreferrer" className={LINK}>
                     Ancient Chinese characters project
@@ -53,26 +56,28 @@ export default function AncientFormCreditsPage() {
                 {files.length.toLocaleString("en")} files for {chars.length.toLocaleString("en")} characters are listed below,{" "}
                 {xiaoxueCount.toLocaleString("en")} of them from 小學堂.
             </p>
-            <p className="mt-3 text-sm text-ink-3">
-                <Link href="/about" className="text-[var(--accent)] hover:underline">All data sources and licences</Link>
+            }
+        >
+            <p className="-mt-8 text-sm text-ink-3">
+                <Link href="/about" className={LINK}>All data sources and licences</Link>
             </p>
 
-            <div className="mt-8 overflow-x-auto rounded-xl border border-line">
+            <div className="overflow-x-auto rounded-2xl border border-line">
                 <table className="w-full text-sm">
-                    <thead className="bg-card text-left text-ink-3">
+                    <thead className="bg-card text-left">
                         <tr>
-                            <th scope="col" className="px-3 py-2 font-medium">Character</th>
-                            <th scope="col" className="px-3 py-2 font-medium">Stage</th>
-                            <th scope="col" className="px-3 py-2 font-medium">Licence</th>
-                            <th scope="col" className="px-3 py-2 font-medium">Source</th>
-                            <th scope="col" className="px-3 py-2 font-medium">File and author</th>
+                            <th scope="col" className="type-label px-3 py-2.5">Character</th>
+                            <th scope="col" className="type-label px-3 py-2.5">Stage</th>
+                            <th scope="col" className="type-label px-3 py-2.5">Licence</th>
+                            <th scope="col" className="type-label px-3 py-2.5">Source</th>
+                            <th scope="col" className="type-label px-3 py-2.5">File and author</th>
                         </tr>
                     </thead>
                     <tbody>
                         {chars.flatMap((char) =>
                             byChar.get(char)!.map((file, i) => (
                                 <tr key={file.name} className="border-t border-line align-top">
-                                    <td className="px-3 py-2 font-jp text-lg" lang="zh-Hant">{i === 0 ? char : ""}</td>
+                                    <td className="px-3 py-2 font-jp text-lg font-extrabold" lang="zh-Hant">{i === 0 ? char : ""}</td>
                                     <td className="px-3 py-2 text-ink-2">{STAGE_LABEL[file.stage] ?? file.stage}</td>
                                     <td className="px-3 py-2 text-ink-2">{file.license === "CC0" ? "CC0" : "Public domain"}</td>
                                     <td className="px-3 py-2 text-ink-3">
@@ -107,6 +112,6 @@ export default function AncientFormCreditsPage() {
                     </tbody>
                 </table>
             </div>
-        </PageShell>
+        </DocumentPage>
     );
 }
