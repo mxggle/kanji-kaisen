@@ -83,7 +83,7 @@ function ResultRow({ result }: { result: SearchResult }) {
     return (
         <li>
             <Link href={kanjiPath(e.c)} className="flex items-center gap-4 p-3 sm:p-4 bg-card hover:bg-ink/5 transition-colors">
-                <span className="w-14 h-14 shrink-0 flex items-center justify-center rounded-lg bg-card border border-line text-4xl font-bold font-japanese">
+                <span className="w-14 h-14 shrink-0 flex items-center justify-center rounded-lg bg-ink/5 border border-line text-4xl font-bold font-japanese">
                     {e.c}
                 </span>
                 <span className="min-w-0 flex-1">

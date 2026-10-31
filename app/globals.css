@@ -152,21 +152,24 @@
   mix-blend-mode: var(--art-blend);
 }
 
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overflow-y: scroll; /* Prevent layout shift */
-  transition: background-color .4s, color .4s;
-}
+/* Base layer, so page utilities (e.g. classic practice's own colours) still win. */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll; /* Prevent layout shift */
+    transition: background-color .4s, color .4s;
+  }
 
-::selection {
-  background: color-mix(in oklab, var(--accent) 30%, transparent);
-}
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 30%, transparent);
+  }
 
-:focus-visible {
-  outline-color: var(--accent);
+  :focus-visible {
+    outline-color: var(--accent);
+  }
 }
 
 /* Scrollbar in skin colours. */

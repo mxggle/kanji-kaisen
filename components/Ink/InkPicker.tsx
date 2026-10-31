@@ -82,7 +82,8 @@ export function InkPicker({ char, source = "self", label, className }: InkPicker
                             className={cn(
                                 "flex h-11 w-11 items-center justify-center rounded-[10px] font-jp text-[22px] font-extrabold leading-none",
                                 SWATCH[shade],
-                                checked && "ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-bg",
+                                // Outline, not ring: ring and halo would both claim box-shadow.
+                                checked && "outline-2 outline-offset-2 outline-[var(--accent)]",
                                 shade === 4 && "halo",
                             )}
                         >
