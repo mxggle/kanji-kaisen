@@ -124,7 +124,7 @@ export default async function RadicalPage({ params }: Params) {
                 <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_560px]">
                     {/* The journey: sourced ancient forms, then today's strokes. */}
                     <section
-                        aria-label={`How ${char} changed over time`}
+                        aria-label={stages.length > 0 ? `How ${char} changed over time` : `${char} as it is written today`}
                         className="min-w-0 [--kkj-size:280px] sm:[--kkj-size:400px] lg:[--kkj-size:520px]"
                     >
                         <JourneyPlayer
