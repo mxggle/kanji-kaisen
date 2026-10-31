@@ -42,3 +42,6 @@ next-env.d.ts
 
 # agent worktrees
 /.claude/worktrees/
+
+# downloaded raw data sources (see scripts/)
+/data-cache/

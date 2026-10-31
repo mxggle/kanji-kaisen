@@ -113,7 +113,7 @@ Existing events are kept: `search_performed`, `kanji_viewed`, `radical_viewed`, 
 
 ### Phase 0 — Baseline (main session)
 
-- [ ] **0.1** Run `pnpm install`, `pnpm lint`, `pnpm test` and `pnpm build` on the untouched branch. Record the results in the Deviations log. Make sure `.claude/worktrees/` and `data-cache/` are git-ignored and excluded from ESLint and TypeScript.
+- [x] **0.1** Run `pnpm install`, `pnpm lint`, `pnpm test` and `pnpm build` on the untouched branch. Record the results in the Deviations log. Make sure `.claude/worktrees/` and `data-cache/` are git-ignored and excluded from ESLint and TypeScript.
 
 ### Phase 1 — Foundations (three parallel subagents, separate worktrees)
 
@@ -287,6 +287,9 @@ Existing events are kept: `search_performed`, `kanji_viewed`, `radical_viewed`, 
 ## Deviations log
 
 _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
+
+- 2026-10-31 0.1 — Baseline clean: `pnpm lint` 0 problems, `pnpm test` 80/80, `pnpm build` prerenders 2489 pages. `/data-cache/` added to `.gitignore`; agent worktrees live outside this checkout (`/Users/harry/code/kanji-kaisen/.claude/worktrees/sa-*`), so no ESLint/tsconfig change was needed.
+- 2026-10-31 plan — Owner confirmed: no review queue (ink by steps + self-marking, wrong answers never lower a shade) and all five Phase 2 workstreams.
 
 ## Final report
 
