@@ -135,12 +135,21 @@ export function clip(text: string, max: number): string {
     return head ? `${head}…` : `${clean.slice(0, max - 1)}…`;
 }
 
-/** The first real meaning (skips notes like "(kokuji)"), capped at `max` characters. */
+/**
+ * The first real meaning (skips notes like "(kokuji)"). When it is longer than
+ * `max` even without its asides, one of the next two meanings that fits is
+ * used instead (張: "stretch", not "counter for bows & stringed…"); failing
+ * that, the first is clipped.
+ */
 export function headlineMeaning(meanings: string[], max = MAX_MEANING): string {
-    const list = meanings.map((m) => m.trim()).filter(Boolean);
-    const first = list.find((m) => !m.startsWith("(")) ?? stripParens(list[0] ?? "");
+    const list = meanings.map((m) => m.trim()).filter((m) => m && !m.startsWith("("));
+    if (!list.length) return stripParens(meanings[0] ?? "");
+    const [first] = list;
     if (first.length <= max) return first;
-    return clip(stripParens(first) || first, max);
+    const bare = stripParens(first);
+    if (bare && bare.length <= max) return bare;
+    const next = list.slice(1, 3).map(stripParens).find((m) => m && m.length <= max);
+    return next ?? clip(bare || first, max);
 }
 
 /** A short gloss from a dictionary meaning: "metal, gold, money" -> "metal", "Water (3 drops)" -> "water". */
@@ -578,7 +587,24 @@ export function fitList(
     return { items: first, text: readingLine(first, separator), size: min };
 }
 
-// --- 墨 art --------------------------------------------------------------------
+// --- Background pixels ----------------------------------------------------------
+
+/**
+ * Rounds RGB to steps of `step` counted from `base` (the card's background
+ * colour, which so stays exact), in place. Run on the background only, before
+ * the glyph and text: it barely shows under the shading but roughly halves
+ * Chrome's PNG output, which otherwise passes 1.5 MB.
+ */
+export function posterize(data: Uint8ClampedArray | number[], step: number, base: [number, number, number] = [0, 0, 0]): void {
+    if (step <= 1) return;
+    for (let i = 0; i < data.length; i += 4) {
+        for (let c = 0; c < 3; c++) {
+            const value = base[c] + Math.round((data[i + c] - base[c]) / step) * step;
+            data[i + c] = value < 0 ? 0 : value > 255 ? 255 : value;
+        }
+    }
+}
+
 
 /**
  * The 墨 `ink-art` filter from app/globals.css, grayscale(1) contrast(1.45)
