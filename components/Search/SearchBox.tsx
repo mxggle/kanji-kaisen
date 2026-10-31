@@ -124,7 +124,7 @@ export function SearchBox({
                 <Search
                     aria-hidden
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-[var(--accent)] transition-colors pointer-events-none",
+                        "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-[var(--accent)] transition-colors pointer-events-none",
                         hero ? "left-4 w-5 h-5" : "left-3 w-4 h-4",
                     )}
                 />
@@ -159,7 +159,7 @@ export function SearchBox({
                     }}
                     onKeyDown={onKeyDown}
                     className={cn(
-                        "w-full bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--accent)] focus:bg-white/10 transition-all [&::-webkit-search-cancel-button]:hidden",
+                        "w-full bg-card border border-line text-ink placeholder:text-ink-3 focus:outline-none focus:border-[var(--accent)] focus:bg-ink/10 transition-all [&::-webkit-search-cancel-button]:hidden",
                         hero ? "rounded-xl py-4 pl-12 pr-4 text-lg" : "rounded-md py-2 pl-9 pr-3 text-sm",
                     )}
                 />
@@ -167,7 +167,7 @@ export function SearchBox({
 
             <div
                 className={cn(
-                    "absolute left-0 right-0 mt-2 z-50 rounded-xl border border-white/10 bg-neutral-950/95 backdrop-blur shadow-2xl overflow-hidden",
+                    "absolute left-0 right-0 mt-2 z-50 rounded-xl border border-line bg-card/95 backdrop-blur shadow-2xl overflow-hidden",
                     !showDropdown && "hidden",
                 )}
                 // Keep focus in the input while clicking inside the dropdown.
@@ -188,13 +188,13 @@ export function SearchBox({
                                 onClick={() => go(kanjiPath(e.c))}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 cursor-pointer",
-                                    i === active ? "bg-white/10" : "hover:bg-white/5",
+                                    i === active ? "bg-ink/10" : "hover:bg-ink/5",
                                 )}
                             >
-                                <span className="w-10 text-center text-2xl font-bold font-japanese text-white shrink-0">{e.c}</span>
+                                <span className="w-10 text-center text-2xl font-bold font-japanese text-ink shrink-0">{e.c}</span>
                                 <span className="min-w-0 flex-1">
-                                    <span className="block text-sm text-white truncate">{e.m.slice(0, 3).join(", ")}</span>
-                                    {reading && <span className="block text-xs text-white/50 font-japanese truncate">{formatReading(reading)}</span>}
+                                    <span className="block text-sm text-ink truncate">{e.m.slice(0, 3).join(", ")}</span>
+                                    {reading && <span className="block text-xs text-ink-3 font-japanese truncate">{formatReading(reading)}</span>}
                                 </span>
                                 <span className="text-[10px] font-bold shrink-0" style={{ color: jlptColor(level) }}>{level}</span>
                             </li>
@@ -202,22 +202,22 @@ export function SearchBox({
                     })}
                 </ul>
                 {indexState.status === "loading" && (
-                    <p className="flex items-center gap-2 px-3 py-3 text-sm text-white/50">
+                    <p className="flex items-center gap-2 px-3 py-3 text-sm text-ink-3">
                         <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> Loading…
                     </p>
                 )}
                 {indexState.status === "error" && (
-                    <p className="px-3 py-3 text-sm text-white/50">Instant results are unavailable. Press Enter to search.</p>
+                    <p className="px-3 py-3 text-sm text-ink-3">Instant results are unavailable. Press Enter to search.</p>
                 )}
                 {indexState.status === "ready" && results.length === 0 && (
-                    <p className="px-3 py-3 text-sm text-white/50">No kanji match “{trimmed}”.</p>
+                    <p className="px-3 py-3 text-sm text-ink-3">No kanji match “{trimmed}”.</p>
                 )}
                 <button
                     type="button"
                     onClick={() => go(searchPath(trimmed))}
-                    className="block w-full text-left px-3 py-2 text-xs text-[var(--accent)] border-t border-white/10 hover:bg-white/5"
+                    className="block w-full text-left px-3 py-2 text-xs text-[var(--accent)] border-t border-line hover:bg-ink/5"
                 >
-                    See all results for “{trimmed}”{!activeResult && <span className="text-white/40"> (Enter)</span>}
+                    See all results for “{trimmed}”{!activeResult && <span className="text-ink-3"> (Enter)</span>}
                 </button>
             </div>
             <div aria-live="polite" className="sr-only">

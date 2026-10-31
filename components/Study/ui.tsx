@@ -11,7 +11,7 @@ export function Checkbox({ checked, onChange, label, hint }: { checked: boolean;
             />
             <span className="text-sm">
                 {label}
-                {hint && <span className="block text-xs text-white/50 mt-0.5">{hint}</span>}
+                {hint && <span className="block text-xs text-ink-3 mt-0.5">{hint}</span>}
             </span>
         </label>
     );
@@ -20,8 +20,8 @@ export function Checkbox({ checked, onChange, label, hint }: { checked: boolean;
 export function SessionSkeleton() {
     return (
         <div aria-busy="true" aria-label="Loading deck" className="space-y-4">
-            <div className="h-9 w-48 rounded bg-white/5 animate-pulse" />
-            <div className="h-64 rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
+            <div className="h-9 w-48 rounded bg-card animate-pulse" />
+            <div className="h-64 rounded-2xl bg-card border border-line animate-pulse" />
         </div>
     );
 }

@@ -20,13 +20,13 @@ export function KanjiTile({ kanji, className, action }: KanjiTileProps) {
         <div className={cn("relative group", className)}>
             <Link
                 href={kanjiPath(kanji.char)}
-                className="flex flex-col items-center justify-center aspect-square p-2 rounded-lg bg-white/5 border border-white/10 border-b-4 hover:bg-white/10 hover:border-[var(--accent)] transition-colors"
+                className="flex flex-col items-center justify-center aspect-square p-2 rounded-lg bg-card border border-line border-b-4 hover:bg-ink/10 hover:border-[var(--accent)] transition-colors"
                 style={{ borderBottomColor: jlptColor(kanji.jlpt) }}
                 title={`${kanji.char} – ${kanji.meanings.slice(0, 3).join(", ")}`}
             >
-                <span className="text-[10px] text-white/50 truncate w-full text-center font-japanese">{reading.replace(/\./g, "")}</span>
-                <span className="text-3xl sm:text-4xl font-bold font-japanese text-white my-0.5">{kanji.char}</span>
-                <span className="text-[11px] text-white/80 truncate w-full text-center leading-tight">{kanji.meanings[0]}</span>
+                <span className="text-[10px] text-ink-3 truncate w-full text-center font-japanese">{reading.replace(/\./g, "")}</span>
+                <span className="text-3xl sm:text-4xl font-bold font-japanese text-ink my-0.5">{kanji.char}</span>
+                <span className="text-[11px] text-ink truncate w-full text-center leading-tight">{kanji.meanings[0]}</span>
             </Link>
             {action && <div className="absolute top-1 right-1">{action}</div>}
         </div>
@@ -35,7 +35,7 @@ export function KanjiTile({ kanji, className, action }: KanjiTileProps) {
 
 export function KanjiTileGrid({ items, className }: { items: KanjiTileData[]; className?: string }) {
     if (items.length === 0) {
-        return <p className="text-white/50 text-sm">No kanji here yet.</p>;
+        return <p className="text-ink-3 text-sm">No kanji here yet.</p>;
     }
     return (
         <ul className={cn("grid grid-cols-3 min-[420px]:grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2", className)}>

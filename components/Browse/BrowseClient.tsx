@@ -78,13 +78,13 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
     return (
         <div>
             <h1 className="text-3xl font-bold mb-2">{browseHeading(filters)}</h1>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-ink-2 text-sm mb-6">
                 Filter by JLPT level, stroke count, theme or radical. Every tile links to the kanji&apos;s full page.
             </p>
 
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
+            <div className="rounded-xl border border-line bg-card p-4 space-y-4">
                 <fieldset>
-                    <legend className="text-xs font-medium text-white/60 uppercase tracking-wider mb-2">JLPT level</legend>
+                    <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">JLPT level</legend>
                     <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
@@ -92,7 +92,7 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                             onClick={() => update({ jlpt: [] })}
                             className={cn(
                                 "h-9 px-3 rounded-full text-sm font-bold border transition-colors",
-                                filters.jlpt.length === 0 ? "bg-white text-black border-white" : "border-white/20 text-white/60 hover:border-white/50",
+                                filters.jlpt.length === 0 ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
                             )}
                         >
                             All
@@ -107,7 +107,7 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                                     onClick={() => toggleLevel(level)}
                                     className={cn(
                                         "h-9 px-3 rounded-full text-sm font-bold border-2 transition-colors",
-                                        active ? "text-white" : "bg-transparent text-white/60 border-white/20 hover:border-white/50",
+                                        active ? "text-ink" : "bg-transparent text-ink-2 border-line-2 hover:border-ink-3 hover:text-ink",
                                     )}
                                     style={active ? { borderColor: jlptColor(level), backgroundColor: `color-mix(in oklab, ${jlptColor(level)} 35%, transparent)` } : undefined}
                                 >
@@ -119,7 +119,7 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                 </fieldset>
 
                 <fieldset>
-                    <legend className="text-xs font-medium text-white/60 uppercase tracking-wider mb-2">Sort by</legend>
+                    <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">Sort by</legend>
                     <div className="flex flex-wrap gap-2">
                         {SORTS.map((s) => (
                             <button
@@ -129,7 +129,7 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                                 onClick={() => update({ sort: s.id })}
                                 className={cn(
                                     "h-9 px-3 rounded-full text-sm font-medium border transition-colors",
-                                    filters.sort === s.id ? "bg-white text-black border-white" : "border-white/20 text-white/60 hover:border-white/50",
+                                    filters.sort === s.id ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
                                 )}
                             >
                                 {s.label}
@@ -157,7 +157,7 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
             </div>
 
             <div className="flex items-center justify-between gap-3 mt-6 mb-3">
-                <p className="text-sm text-white/60" aria-live="polite">
+                <p className="text-sm text-ink-2" aria-live="polite">
                     {results.length === 0
                         ? "No kanji match these filters."
                         : `Showing ${shown.length} of ${results.length} kanji`}
@@ -180,10 +180,10 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
                     <button
                         type="button"
                         onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                        className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 hover:border-[var(--accent)] text-sm font-medium transition-colors"
+                        className="px-6 py-3 rounded-full bg-ink/10 hover:bg-ink/15 border border-line hover:border-[var(--accent)] text-sm font-medium transition-colors"
                     >
                         Show {Math.min(PAGE_SIZE, results.length - visible)} more
-                        <span className="text-white/50"> · {results.length - visible} left</span>
+                        <span className="text-ink-3"> · {results.length - visible} left</span>
                     </button>
                 </div>
             )}
@@ -194,11 +194,11 @@ export function BrowseClient({ items, initialFilters, themes, radicals }: Browse
 function SelectField({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: React.ReactNode }) {
     return (
         <label className="block min-w-0">
-            <span className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">{label}</span>
+            <span className="block text-xs font-medium text-ink-2 uppercase tracking-wider mb-1.5">{label}</span>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full min-w-0 h-10 rounded-md bg-neutral-900 border border-white/15 px-2 text-sm text-white focus:outline-none focus:border-[var(--accent)]"
+                className="w-full min-w-0 h-10 rounded-md bg-card border border-line px-2 text-sm text-ink focus:outline-none focus:border-[var(--accent)]"
             >
                 {children}
             </select>

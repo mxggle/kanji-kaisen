@@ -3,7 +3,7 @@ import { CATEGORIES, getCategorySlug } from "@/lib/atlas/categories";
 import { categoryPath } from "@/lib/atlas/paths";
 import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
 import { RadicalLinkCard } from "@/components/Atlas/radical/RadicalLinkCard";
-import { getThemeStyle } from "@/components/Atlas/category/themeStyles";
+import { getThemeStyle, themeVars } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 import Link from "next/link";
 
@@ -37,7 +37,7 @@ export default function RadicalsPage() {
 
             <header className="mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold mb-3">Radicals</h1>
-                <p className="text-white/60 max-w-2xl leading-relaxed">
+                <p className="text-ink-2 max-w-2xl leading-relaxed">
                     Radicals are the building blocks of kanji. Learn what each one means and where it comes from,
                     and you can make an educated guess about thousands of characters. {radicals.length} radicals,
                     grouped into {CATEGORIES.length} themes.
@@ -45,31 +45,29 @@ export default function RadicalsPage() {
             </header>
 
             <nav aria-label="Themes" className="mb-4 flex flex-wrap gap-2">
-                {groups.map(({ category, radicals: list }) => {
-                    const theme = getThemeStyle(category);
-                    return (
-                        <a
-                            key={category}
-                            href={`#${getCategorySlug(category)}`}
-                            className={`px-3 py-1.5 rounded-full text-sm border ${theme.border} ${theme.tint} ${theme.title} hover:bg-white/10 transition-colors`}
-                        >
-                            {category} <span className="text-white/40">{list.length}</span>
-                        </a>
-                    );
-                })}
+                {groups.map(({ category, radicals: list }) => (
+                    <a
+                        key={category}
+                        href={`#${getCategorySlug(category)}`}
+                        style={themeVars(category)}
+                        className="px-3 py-1.5 rounded-full text-sm border border-c/40 bg-c/5 text-c hover:bg-c/15 transition-colors"
+                    >
+                        {category} <span className="text-ink-3">{list.length}</span>
+                    </a>
+                ))}
             </nav>
 
             {groups.map(({ category, radicals: list }) => {
                 const theme = getThemeStyle(category);
                 const Icon = theme.icon;
                 return (
-                    <section key={category} id={getCategorySlug(category)} className="mt-10 scroll-mt-24">
+                    <section key={category} id={getCategorySlug(category)} style={themeVars(category)} className="mt-10 scroll-mt-24">
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
-                            <Icon size={20} className={theme.title} aria-hidden />
-                            <h2 className={`text-xl font-bold ${theme.title}`}>{category}</h2>
-                            <span className="text-white/40 text-sm">{list.length} radicals</span>
+                            <Icon size={20} className="text-c" aria-hidden />
+                            <h2 className="text-xl font-bold text-c">{category}</h2>
+                            <span className="text-ink-3 text-sm">{list.length} radicals</span>
                             {(
-                                <Link href={categoryPath(category)} className="ml-auto text-sm text-white/50 hover:text-[var(--accent)] transition-colors">
+                                <Link href={categoryPath(category)} className="ml-auto text-sm text-ink-3 hover:text-[var(--accent)] transition-colors">
                                     About this theme →
                                 </Link>
                             )}

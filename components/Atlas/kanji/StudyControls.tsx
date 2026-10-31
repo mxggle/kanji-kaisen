@@ -19,7 +19,7 @@ export function StudyControls({ char }: { char: string }) {
     const setStatus = useStudyStore((state) => state.setStatus);
 
     if (!hydrated) {
-        return <div className="mt-4 h-9 w-40 rounded-full bg-white/5 animate-pulse" aria-hidden />;
+        return <div className="mt-4 h-9 w-40 rounded-full bg-card animate-pulse" aria-hidden />;
     }
 
     const saved = Boolean(entry);
@@ -45,7 +45,7 @@ export function StudyControls({ char }: { char: string }) {
                     "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors",
                     saved
                         ? "bg-[var(--accent)]/15 border-[var(--accent)] text-[var(--accent)]"
-                        : "bg-white/5 border-white/15 text-white hover:border-[var(--accent)]"
+                        : "bg-card border-line text-ink hover:border-[var(--accent)]"
                 )}
             >
                 {saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
@@ -53,7 +53,7 @@ export function StudyControls({ char }: { char: string }) {
             </button>
 
             {saved && (
-                <div role="radiogroup" aria-label="Study status" className="inline-flex rounded-full border border-white/15 bg-white/5 p-0.5">
+                <div role="radiogroup" aria-label="Study status" className="inline-flex rounded-full border border-line bg-card p-0.5">
                     {STATUSES.map((s) => (
                         <button
                             key={s.value}
@@ -63,7 +63,7 @@ export function StudyControls({ char }: { char: string }) {
                             onClick={() => handleStatus(s.value)}
                             className={cn(
                                 "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                                entry?.status === s.value ? "bg-white text-black" : "text-white/70 hover:text-white"
+                                entry?.status === s.value ? "bg-ink text-bg" : "text-ink-2 hover:text-ink"
                             )}
                         >
                             {s.label}

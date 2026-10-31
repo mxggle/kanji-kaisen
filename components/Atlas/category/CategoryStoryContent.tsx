@@ -23,18 +23,18 @@ export function CategoryStoryContent({ story, themeClass, headingAs: H = "h3" }:
             <section>
                 <div className="flex items-center gap-2 mb-3">
                     <BookOpen size={18} className={colorClass} aria-hidden />
-                    <H className="text-lg font-semibold text-white">About This Theme</H>
+                    <H className="text-lg font-semibold text-ink">About This Theme</H>
                 </div>
-                <p className="text-white/70 leading-relaxed">{story.description}</p>
+                <p className="text-ink-2 leading-relaxed">{story.description}</p>
             </section>
 
             {story.whyItMatters && (
-                <section className={`p-5 rounded-2xl border bg-gradient-to-br from-white/5 to-transparent ${borderClass}`}>
+                <section className={`p-5 rounded-2xl border bg-gradient-to-br from-ink/5 to-transparent ${borderClass}`}>
                     <div className="flex items-center gap-2 mb-3">
                         <Sparkles size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-white">Why This Matters</H>
+                        <H className="text-lg font-semibold text-ink">Why This Matters</H>
                     </div>
-                    <p className="text-white/70 leading-relaxed">{story.whyItMatters}</p>
+                    <p className="text-ink-2 leading-relaxed">{story.whyItMatters}</p>
                 </section>
             )}
 
@@ -42,15 +42,15 @@ export function CategoryStoryContent({ story, themeClass, headingAs: H = "h3" }:
                 <section>
                     <div className="flex items-center gap-2 mb-4">
                         <ArrowRight size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-white">Common Patterns</H>
+                        <H className="text-lg font-semibold text-ink">Common Patterns</H>
                     </div>
                     <ol className="space-y-3">
                         {story.commonPatterns.map((pattern, index) => (
-                            <li key={index} className="flex items-start gap-3 p-3 rounded-xl bg-white/5">
-                                <span className={`w-6 h-6 rounded-full flex items-center justify-center ${bgColorClass} text-white text-xs font-bold flex-shrink-0 mt-0.5`}>
+                            <li key={index} className="flex items-start gap-3 p-3 rounded-xl bg-card">
+                                <span className={`w-6 h-6 rounded-full flex items-center justify-center ${bgColorClass} text-onacc text-xs font-bold flex-shrink-0 mt-0.5`}>
                                     {index + 1}
                                 </span>
-                                <p className="text-white/70 text-sm leading-relaxed">{pattern}</p>
+                                <p className="text-ink-2 text-sm leading-relaxed">{pattern}</p>
                             </li>
                         ))}
                     </ol>
@@ -58,12 +58,12 @@ export function CategoryStoryContent({ story, themeClass, headingAs: H = "h3" }:
             )}
 
             {story.learningTip && (
-                <section className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                <section className="p-5 rounded-2xl bg-tip/10 border border-tip/30">
                     <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb size={18} className="text-amber-400" aria-hidden />
-                        <H className="text-lg font-semibold text-amber-400">Learning Tip</H>
+                        <Lightbulb size={18} className="text-tip" aria-hidden />
+                        <H className="text-lg font-semibold text-tip">Learning Tip</H>
                     </div>
-                    <p className="text-white/70 leading-relaxed">{story.learningTip}</p>
+                    <p className="text-ink-2 leading-relaxed">{story.learningTip}</p>
                 </section>
             )}
         </div>

@@ -9,7 +9,7 @@ import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
 import { RadicalLinkCard } from "@/components/Atlas/radical/RadicalLinkCard";
 import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
 import { CategoryCardArt } from "@/components/Atlas/category/CategoryCardArt";
-import { getThemeClass, getThemeStyle } from "@/components/Atlas/category/themeStyles";
+import { getThemeStyle, themeVars, TOKEN_THEME_CLASS } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -36,7 +36,6 @@ export default async function CategoryPage({ params }: Params) {
     if (!category) notFound();
 
     const theme = getThemeStyle(category.name);
-    const themeClass = getThemeClass(category.name);
     const Icon = theme.icon;
     const kanjiByLevel = JLPT_LEVELS.map((level) => ({
         level,
@@ -44,7 +43,7 @@ export default async function CategoryPage({ params }: Params) {
     })).filter((g) => g.kanji.length > 0);
 
     return (
-        <PageShell>
+        <PageShell style={themeVars(category.name)}>
             <Breadcrumbs
                 items={[
                     { href: "/", label: "Home" },
@@ -54,16 +53,16 @@ export default async function CategoryPage({ params }: Params) {
             />
 
             {/* Hero */}
-            <header className={`group relative overflow-hidden rounded-3xl border ${theme.border} ${theme.bg} p-6 sm:p-10`}>
+            <header className="group relative overflow-hidden rounded-3xl border border-c/30 bg-card p-6 sm:p-10">
                 <CategoryCardArt category={category.name} theme={theme} />
                 <div className="relative z-10">
-                    <div className={`inline-flex p-3 rounded-2xl bg-white/10 ${theme.title} backdrop-blur-md border border-white/5 mb-4`}>
+                    <div className="inline-flex p-3 rounded-2xl bg-ink/10 text-c backdrop-blur-md border border-line mb-4">
                         <Icon size={28} aria-hidden />
                     </div>
                     {category.story?.title && (
-                        <p className="text-xs uppercase tracking-widest text-white/50 mb-1">{category.story.title}</p>
+                        <p className="text-xs uppercase tracking-widest text-ink-3 mb-1">{category.story.title}</p>
                     )}
-                    <h1 className={`text-3xl sm:text-4xl font-bold mb-3 ${theme.title} drop-shadow-lg`}>{category.name}</h1>
+                    <h1 className="glow text-3xl sm:text-4xl font-bold mb-3 text-c">{category.name}</h1>
                     <div className="flex flex-wrap gap-2 mb-6">
                         <StatBadge>{category.radicalCount} radicals</StatBadge>
                         <StatBadge>{category.kanjiCount} kanji</StatBadge>
@@ -71,14 +70,14 @@ export default async function CategoryPage({ params }: Params) {
                     <div className="flex flex-wrap gap-3">
                         <Link
                             href={`/study?theme=${category.slug}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-black font-semibold hover:opacity-90 transition-opacity"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-onacc font-semibold hover:opacity-90 transition-opacity"
                         >
                             <GraduationCap size={18} aria-hidden /> Study this theme
                         </Link>
                         <Link
                             href={practiceCategoryPath(category.name)}
                             prefetch={false}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/40 border border-white/15 hover:bg-white/10 transition-colors"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-bg/40 border border-line-2 hover:bg-ink/10 transition-colors"
                         >
                             <Swords size={18} aria-hidden /> Practice this theme (classic)
                         </Link>
@@ -88,7 +87,7 @@ export default async function CategoryPage({ params }: Params) {
 
             {category.story && (
                 <div className="mt-10">
-                    <CategoryStoryContent story={category.story} themeClass={themeClass} headingAs="h2" />
+                    <CategoryStoryContent story={category.story} themeClass={TOKEN_THEME_CLASS} headingAs="h2" />
                 </div>
             )}
 
@@ -106,7 +105,7 @@ export default async function CategoryPage({ params }: Params) {
             </Section>
 
             <Section title={`${category.name} kanji`} id="kanji" className="scroll-mt-24">
-                <p className="text-white/50 text-sm mb-4">
+                <p className="text-ink-3 text-sm mb-4">
                     {category.kanjiCount} kanji whose radical belongs to this theme, by JLPT level and frequency.
                 </p>
                 <div className="space-y-8">
@@ -114,7 +113,7 @@ export default async function CategoryPage({ params }: Params) {
                         <div key={level}>
                             <h3 className="flex items-center gap-2 mb-3">
                                 <JlptBadge level={level} />
-                                <span className="text-white/40 text-sm">{kanji.length} kanji</span>
+                                <span className="text-ink-3 text-sm">{kanji.length} kanji</span>
                             </h3>
                             <KanjiTileGrid items={kanji} />
                         </div>

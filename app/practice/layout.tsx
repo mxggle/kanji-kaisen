@@ -6,6 +6,12 @@ export const metadata: Metadata = {
     openGraph: { title: "Classic practice", type: "website", siteName: "Kanji Kaisen" },
 };
 
+// Classic practice keeps its original dark look: the 夜 skin is forced on this
+// subtree so its hard-coded colours stay readable when the site is in 墨.
 export default function PracticeLayout({ children }: { children: React.ReactNode }) {
-    return children;
+    return (
+        <div data-skin="night" className="bg-bg text-ink">
+            {children}
+        </div>
+    );
 }

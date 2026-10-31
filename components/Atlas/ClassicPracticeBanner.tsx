@@ -10,11 +10,11 @@ export function ClassicPracticeBanner({ className }: { className?: string }) {
             role="note"
             className={cn(
                 "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5 rounded-xl",
-                "bg-white/5 border border-white/10 text-sm",
+                "bg-card border border-line text-sm",
                 className,
             )}
         >
-            <span className="flex items-center gap-2 text-white/60">
+            <span className="flex items-center gap-2 text-ink-2">
                 <Swords size={16} className="text-[var(--accent)]" aria-hidden />
                 Classic practice mode
             </span>
