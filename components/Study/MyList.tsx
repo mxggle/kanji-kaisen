@@ -1,76 +1,177 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { BookOpen, Check, Layers, RotateCcw, X } from "lucide-react";
+import { useId, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SHADE_JP, SHADE_NAMES, SHADES, themeProgress, type InkEntries, type Shade } from "@/lib/ink";
+import { useInkHydrated, useInkStore } from "@/lib/ink-store";
 import { useStudyStore, useStudyStoreHydrated } from "@/lib/study-store";
-import { countByStatus, listSaved, type StudyEntry, type StudyStatus } from "@/lib/study-list";
-import { browsePath, kanjiPath } from "@/lib/atlas/paths";
-import { KanjiTile } from "@/components/Atlas/KanjiTile";
-import { jlptLevelOf, studyPath } from "./session";
+import { listSaved, type StudyEntry } from "@/lib/study-list";
+import { extractKanji } from "@/lib/teach-set";
+import { browsePath, categoryPath, kanjiPath } from "@/lib/atlas/paths";
+import { getCategorySlug, isCategoryName, THEME_SHORT } from "@/lib/atlas/categories";
+import type { SearchIndexEntry } from "@/lib/atlas/search-index";
+import type { JlptLevel } from "@/lib/atlas/types";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
+import { Tool } from "@/components/Layout/Tool";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { KanjiTile } from "@/components/ui/KanjiTile";
+import { PaintedBar } from "@/components/ui/PaintedBar";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { currentLevel, filterByShade, firstToLearn, recentTheme, revisitChars, shadeCounts, type AtlasIndex } from "./my-list";
+import { studyPath, type DeckRequest } from "./session";
 import { useSearchIndex } from "./useSearchIndex";
 
-type Filter = "all" | StudyStatus;
+const EMPTY: InkEntries = {};
+const TILE_GRID = "grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5";
 
-const FILTERS: { id: Filter; label: string }[] = [
-    { id: "all", label: "All" },
-    { id: "learning", label: "Still learning" },
-    { id: "known", label: "Known" },
-];
+const short = (theme: string) => (isCategoryName(theme) ? THEME_SHORT[theme] : theme);
 
-const GRID = "grid grid-cols-3 min-[420px]:grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2";
+/** The learner's ink and saved list, with a char → theme lookup for tile colours. */
+function useAtlas(atlas: AtlasIndex) {
+    return useMemo(() => {
+        const themeOf = new Map<string, string>();
+        for (const theme of atlas.themes) for (const char of theme.chars) themeOf.set(char, theme.name);
+        const all = atlas.jlpt.map((l) => l.chars).join("");
+        const known = new Set(Array.from(all));
+        return { themeOf, all, known };
+    }, [atlas]);
+}
 
-export function MyList() {
-    const hydrated = useStudyStoreHydrated();
+/**
+ * My list on the Tool template: the rail is the only progress view (shade
+ * counts and one painted bar per theme); the result is the saved kanji, a
+ * revisit suggestion (never a queue) and ways to study.
+ */
+export function MyList({ atlas }: { atlas: AtlasIndex }) {
+    const inkReady = useInkHydrated();
+    const listReady = useStudyStoreHydrated();
+    const stored = useInkStore((s) => s.entries);
+    const ink = inkReady ? stored : EMPTY;
+    const saved = useStudyStore((s) => s.entries);
+    const { themeOf, all, known } = useAtlas(atlas);
+
+    const savedChars = useMemo(() => (listReady ? listSaved(saved) : []), [listReady, saved]);
+    const revisit = useMemo(() => revisitChars(ink, undefined, (c) => known.has(c)), [ink, known]);
+    const level = currentLevel(ink, atlas.jlpt);
+
+    const action =
+        !listReady ? (
+            <Button variant="primary" aria-disabled="true">
+                Study saved
+            </Button>
+        ) : savedChars.length > 0 ? (
+            <Button variant="primary" href={studyPath({ kind: "list" })}>
+                Study saved <span aria-hidden>·</span> {savedChars.length}
+            </Button>
+        ) : (
+            <Button variant="primary" href={browsePath({ jlpt: level })}>
+                Browse {level} kanji
+            </Button>
+        );
+
+    return (
+        <Tool
+            jp="墨"
+            kind="My list"
+            title="Your ink"
+            lede="What you've saved, how dark each kanji is, and what you can study. Kept in this browser. Nothing comes due."
+            actions={action}
+            railLabel="Your ink"
+            rail={<InkRail atlas={atlas} all={all} ink={ink} ready={inkReady} />}
+        >
+            <div className="flex flex-col gap-16">
+                <Saved chars={savedChars} ready={listReady} ink={ink} themeOf={themeOf} level={level} />
+                <Revisit chars={revisit} ready={inkReady} ink={ink} themeOf={themeOf} />
+                <Study atlas={atlas} ink={ink} saved={savedChars} revisit={revisit} level={level} known={known} />
+                <p className="text-sm text-ink-2">
+                    Prefer the old checkpoint path?{" "}
+                    <Link href="/practice" prefetch={false} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
+                        Classic practice
+                    </Link>{" "}
+                    is still here, unchanged.
+                </p>
+            </div>
+        </Tool>
+    );
+}
+
+/** Rail: every kanji by shade, then one painted bar per theme. */
+function InkRail({ atlas, all, ink, ready }: { atlas: AtlasIndex; all: string; ink: InkEntries; ready: boolean }) {
+    const counts = shadeCounts(ink, all);
     return (
         <>
-            <h1 className="text-3xl font-bold mb-2">My list</h1>
-            <p className="text-ink-2 text-sm mb-6">
-                Kanji you saved, stored in this browser only. Mark them “Known” when they stick, or study them as flashcards or a quiz.
-            </p>
-            {hydrated ? <MyListContent /> : <MyListSkeleton />}
+            <div className="flex flex-col gap-2.5">
+                <h2 className="type-label">All {atlas.total.toLocaleString("en")} kanji</h2>
+                <ul className="flex flex-col gap-2">
+                    {SHADES.map((shade) => (
+                        <li key={shade} className="flex items-center gap-3">
+                            <span
+                                aria-hidden
+                                lang="ja"
+                                data-ink={shade}
+                                className="flex size-9 flex-none items-center justify-center rounded-lg border border-line font-jp text-base font-extrabold"
+                            >
+                                {SHADE_JP[shade]}
+                            </span>
+                            <span className="flex-1 text-sm">{SHADE_NAMES[shade]}</span>
+                            <span className={cn("text-sm tabular-nums text-ink-2", !ready && "invisible")}>{counts[shade].toLocaleString("en")}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <hr className="h-px border-0 bg-line" />
+            <div className="flex flex-col gap-3.5">
+                <h2 className="type-label">By theme</h2>
+                <ul className="flex flex-col gap-3.5">
+                    {atlas.themes.map((theme) => {
+                        const progress = themeProgress(ink, theme.chars);
+                        return (
+                            <li key={theme.name} style={themeVars(theme.name)}>
+                                <Link href={categoryPath(theme.name)} className="block rounded-sm text-ink transition-colors hover:text-ink-2">
+                                    <PaintedBar
+                                        painted={progress.painted}
+                                        known={progress.known}
+                                        total={progress.total}
+                                        caption
+                                        label={short(theme.name)}
+                                        className="[&>div]:flex-wrap [&>div]:gap-y-0.5"
+                                    />
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
         </>
     );
 }
 
-export function MyListSkeleton() {
-    return (
-        <div aria-busy="true" aria-label="Loading your list">
-            <div className="flex gap-2 mb-6">
-                {[0, 1, 2].map((i) => (
-                    <div key={i} className="h-9 w-24 rounded-full bg-card animate-pulse" />
-                ))}
-            </div>
-            <ul className={GRID}>
-                {Array.from({ length: 8 }, (_, i) => (
-                    <li key={i} className="aspect-square rounded-lg bg-card border border-line animate-pulse" />
-                ))}
-            </ul>
-        </div>
-    );
+interface TileListProps {
+    ink: InkEntries;
+    themeOf: Map<string, string>;
 }
 
-function MyListContent() {
-    const entries = useStudyStore((s) => s.entries);
-    const setStatus = useStudyStore((s) => s.setStatus);
-    const unsave = useStudyStore((s) => s.unsave);
+function tileData(char: string, entry: SearchIndexEntry | undefined, themeOf: Map<string, string>) {
+    return { char, meanings: entry?.m, onyomi: entry?.on, kunyomi: entry?.kun, category: themeOf.get(char) ?? null };
+}
+
+type Filter = Shade | "all";
+
+function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: string[]; ready: boolean; level: JlptLevel }) {
+    const titleId = useId();
     const { byChar, error, retry } = useSearchIndex();
-    const [filter, setFilter] = useState<Filter>("all");
+    const entries = useStudyStore((s) => s.entries);
+    const unsave = useStudyStore((s) => s.unsave);
     const restore = useStudyStore((s) => s.restore);
+    const [filter, setFilter] = useState<Filter>("all");
+    const [editing, setEditing] = useState(false);
     const [removed, setRemoved] = useState<{ char: string; entry: StudyEntry } | null>(null);
 
-    const counts = countByStatus(entries);
-    const chars = listSaved(entries, filter === "all" ? undefined : filter);
-
-    if (counts.all === 0) {
-        return (
-            <>
-                {removed && <UndoBar removed={removed} onUndo={() => { restore(removed.char, removed.entry); setRemoved(null); }} />}
-                <EmptyState />
-            </>
-        );
-    }
+    const counts = shadeCounts(ink, chars);
+    const shown = filterByShade(ink, chars, filter);
 
     const remove = (char: string) => {
         const entry = entries[char];
@@ -79,151 +180,270 @@ function MyListContent() {
         setRemoved({ char, entry });
     };
 
+    const aside =
+        chars.length > 0 ? (
+            <span className="flex items-center gap-2">
+                <span className="max-sm:hidden">Save from any kanji page</span>
+                <Button variant="quiet" size="sm" aria-pressed={editing} onClick={() => setEditing((e) => !e)}>
+                    {editing ? "Done" : "Edit"}
+                </Button>
+            </span>
+        ) : (
+            "Save from any kanji page"
+        );
+
     return (
-        <>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-                <Link
-                    href={studyPath({ kind: "list" })}
-                    className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] text-onacc font-bold text-sm hover:opacity-90 transition-opacity"
-                >
-                    <Layers className="w-4 h-4" aria-hidden /> Study these ({counts.all})
-                </Link>
-                {counts.learning > 0 && (
-                    <Link
-                        href={studyPath({ kind: "learning" })}
-                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
+        <section aria-labelledby={titleId} className="flex flex-col gap-[18px]">
+            <SectionHeader jp="保存" title="Saved" id={titleId} aside={ready ? aside : undefined} />
+
+            {removed && (
+                <div role="status" className="flex items-center justify-between gap-3 rounded-xl border border-line bg-card px-4 py-2 text-sm">
+                    <span className="text-ink-2">
+                        Removed{" "}
+                        <span lang="ja" className="font-jp text-ink">
+                            {removed.char}
+                        </span>{" "}
+                        from My list.
+                    </span>
+                    <Button
+                        variant="quiet"
+                        size="sm"
+                        onClick={() => {
+                            restore(removed.char, removed.entry);
+                            setRemoved(null);
+                        }}
                     >
-                        <RotateCcw className="w-4 h-4" aria-hidden /> Review {counts.learning} still-learning kanji
-                    </Link>
+                        Undo
+                    </Button>
+                </div>
+            )}
+
+            {!ready ? (
+                <ul aria-busy="true" aria-label="Loading your list" className={TILE_GRID}>
+                    {Array.from({ length: 8 }, (_, i) => (
+                        <li key={i} className="aspect-[1/1.12] animate-pulse rounded-xl border border-line bg-card" />
+                    ))}
+                </ul>
+            ) : chars.length === 0 ? (
+                <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                    <p className="text-base text-ink">Nothing saved yet.</p>
+                    <p className="text-sm text-ink-2">Open any kanji and press Save to keep it here. Your ink is kept either way: every kanji you learn darkens on its own.</p>
+                    <Button href={studyPath({ kind: "jlpt", level })} size="sm" className="self-start">
+                        Study {level} without saving
+                    </Button>
+                </div>
+            ) : (
+                <>
+                    <div role="group" aria-label="Show saved kanji by shade" className="flex flex-wrap items-center gap-2">
+                        <Chip pressed={filter === "all"} onClick={() => setFilter("all")} count={chars.length}>
+                            All
+                        </Chip>
+                        {SHADES.filter((s) => counts[s] > 0 || filter === s).map((s) => (
+                            <Chip key={s} pressed={filter === s} onClick={() => setFilter(s)} count={counts[s]}>
+                                <span lang="ja" className="font-jp">
+                                    {SHADE_JP[s]}
+                                </span>{" "}
+                                {SHADE_NAMES[s]}
+                            </Chip>
+                        ))}
+                    </div>
+                    {error && (
+                        <p className="text-sm text-ink-2">
+                            Couldn&apos;t load meanings and readings.{" "}
+                            <button type="button" onClick={retry} className="text-ink underline underline-offset-[3px]">
+                                Try again
+                            </button>
+                        </p>
+                    )}
+                    {shown.length === 0 ? (
+                        <p className="py-4 text-sm text-ink-3">No saved kanji at this shade.</p>
+                    ) : (
+                        <ul className={TILE_GRID}>
+                            {shown.map((char) => (
+                                <li key={char} className="relative min-w-0">
+                                    <KanjiTile kanji={tileData(char, byChar?.get(char), themeOf)} shade={ink[char]?.shade ?? 0} />
+                                    {editing && (
+                                        <button
+                                            type="button"
+                                            onClick={() => remove(char)}
+                                            aria-label={`Remove ${char} from My list`}
+                                            title="Remove from My list"
+                                            className="absolute -right-1.5 -top-1.5 flex size-8 items-center justify-center rounded-full border border-line-2 bg-bg text-ink-2 transition-colors hover:border-ink hover:text-ink"
+                                        >
+                                            <X className="size-4" aria-hidden />
+                                        </button>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </>
+            )}
+        </section>
+    );
+}
+
+function Revisit({ chars, ready, ink, themeOf }: TileListProps & { chars: string[]; ready: boolean }) {
+    const titleId = useId();
+    const { byChar } = useSearchIndex();
+    return (
+        <section aria-labelledby={titleId} className="flex flex-col gap-[18px]">
+            <SectionHeader jp="再訪" title="Worth a revisit" id={titleId} aside="A suggestion, not a queue" />
+            <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-card px-[22px] py-5">
+                {!ready ? (
+                    <div aria-hidden className="h-16 w-full animate-pulse rounded-xl bg-raise" />
+                ) : chars.length > 0 ? (
+                    <>
+                        <ul className="flex flex-wrap gap-2">
+                            {chars.map((char) => (
+                                <li key={char} className="w-16">
+                                    <KanjiTile size="sq" kanji={tileData(char, byChar?.get(char), themeOf)} shade={ink[char]?.shade ?? 0} />
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="min-w-0 flex-[1_1_220px] text-sm text-ink-2">
+                            Kanji you&apos;ve met but haven&apos;t practised lately, oldest first. Skip them as long as you like; nothing piles up.
+                        </p>
+                        <Button href={studyPath({ kind: "revisit", chars })}>Practise these</Button>
+                    </>
+                ) : (
+                    <p className="text-sm text-ink-2">
+                        Nothing here yet. Kanji at{" "}
+                        <span lang="ja" className="font-jp">
+                            {SHADE_JP[1]}
+                        </span>{" "}
+                        {SHADE_NAMES[1]} or{" "}
+                        <span lang="ja" className="font-jp">
+                            {SHADE_JP[2]}
+                        </span>{" "}
+                        {SHADE_NAMES[2]} show up here, the ones you haven&apos;t touched longest first. Nothing piles up.
+                    </p>
                 )}
             </div>
+        </section>
+    );
+}
 
-            <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2 mb-4">
-                {FILTERS.map((f) => (
-                    <button
-                        key={f.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={filter === f.id}
-                        onClick={() => setFilter(f.id)}
-                        className={cn(
-                            "h-9 px-3 rounded-full text-sm font-medium border transition-colors",
-                            filter === f.id ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
-                        )}
-                    >
-                        {f.label} <span className={filter === f.id ? "text-bg/70" : "text-ink-3"}>{counts[f.id]}</span>
-                    </button>
+type DeckId = "saved" | "revisit" | "jlpt" | "theme" | "paste";
+
+interface StudyProps {
+    atlas: AtlasIndex;
+    ink: InkEntries;
+    saved: string[];
+    revisit: string[];
+    level: JlptLevel;
+    known: Set<string>;
+}
+
+const MODES = [
+    { id: "flashcards", jp: "札", title: "Flashcards", text: "Kanji on the front. Meaning and readings on the back." },
+    { id: "quiz", jp: "問", title: "Meaning quiz", text: "Pick the meaning from four. A wrong answer costs nothing." },
+    { id: "steps", jp: "書", title: "Four steps", text: "Meet, recall, trace and write each one. This is what darkens the ink." },
+] as const;
+
+function Study({ atlas, ink, saved, revisit, level, known }: StudyProps) {
+    const titleId = useId();
+    const pasteId = useId();
+    const theme = recentTheme(ink, atlas.themes) ?? atlas.themes[0]?.name ?? "";
+    const [picked, setPicked] = useState<DeckId | null>(null);
+    const [pasted, setPasted] = useState("");
+
+    const decks: { id: DeckId; label: string; theme?: string }[] = [
+        ...(saved.length ? [{ id: "saved" as const, label: "Saved" }] : []),
+        ...(revisit.length ? [{ id: "revisit" as const, label: "Worth a revisit" }] : []),
+        { id: "jlpt", label: level },
+        { id: "theme", label: short(theme), theme },
+        { id: "paste", label: "Paste kanji" },
+    ];
+    const deck = picked && decks.some((d) => d.id === picked) ? picked : decks[0].id;
+    const pastedChars = extractKanji(pasted, known);
+
+    let request: DeckRequest | null;
+    let chars: string[];
+    if (deck === "saved") {
+        request = { kind: "list" };
+        chars = saved;
+    } else if (deck === "revisit") {
+        request = { kind: "revisit", chars: revisit };
+        chars = revisit;
+    } else if (deck === "jlpt") {
+        request = { kind: "jlpt", level };
+        chars = Array.from(atlas.jlpt.find((l) => l.level === level)?.chars ?? "");
+    } else if (deck === "theme") {
+        request = { kind: "theme", slug: getCategorySlug(theme) };
+        chars = Array.from(atlas.themes.find((t) => t.name === theme)?.chars ?? "");
+    } else {
+        request = pastedChars.length ? { kind: "chars", chars: pastedChars, title: "Your kanji" } : null;
+        chars = pastedChars;
+    }
+    const first = firstToLearn(ink, chars);
+
+    const hrefFor = (mode: (typeof MODES)[number]["id"]) => {
+        if (mode === "steps") return first ? `${kanjiPath(first)}#learn` : null;
+        return request ? studyPath(request, mode) : null;
+    };
+
+    return (
+        <section aria-labelledby={titleId} className="flex flex-col gap-[18px]">
+            <SectionHeader jp="学習" title="Study" id={titleId} aside="Pick a deck, then a way to study it" />
+            <div role="group" aria-label="Deck" className="flex flex-wrap items-center gap-2">
+                <span aria-hidden className="mr-1 text-sm text-ink-2">
+                    Deck
+                </span>
+                {decks.map((d) => (
+                    <Chip key={d.id} pressed={deck === d.id} onClick={() => setPicked(d.id)} theme={d.theme}>
+                        {d.label}
+                    </Chip>
                 ))}
             </div>
-
-            {removed && <UndoBar removed={removed} onUndo={() => { restore(removed.char, removed.entry); setRemoved(null); }} />}
-
-            {error && (
-                <p className="mb-4 text-sm text-ink-2">
-                    Couldn’t load kanji details.{" "}
-                    <button type="button" onClick={retry} className="text-[var(--accent)] hover:underline">Try again</button>
-                </p>
+            {deck === "paste" && (
+                <div className="flex flex-col gap-2">
+                    <label htmlFor={pasteId} className="text-sm text-ink-2">
+                        Paste or type the kanji you want to study, up to 60.
+                    </label>
+                    <input
+                        id={pasteId}
+                        value={pasted}
+                        onChange={(e) => setPasted(e.target.value)}
+                        placeholder="海 池 泳 港"
+                        lang="ja"
+                        autoComplete="off"
+                        className="h-11 w-full max-w-md rounded-full border border-line-2 bg-card px-4 font-jp text-lg text-ink placeholder:text-ink-3 focus:border-ink"
+                    />
+                    <p aria-live="polite" className="text-xs text-ink-3">
+                        {pasted.trim() === "" ? "Anything that isn't a kanji is skipped." : pastedChars.length === 0 ? "No kanji found yet." : `${pastedChars.length} kanji: ${pastedChars.join(" ")}`}
+                    </p>
+                </div>
             )}
-
-            {chars.length === 0 ? (
-                <p className="text-ink-3 text-sm py-6">
-                    {filter === "known"
-                        ? "Nothing marked as known yet. Use the status buttons below a kanji, or “Knew it” in flashcards."
-                        : "Nothing still learning. Nice work!"}
-                </p>
-            ) : (
-                <ul className={GRID}>
-                    {chars.map((char) => {
-                        const status = entries[char].status;
-                        const entry = byChar?.get(char);
-                        return (
-                            <li key={char} className="flex flex-col gap-1">
-                                {entry ? (
-                                    <KanjiTile kanji={{ char, meanings: entry.m, jlpt: jlptLevelOf(entry.j), onyomi: entry.on, kunyomi: entry.kun }} />
-                                ) : (
-                                    <Link
-                                        href={kanjiPath(char)}
-                                        className={cn(
-                                            "flex items-center justify-center aspect-square rounded-lg bg-card border border-line border-b-4 text-3xl sm:text-4xl font-bold font-japanese hover:border-[var(--accent)]",
-                                            !byChar && !error && "animate-pulse",
-                                        )}
-                                    >
-                                        {char}
-                                    </Link>
-                                )}
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStatus(char, status === "known" ? "learning" : "known")}
-                                        aria-label={`${char}: ${status === "known" ? "Known" : "Still learning"}. Mark as ${status === "known" ? "still learning" : "known"}`}
-                                        title={status === "known" ? "Known — click to mark as still learning" : "Still learning — click to mark as known"}
-                                        className={cn(
-                                            "flex-1 min-w-0 inline-flex items-center justify-center gap-1 h-8 rounded-md text-[11px] font-medium border transition-colors",
-                                            status === "known"
-                                                ? "border-[var(--accent)]/50 text-[var(--accent)] bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20"
-                                                : "border-line text-ink-2 hover:border-line-2",
-                                        )}
-                                    >
-                                        {status === "known" ? <Check className="w-3 h-3 shrink-0" aria-hidden /> : <BookOpen className="w-3 h-3 shrink-0" aria-hidden />}
-                                        <span className="truncate">{status === "known" ? "Known" : "Learning"}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => remove(char)}
-                                        aria-label={`Remove ${char} from My list`}
-                                        title="Remove from My list"
-                                        className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md border border-line text-ink-3 hover:text-ink hover:border-line-2 transition-colors"
-                                    >
-                                        <X className="w-3.5 h-3.5" aria-hidden />
-                                    </button>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </>
-    );
-}
-
-function UndoBar({ removed, onUndo }: { removed: { char: string }; onUndo: () => void }) {
-    return (
-        <div role="status" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-line bg-card px-4 py-2 text-sm">
-            <span className="text-ink-2">
-                Removed <span className="font-japanese text-ink">{removed.char}</span> from My list.
-            </span>
-            <button type="button" onClick={onUndo} className="text-[var(--accent)] font-medium hover:underline">Undo</button>
-        </div>
-    );
-}
-
-function EmptyState() {
-    return (
-        <div className="rounded-xl border border-line bg-card p-6 sm:p-8 text-ink-2">
-            <p className="text-lg font-medium text-ink">Your list is empty.</p>
-            <p className="mt-2 text-sm">
-                Open any kanji and press Save to add it here. A good place to start is the JLPT N5 kanji.
-            </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-                <Link
-                    href={browsePath({ jlpt: "N5" })}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full bg-[var(--accent)] text-onacc font-bold text-sm hover:opacity-90 transition-opacity"
-                >
-                    Browse N5 kanji
-                </Link>
-                <Link
-                    href={browsePath()}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
-                >
-                    Browse all kanji
-                </Link>
-                <Link
-                    href={studyPath({ kind: "jlpt", level: "N5" })}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
-                >
-                    Study N5 without saving
-                </Link>
-            </div>
-        </div>
+            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
+                {MODES.map((mode) => {
+                    const href = hrefFor(mode.id);
+                    return (
+                        <li key={mode.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                            <p className="flex items-center gap-3">
+                                <span
+                                    aria-hidden
+                                    lang="ja"
+                                    className="flex size-11 flex-none items-center justify-center rounded-full border border-line-2 font-jp text-[21px] font-extrabold leading-none"
+                                >
+                                    {mode.jp}
+                                </span>
+                                <span className="text-[17px] font-bold leading-snug">{mode.title}</span>
+                            </p>
+                            <p className="text-sm text-ink-2">{mode.text}</p>
+                            {href ? (
+                                <Button href={href} size="sm" className="mt-auto self-start" aria-label={`Start ${mode.title.toLowerCase()}`}>
+                                    Start
+                                </Button>
+                            ) : (
+                                <Button size="sm" disabled className="mt-auto self-start">
+                                    Start
+                                </Button>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </section>
     );
 }

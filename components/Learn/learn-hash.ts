@@ -61,11 +61,23 @@ export function closeLearn(char: string) {
     }
 }
 
-/** Refocuses whatever opened the layer, else the element with `fallbackId`. Call once the page is interactive again. */
+/** Marks every "Learn it" button (LearnButton sets it); a page may have two, desktop row and phone action bar. */
+export const LEARN_BUTTON_ATTR = "data-learn-button";
+
+/** The first "Learn it" button that is shown, for a layer opened by a #learn link. */
+function visibleLearnButton(): HTMLElement | null {
+    const buttons = document.querySelectorAll<HTMLElement>(`[${LEARN_BUTTON_ATTR}]`);
+    return Array.from(buttons).find((el) => el.getClientRects().length > 0) ?? null;
+}
+
+/**
+ * Refocuses whatever opened the layer, else the shown "Learn it" button, else
+ * the element with `fallbackId`. Call once the page is interactive again.
+ */
 export function restoreLearnFocus(fallbackId?: string) {
     const target = opener;
     opener = null;
-    const el = target && target.isConnected ? target : fallbackId ? document.getElementById(fallbackId) : null;
+    const el = target && target.isConnected ? target : (visibleLearnButton() ?? (fallbackId ? document.getElementById(fallbackId) : null));
     el?.focus({ preventScroll: true });
 }
 

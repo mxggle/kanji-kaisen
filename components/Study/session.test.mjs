@@ -42,6 +42,12 @@ test("parses a chars deck after the other params, validated and capped at 60", (
     assert.equal(parseStudyParams({ chars: "海", t: "x".repeat(200) }).request.title.length, 80);
 });
 
+test("parses a revisit deck last, validated like chars", () => {
+    assert.deepEqual(parseStudyParams({ revisit: "池海池" }), { request: { kind: "revisit", chars: ["池", "海"] }, invalid: false, mode: null });
+    assert.deepEqual(parseStudyParams({ chars: "海", revisit: "池" }).request, { kind: "chars", chars: ["海"] });
+    assert.equal(parseStudyParams({ revisit: "海" }, () => false).invalid, true);
+});
+
 test("study paths round-trip through the parser", () => {
     const requests = [
         { kind: "list" },
@@ -51,6 +57,7 @@ test("study paths round-trip through the parser", () => {
         { kind: "theme", slug: "time-sequence" },
         { kind: "chars", chars: ["海", "泳"] },
         { kind: "chars", chars: ["𠮟"], title: "Lesson 7 · words" },
+        { kind: "revisit", chars: ["池", "海"] },
     ];
     for (const request of requests) {
         const path = studyPath(request, "flashcards");

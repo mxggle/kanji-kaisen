@@ -9,7 +9,7 @@ import { useStudyStore, useStudyStoreHydrated } from "@/lib/study-store";
 import { listSaved } from "@/lib/study-list";
 import { DeckPicker } from "./DeckPicker";
 import { StudySession, type DeckSource } from "./StudySession";
-import { SessionSkeleton } from "./ui";
+import { SessionSkeleton, STUDY_COLUMN } from "./ui";
 import type { DeckRequest, StudyMode } from "./session";
 
 export interface ServerDeck {
@@ -18,6 +18,8 @@ export interface ServerDeck {
     chars: string[];
     backHref: string;
     backLabel: string;
+    /** A theme deck's theme, for its colour. */
+    category?: string | null;
 }
 
 export interface PickerData {
@@ -45,15 +47,15 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
 
     if (notFound || !request) {
         return (
-            <>
+            <div className={STUDY_COLUMN}>
                 {notFound && (
-                    <div role="alert" className="mb-6 rounded-xl border border-line bg-card p-4 text-sm text-ink-2">
-                        <p className="font-medium text-ink">Deck not found.</p>
-                        <p className="mt-1">That link doesn’t match a radical, theme, JLPT level or kanji set. Pick a deck below instead.</p>
+                    <div role="alert" className="mb-10 flex flex-col gap-1 rounded-2xl border border-line bg-card px-[22px] py-5 text-sm text-ink-2">
+                        <p className="text-base text-ink">Deck not found.</p>
+                        <p>That link doesn&apos;t match a radical, theme, JLPT level or kanji set. Pick a deck below instead.</p>
                     </div>
                 )}
                 <DeckPicker picker={picker} mode={initialMode} />
-            </>
+            </div>
         );
     }
 
@@ -63,10 +65,10 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
 
     if (!serverDeck || serverDeck.chars.length === 0) {
         return (
-            <>
+            <div className={STUDY_COLUMN}>
                 <EmptyDeck title={serverDeck?.title ?? "This deck"} message="This deck has no kanji yet." />
-                <DeckPicker picker={picker} mode={initialMode} />
-            </>
+                <DeckPicker picker={picker} mode={initialMode} heading={false} />
+            </div>
         );
     }
 
@@ -79,6 +81,7 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
             backLabel={serverDeck.backLabel}
             initialMode={initialMode}
             categoryOf={categoryOf}
+            category={serverDeck.category}
         />
     );
 }
@@ -92,7 +95,13 @@ interface ListDeckProps {
 
 function ListDeck(props: ListDeckProps) {
     const hydrated = useStudyStoreHydrated();
-    if (!hydrated) return <SessionSkeleton />;
+    if (!hydrated) {
+        return (
+            <div className={STUDY_COLUMN}>
+                <SessionSkeleton />
+            </div>
+        );
+    }
     return <ListDeckSnapshot {...props} />;
 }
 
@@ -103,13 +112,13 @@ function ListDeckSnapshot({ kind, initialMode, categoryOf, picker }: ListDeckPro
 
     if (chars.length === 0) {
         return (
-            <>
+            <div className={STUDY_COLUMN}>
                 <EmptyDeck
                     title={title}
-                    message={kind === "learning" ? "No saved kanji are marked “still learning”." : "You haven’t saved any kanji yet."}
+                    message={kind === "learning" ? "No saved kanji are marked “still learning”." : "You haven't saved any kanji yet."}
                 />
-                <DeckPicker picker={picker} mode={initialMode} />
-            </>
+                <DeckPicker picker={picker} mode={initialMode} heading={false} />
+            </div>
         );
     }
 
@@ -128,13 +137,15 @@ function ListDeckSnapshot({ kind, initialMode, categoryOf, picker }: ListDeckPro
 
 function EmptyDeck({ title, message }: { title: string; message: string }) {
     return (
-        <div className="mb-8 rounded-xl border border-line bg-card p-6 text-ink-2">
-            <h2 className="text-2xl font-bold text-ink">{title}</h2>
-            <p className="mt-2 text-sm">{message}</p>
-            <p className="mt-2 text-sm">
-                <Link href={browsePath({ jlpt: "N5" })} className="text-[var(--accent)] hover:underline">Browse N5 kanji</Link>{" "}
+        <header className="mb-12 flex flex-col gap-3">
+            <h1 className="type-title">{title}</h1>
+            <p className="text-base leading-relaxed text-ink-2">
+                {message}{" "}
+                <Link href={browsePath({ jlpt: "N5" })} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
+                    Browse N5 kanji
+                </Link>{" "}
                 and save a few, or pick another deck below.
             </p>
-        </div>
+        </header>
     );
 }

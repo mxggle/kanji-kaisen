@@ -5,6 +5,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildMeaningOptions, type QuizCandidate } from "@/lib/atlas/quiz";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
+import { buttonClass } from "@/components/ui/Button";
 import { KanjiDetails } from "./KanjiDetails";
 import { isTextEntry, isTypingTarget } from "./Flashcard";
 import { toQuizCandidate } from "./session";
@@ -53,13 +54,15 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
     }, []);
 
     return (
-        <div>
-            <div className="rounded-2xl border border-line bg-card p-6 flex flex-col items-center">
-                <span className="font-japanese font-bold text-8xl sm:text-9xl leading-none text-ink">{entry.c}</span>
-                <p className="mt-4 text-sm text-ink-3">What does this kanji mean?</p>
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-card p-6 sm:p-8">
+                <span lang="ja" className="font-jp text-[112px] font-extrabold leading-none text-ink sm:text-[136px]">
+                    {entry.c}
+                </span>
+                <p className="text-sm text-ink-2">What does this kanji mean?</p>
             </div>
 
-            <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ul className="grid gap-3 sm:grid-cols-2">
                 {options.map((option, i) => {
                     const isAnswer = option === target.meaning;
                     const isPicked = option === selected;
@@ -71,19 +74,26 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 disabled={answered}
                                 aria-pressed={isPicked}
                                 className={cn(
-                                    "w-full min-h-14 text-left rounded-xl border px-4 py-3 flex items-center gap-3 transition-colors",
-                                    !answered && "border-line bg-card hover:border-[var(--accent)]",
-                                    answered && isAnswer && "border-[var(--accent)] bg-[var(--accent)]/15 text-ink",
-                                    answered && isPicked && !isAnswer && "border-line-2 border-dashed bg-ink/10 text-ink",
+                                    "flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                                    !answered && "cursor-pointer border-line bg-card text-ink hover:border-ink-3",
+                                    answered && isAnswer && "border-ok bg-ok/10 text-ink",
+                                    answered && isPicked && !isAnswer && "border-dashed border-bad bg-card text-ink",
                                     answered && !isAnswer && !isPicked && "border-line text-ink-3",
                                 )}
                             >
-                                <span className="shrink-0 w-6 h-6 rounded-full border border-current text-xs flex items-center justify-center opacity-60">
-                                    {answered && isAnswer ? <Check className="w-3.5 h-3.5" aria-hidden /> : i + 1}
+                                <span
+                                    aria-hidden
+                                    className={cn(
+                                        "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs",
+                                        answered && isAnswer ? "border-ok text-ok" : "border-line-2 text-ink-3",
+                                    )}
+                                >
+                                    {answered && isAnswer ? <Check className="size-3.5" /> : i + 1}
                                 </span>
                                 <span className="min-w-0 break-words">
                                     {option}
-                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-ink-3">Your answer</span>}
+                                    {answered && isAnswer && <span className="sr-only"> (the answer)</span>}
+                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-bad">Your answer</span>}
                                 </span>
                             </button>
                         </li>
@@ -92,22 +102,17 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
             </ul>
 
             {answered && (
-                <div className="mt-6 rounded-xl border border-line bg-card p-4" role="status">
-                    <p className={cn("font-bold mb-3", correct ? "text-[var(--accent)]" : "text-ink")}>
-                        {correct ? "Correct!" : <>Not quite — it means “{target.meaning}”.</>}
+                <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5" role="status">
+                    <p className={cn("font-bold", correct ? "text-ok" : "text-ink")}>
+                        {correct ? "Right." : <>Not quite: it means “{target.meaning}”. Nothing is lost.</>}
                     </p>
                     <KanjiDetails entry={entry} showMeanings={!correct} />
                 </div>
             )}
 
             {answered && (
-                <button
-                    ref={nextRef}
-                    type="button"
-                    onClick={onNext}
-                    className="mt-4 w-full h-14 rounded-xl bg-[var(--accent)] text-onacc font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2"
-                >
-                    {isLast ? "See summary" : "Next"} <ArrowRight className="w-5 h-5" aria-hidden />
+                <button ref={nextRef} type="button" onClick={onNext} className={cn(buttonClass({ variant: "primary", size: "lg" }), "w-full")}>
+                    {isLast ? "See summary" : "Next"} <ArrowRight aria-hidden />
                 </button>
             )}
         </div>

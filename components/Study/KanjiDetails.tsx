@@ -3,23 +3,27 @@ import { ArrowRight } from "lucide-react";
 import { formatReading, readingToRomaji } from "@/lib/atlas/readings";
 import { kanjiPath } from "@/lib/atlas/paths";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
-import { JlptBadge } from "@/components/Atlas/JlptBadge";
+import { Tag } from "@/components/ui/Tag";
 import { jlptLevelOf } from "./session";
 
 /** Meanings, on/kun readings with romaji and a link to the kanji page (the back of a flashcard). */
 export function KanjiDetails({ entry, showMeanings = true }: { entry: SearchIndexEntry; showMeanings?: boolean }) {
     return (
-        <div className="text-left">
-            {showMeanings && <p className="text-xl font-bold text-ink mb-3">{entry.m.slice(0, 5).join(", ")}</p>}
+        <div className="flex flex-col gap-3 text-left">
+            {showMeanings && <p className="text-xl font-bold text-ink">{entry.m.slice(0, 5).join(", ")}</p>}
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
                 <ReadingRow label="On" readings={entry.on} />
                 <ReadingRow label="Kun" readings={entry.kun} />
             </dl>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-                <JlptBadge level={jlptLevelOf(entry.j)} />
-                <span className="text-xs text-ink-3">{entry.s} strokes</span>
-                <Link href={kanjiPath(entry.c)} className="inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:underline">
-                    Open {entry.c} <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Tag>{jlptLevelOf(entry.j)}</Tag>
+                <Tag>{entry.s} strokes</Tag>
+                <Link href={kanjiPath(entry.c)} className="ml-1 inline-flex items-center gap-1 text-sm text-ink underline underline-offset-[3px] hover:text-ink-2">
+                    Open{" "}
+                    <span lang="ja" className="font-jp">
+                        {entry.c}
+                    </span>{" "}
+                    <ArrowRight className="size-3.5" aria-hidden />
                 </Link>
             </div>
         </div>
@@ -29,7 +33,7 @@ export function KanjiDetails({ entry, showMeanings = true }: { entry: SearchInde
 function ReadingRow({ label, readings }: { label: string; readings: string[] }) {
     return (
         <>
-            <dt className="text-ink-3 text-xs uppercase tracking-wider pt-0.5">{label}</dt>
+            <dt className="type-label pt-0.5">{label}</dt>
             <dd className="min-w-0">
                 {readings.length === 0 ? (
                     <span className="text-ink-3">—</span>
@@ -37,8 +41,10 @@ function ReadingRow({ label, readings }: { label: string; readings: string[] }) 
                     <ul className="flex flex-wrap gap-x-3 gap-y-1">
                         {readings.slice(0, 6).map((r) => (
                             <li key={r}>
-                                <span className="font-japanese text-ink">{formatReading(r)}</span>{" "}
-                                <span className="text-ink-3 text-xs">{readingToRomaji(r)}</span>
+                                <span lang="ja" className="font-jp text-ink">
+                                    {formatReading(r)}
+                                </span>{" "}
+                                <span className="text-xs text-ink-3">{readingToRomaji(r)}</span>
                             </li>
                         ))}
                     </ul>

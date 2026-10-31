@@ -19,7 +19,9 @@ export type DeckRequest =
     | { kind: "radical"; key: string }
     | { kind: "theme"; slug: string }
     // A shared teacher set: exactly these kanji (validated on the server), with an optional title.
-    | { kind: "chars"; chars: string[]; title?: string };
+    | { kind: "chars"; chars: string[]; title?: string }
+    // My list's "Worth a revisit" suggestion: these kanji, leading back to My list.
+    | { kind: "revisit"; chars: string[] };
 
 export type StudyParams = Record<string, string | string[] | undefined>;
 
@@ -43,8 +45,8 @@ export interface ParsedStudyParams {
     mode: StudyMode | null;
 }
 
-/** First matching param wins: deck, then jlpt, radical, theme, chars. */
-/** `known` filters `chars=` before the 60-kanji cap (the page passes the atlas lookup). */
+/** First matching param wins: deck, then jlpt, radical, theme, chars, revisit. */
+/** `known` filters `chars=` and `revisit=` before the 60-kanji cap (the page passes the atlas lookup). */
 export function parseStudyParams(params: StudyParams, known?: KnownChars): ParsedStudyParams {
     const mode = parseMode(params.mode);
     const deck = first(params.deck).toLowerCase();
@@ -52,6 +54,7 @@ export function parseStudyParams(params: StudyParams, known?: KnownChars): Parse
     const radical = first(params.radical);
     const theme = first(params.theme);
     const chars = first(params.chars);
+    const revisit = first(params.revisit);
 
     if (deck) {
         if (deck === "list" || deck === "learning") return { request: { kind: deck }, invalid: false, mode };
@@ -70,6 +73,10 @@ export function parseStudyParams(params: StudyParams, known?: KnownChars): Parse
         const title = cleanTitle(first(params.t));
         return { request: { kind: "chars", chars: kanji, ...(title ? { title } : {}) }, invalid: false, mode };
     }
+    if (revisit) {
+        const kanji = extractKanji(revisit, known);
+        return kanji.length ? { request: { kind: "revisit", chars: kanji }, invalid: false, mode } : { request: null, invalid: true, mode };
+    }
     return { request: null, invalid: false, mode };
 }
 
@@ -81,6 +88,7 @@ export function studyPath(request: DeckRequest | null, mode?: StudyMode | null):
         else if (request.kind === "jlpt") params.set("jlpt", request.level);
         else if (request.kind === "radical") params.set("radical", request.key);
         else if (request.kind === "theme") params.set("theme", request.slug);
+        else if (request.kind === "revisit") params.set("revisit", request.chars.join(""));
         else {
             params.set("chars", request.chars.join(""));
             if (request.title) params.set("t", request.title);

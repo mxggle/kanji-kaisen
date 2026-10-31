@@ -49,7 +49,7 @@ export function WriteCanvas({ strokes, onComplete, apiRef }: WriteCanvasProps) {
 
         import("kanji-recognizer").then(({ KanjiWriter }) => {
             if (cancelled) return;
-            // Colours come from the skin tokens on this element (--c follows the theme).
+            // Colours come from the skin tokens on this element (--c follows the theme). The stage draws the grid.
             const css = getComputedStyle(host);
             const token = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
             host.innerHTML = "";
@@ -62,7 +62,7 @@ export function WriteCanvas({ strokes, onComplete, apiRef }: WriteCanvasProps) {
                 hintColor: token("--c", "#3BE0A6"),
                 gridColor: token("--line-2", "rgba(237,234,226,.28)"),
                 showGhost: false,
-                showGrid: true,
+                showGrid: false,
                 checkMode: "stroke",
                 strokeWidth: 4.5,
                 snapDuration: 160,
@@ -85,5 +85,5 @@ export function WriteCanvas({ strokes, onComplete, apiRef }: WriteCanvasProps) {
         };
     }, [id, strokes, skin, apiRef]);
 
-    return <div ref={hostRef} id={id} className="h-full w-full cursor-crosshair touch-none rounded-2xl border border-dashed border-line-2" />;
+    return <div ref={hostRef} id={id} className="h-full w-full cursor-crosshair touch-none" />;
 }

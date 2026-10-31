@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { BookmarkPlus } from "lucide-react";
-import { kanjiPath } from "@/lib/atlas/paths";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import type { StudyEntries } from "@/lib/study-list";
+import { Button } from "@/components/ui/Button";
+import { KanjiTile } from "@/components/ui/KanjiTile";
+import { KindLabel, SectionHeader } from "@/components/ui/SectionHeader";
 import { uniqueChars, type StudyMode } from "./session";
 
 export interface CardResult {
@@ -20,6 +21,8 @@ interface SessionSummaryProps {
     results: CardResult[];
     byChar: Map<string, SearchIndexEntry>;
     saved: StudyEntries;
+    /** Each kanji's theme, for its tile colour. */
+    categoryOf?: (char: string) => string | null;
     onSave: (chars: string[]) => void;
     onAgain: () => void;
     onMissed: (chars: string[]) => void;
@@ -30,79 +33,89 @@ interface SessionSummaryProps {
     backLabel: string;
 }
 
-const PRIMARY = "inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] text-onacc font-bold text-sm hover:opacity-90 transition-opacity";
-const SECONDARY = "inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors";
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
+/** The end of a session: what went by, the kanji worth another look, and where to go next (one primary). */
 export function SessionSummary(props: SessionSummaryProps) {
-    const { mode, results, byChar, saved } = props;
+    const { mode, results, byChar, saved, categoryOf } = props;
     const quiz = mode === "quiz";
     const positive = results.filter((r) => r.outcome === "known" || r.outcome === "correct").length;
     const toReview = uniqueChars(results.filter((r) => r.outcome === "learning" || r.outcome === "missed").map((r) => r.char));
     const unsaved = toReview.filter((c) => !saved[c]);
     const endedEarly = results.length < props.total;
+    const went = endedEarly ? `You went through ${results.length} of ${props.total} cards` : `You went through all ${plural(props.total, "card", "cards")}`;
+    const split = quiz
+        ? `${positive} right, ${results.length - positive} to look at again`
+        : `${positive} you knew, ${results.length - positive} still learning`;
+
+    // One primary: the next chunk, else the missed ones, else the same cards again.
+    const primary = props.onNext ? "next" : toReview.length > 0 ? "missed" : "again";
 
     return (
-        <div>
-            <p className="text-xs text-ink-3 mb-1">{props.title} · {props.label}</p>
-            <h1 className="text-3xl font-bold mb-2">Session complete</h1>
-            <p className="text-ink-2 text-sm mb-6">
-                {endedEarly ? `You went through ${results.length} of ${props.total} cards.` : `You went through all ${props.total} cards.`}
-            </p>
-
-            <dl className="grid grid-cols-2 gap-3 mb-8 max-w-md">
-                <div className="rounded-xl border border-line bg-card p-4">
-                    <dt className="text-xs text-ink-3 uppercase tracking-wider">{quiz ? "Correct" : "Knew it"}</dt>
-                    <dd className="text-3xl font-bold text-[var(--accent)]" data-testid="summary-positive">{positive}</dd>
-                </div>
-                <div className="rounded-xl border border-line bg-card p-4">
-                    <dt className="text-xs text-ink-3 uppercase tracking-wider">{quiz ? "To review" : "Still learning"}</dt>
-                    <dd className="text-3xl font-bold" data-testid="summary-review">{results.length - positive}</dd>
-                </div>
-            </dl>
+        <div className="flex flex-col gap-10">
+            <header className="flex flex-col gap-3">
+                <KindLabel jp="了">
+                    {props.title} · {props.label}
+                </KindLabel>
+                <h1 className="type-title">Session complete</h1>
+                <p className="text-base leading-relaxed text-ink-2">
+                    {went}: {split}. A miss costs nothing.
+                </p>
+            </header>
 
             {toReview.length > 0 ? (
-                <section className="mb-8">
-                    <h2 className="text-lg font-bold mb-3">{quiz ? "Worth another look" : "Still learning"}</h2>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <section className="flex flex-col gap-4">
+                    <SectionHeader jp="再訪" title={quiz ? "Worth another look" : "Still learning"} as="h2" />
+                    <ul className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5">
                         {toReview.map((char) => {
                             const entry = byChar.get(char);
                             return (
-                                <li key={char}>
-                                    <Link
-                                        href={kanjiPath(char)}
-                                        className="flex items-center gap-3 rounded-lg border border-line bg-card px-3 py-2 hover:border-ink-3 transition-colors"
-                                    >
-                                        <span className="font-japanese text-3xl font-bold">{char}</span>
-                                        <span className="min-w-0 text-sm text-ink-2 truncate">{entry?.m.slice(0, 3).join(", ")}</span>
-                                    </Link>
+                                <li key={char} className="min-w-0">
+                                    <KanjiTile kanji={{ char, meanings: entry?.m, onyomi: entry?.on, kunyomi: entry?.kun, category: categoryOf?.(char) ?? null }} />
                                 </li>
                             );
                         })}
                     </ul>
                     {unsaved.length > 0 && (
-                        <button type="button" onClick={() => props.onSave(unsaved)} className={`${SECONDARY} mt-3`}>
-                            <BookmarkPlus className="w-4 h-4" aria-hidden /> Save {unsaved.length === 1 ? "it" : `these ${unsaved.length}`} to My list
-                        </button>
+                        <Button size="sm" onClick={() => props.onSave(unsaved)} className="self-start">
+                            <BookmarkPlus aria-hidden /> Save {unsaved.length === 1 ? "it" : `these ${unsaved.length}`} to My list
+                        </Button>
                     )}
                 </section>
             ) : (
-                <p className="mb-8 text-ink-2">{quiz ? "Every answer right." : "You knew every card."} Nice work!</p>
+                <p className="text-base text-ink-2">{quiz ? "Every answer right." : "You knew every card."}</p>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
-                {props.onNext && (
-                    <button type="button" onClick={props.onNext} className={PRIMARY}>{props.nextLabel}</button>
-                )}
-                {toReview.length > 0 && (
-                    <button type="button" onClick={() => props.onMissed(toReview)} className={props.onNext ? SECONDARY : PRIMARY}>
-                        {quiz ? "Study missed ones" : "Study still-learning ones"} ({toReview.length})
-                    </button>
-                )}
-                <button type="button" onClick={props.onAgain} className={SECONDARY}>Study again</button>
-                <button type="button" onClick={props.onSetup} className={SECONDARY}>Change mode</button>
-                <Link href="/my-list" className={SECONDARY}>Back to My list</Link>
-                {props.backHref !== "/my-list" && <Link href={props.backHref} className={SECONDARY}>{props.backLabel}</Link>}
-                <Link href="/study" className={SECONDARY}>Choose another deck</Link>
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2.5">
+                    {props.onNext && (
+                        <Button variant="primary" onClick={props.onNext}>
+                            {props.nextLabel}
+                        </Button>
+                    )}
+                    {toReview.length > 0 && (
+                        <Button variant={primary === "missed" ? "primary" : "secondary"} onClick={() => props.onMissed(toReview)}>
+                            {quiz ? "Study missed ones" : "Study still-learning ones"} · {toReview.length}
+                        </Button>
+                    )}
+                    <Button variant={primary === "again" ? "primary" : "secondary"} onClick={props.onAgain}>
+                        Study again
+                    </Button>
+                    <Button onClick={props.onSetup}>Change mode</Button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                    <Button variant="quiet" href="/my-list">
+                        Back to My list
+                    </Button>
+                    {props.backHref !== "/my-list" && (
+                        <Button variant="quiet" href={props.backHref}>
+                            {props.backLabel}
+                        </Button>
+                    )}
+                    <Button variant="quiet" href="/study">
+                        Choose another deck
+                    </Button>
+                </div>
             </div>
         </div>
     );
