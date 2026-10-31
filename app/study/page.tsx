@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { getAllKanji, getCategories, getCategory, getKanjiByJlpt, getRadical, JLPT_LEVELS } from "@/lib/atlas";
+import { getAllKanji, getCategories, getCategory, getKanji, getKanjiByJlpt, getRadical, JLPT_LEVELS } from "@/lib/atlas";
 import { CATEGORIES } from "@/lib/atlas/categories";
 import { browsePath, categoryPath, radicalPath } from "@/lib/atlas/paths";
+import { setPath } from "@/lib/teach-set";
 import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
 import { StudyClient, type PickerData, type ServerDeck } from "@/components/Study/StudyClient";
 import { parseStudyParams, studyPath, type DeckRequest, type StudyParams } from "@/components/Study/session";
 
 export const metadata: Metadata = {
     title: "Study",
-    description: "Flashcards and a meaning quiz over your saved kanji, a JLPT level, a radical or a theme.",
+    description: "Flashcards and a meaning quiz over your saved kanji, a JLPT level, a radical, a theme or a shared set.",
     robots: { index: false, follow: true },
 };
 
@@ -16,7 +17,7 @@ interface StudyPageProps {
     searchParams: Promise<StudyParams>;
 }
 
-/** Resolves radical, theme and JLPT decks from the atlas; list decks are resolved on the client. */
+/** Resolves radical, theme, JLPT and shared-set decks from the atlas; list decks are resolved on the client. */
 function resolveServerDeck(request: DeckRequest): ServerDeck | null {
     switch (request.kind) {
         case "jlpt":
@@ -47,6 +48,18 @@ function resolveServerDeck(request: DeckRequest): ServerDeck | null {
                 chars: category.kanji.map((k) => k.char),
                 backHref: categoryPath(category.name),
                 backLabel: `Back to ${category.name}`,
+            };
+        }
+        case "chars": {
+            // Unknown kanji are dropped; an all-unknown set is "not found".
+            const chars = request.chars.filter((c) => getKanji(c) !== null);
+            if (chars.length === 0) return null;
+            return {
+                source: "chars",
+                title: request.title || "Shared set",
+                chars,
+                backHref: setPath("set", { chars, title: request.title }),
+                backLabel: "Back to the set",
             };
         }
         default:
