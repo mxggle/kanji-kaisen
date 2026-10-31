@@ -264,7 +264,7 @@ Existing events are kept: `search_performed`, `kanji_viewed`, `radical_viewed`, 
 - [x] **3.3** README, CHANGELOG `[2.1.0]` (2.0.0 is unreleased; the owner may fold both into one release) and the version in `package.json` and the footer.
 - [x] **3.4** Browser QA with the built app (`pnpm build && pnpm start`) at 390 and 1280 px in both skins: `/`, `/kanji/海`, `/kanji/休`, `/kanji/鍋`, `/radical/ki`, `/category/nature-elements`, `/teach`, a print preview, `/teach/present`, `/set?k=海泳`, `/study?chars=海泳`, `/browse`, `/search?q=mizu`, `/my-list`, `/practice`. Pass criteria: no console errors, no horizontal scroll, and readings above the fold on kanji pages.
 - [x] **3.5** Independent review subagent on the full diff against `claude/zen-sagan-9123o5`, briefed on goals only. Verify its findings and fix the real ones.
-- [ ] **3.6** Final report appended here: what shipped, deferred items with reasons, coverage numbers, owner to-dos. Commit. Do not push, open a PR, merge to `main` or deploy without asking the owner.
+- [x] **3.6** Final report appended here: what shipped, deferred items with reasons, coverage numbers, owner to-dos. Commit. Do not push, open a PR, merge to `main` or deploy without asking the owner.
 
 ### Deferred (with reasons)
 
@@ -308,4 +308,70 @@ _(append entries here as `- YYYY-MM-DD task — what changed and why`)_
 
 ## Final report
 
-_(appended at 3.6)_
+_2026-10-31, branch `claude/story-atlas-847c2a` (not pushed). `pnpm lint` clean, `pnpm test` 301/301, `pnpm build` prerenders 2,671 pages. Version 2.1.0._
+
+### What shipped
+
+- **Kanji pages** (`/kanji/[char]`, 2,384 SSG pages) are story-first and reading-first:
+  - Readings come first: one block per reading with its words, and irregular readings under "Special readings".
+  - Part chips show each part's role (meaning or sound) in its theme colour.
+  - "How it was built": the parts assemble, then the sourced ancient forms play in `JourneyPlayer`.
+  - Etymology from Wiktionary, with a revision link, sits apart from the labelled Memory story.
+  - Glowing stroke animation, the numbered diagram and Try writing.
+  - Links: also built on, sound family, same on'yomi, look-alike compare.
+  - "In Chinese" note with the `zh_note_opened` event and the `zh_edition_interest` fake door.
+  - Share card (1080×1350 PNG drawn in the browser).
+  - Print and Present links.
+  - The `#learn` layer: 会 Meet, 想 Recall, 描 Trace, 書 Write (writing is opt-in and local only).
+- **Ink:** five shades per kanji (白 淡 中 濃 印). They come from the learn steps or self-marking. Wrong answers never lower a shade, there is no review queue, and the old study statuses are migrated. Theme scrolls regain colour as kanji darken.
+- **Radical journey pages** (`/radical/[key]`, 230 pages): staged oracle bone → bronze → seal → today animation, Origin and Memory story, "What X grows into", theme scroll and an ink-shaded kanji grid. `/radicals` is a seal index.
+- **Learn home** (`/`): search first, a featured theme with an ink ring, radical seals and "Continue with X", ten gates. **Theme pages** have seals in a suggested order, a selected-radical panel and a server-rendered list of all kanji. `/categories` is a gate grid.
+- **Skins:** 夜 Night and 墨 Ink, set by tokens, a persisted toggle and a no-flash script. Ink-wash art, print forces 墨. New fonts. New header: Learn / Browse / My list / Teach.
+- **Teacher kit:** `/teach` builder, A4/Letter worksheets (stroke strip, tracing cells, 米字格 cells, words, answer key), a projector (one stroke per key press, room quiz), `/set` share links with a hand-rolled QR code, and `/study?chars=`. Nothing needs an account or a backend.
+- **Data:**
+  - A language-neutral core (`lib/core/`) and a Japanese layer (`lib/ja/`). Each share-alike source has its own file and notice.
+  - KANJIDIC2 meaning order (土 "soil", 西 "west"), also written back to `lib/kanji-db.json`.
+  - All 2,136 jōyō kanji (161 added).
+  - JMdict words, aligned to readings with JmdictFurigana: 97.7% of kanji have at least 3 words.
+  - Phonetic series (498) and look-alikes.
+  - Unihan simplified, traditional and pinyin.
+  - Wiktionary glyph origins (983 chars).
+  - Licence-filtered ancient forms.
+- **Analytics:**
+  - New: `journey_played` (with the radical key), `build_played`, `learn_step_completed`, `ink_changed`, `share_card_created`, `worksheet_printed`, `projector_opened`, `share_link_created`, `share_link_opened`, `zh_note_opened`, `zh_edition_interest`, `skin_changed`, `theme_gate_clicked`.
+  - Kept from 2.0.0: `search_performed`, `kanji_viewed`, `radical_viewed`, `kanji_saved`, `kanji_status_changed`, `trace_used`, `study_started`, `study_completed`.
+- **Licences:** `/about` credits KanjiVG, Kanji alive, KANJIDIC2, JMdict, JmdictFurigana, Unihan, Wiktionary, Commons and 小學堂. `/about/ancient-forms` lists every hosted file (1,224) with its licence, source and author.
+
+### Ancient-form coverage (final)
+
+| Radical chars (194) | oracle | bronze | seal | any | all three |
+|---|---|---|---|---|---|
+| Commons only, after the Sears filter | 94 | 80 | 22 | 126 (65%) | 8 |
+| Plus Academia Sinica 小學堂 (CC0) | 150 | 157 | 192 | **194 (100%)** | 133 |
+
+- Radical keys: 230/230 have at least one form.
+- Non-radical kanji are still Commons-only: 247 of the top 600 and 381 of the other 1,477 jōyō kanji have at least one form.
+- Hosted files: 1,224 (932 Commons SVG, 292 小學堂 PNG), about 3.3 MiB.
+- 木 has all three stages and stays the flagship journey.
+- 小學堂's CC0 licence is quoted from its official page in the Deviations log.
+
+### Deferred (with reasons)
+
+- **"Picture" stage art:** needs an illustrator. The data model has a `picture` slot.
+- **Per-kanji OG images:** build cost. Revisit with on-demand rendering after deploy.
+- **Chinese edition:** only the probe ships. The edition waits for the thresholds in the Chinese-market report.
+- **Spaced review:** the owner chose no review queue.
+- **Teacher back-end:** out of scope by decision.
+- **小學堂 forms for non-radical kanji:** the brief asked for radicals first. Running `pnpm data:xiaoxue` over more characters is a follow-up.
+- **Not verified:** a real print dialog, Safari and Firefox, real phones, screen readers, Web Share, and how the Fullscreen API behaves on projectors.
+
+### What the owner must do
+
+1. Decide whether to push this branch, open a PR, merge and deploy. Nothing has been pushed. 2.0.0 was never released, so 2.0.0 and 2.1.0 could ship as one release.
+2. Set `NEXT_PUBLIC_SITE_URL` in Vercel. It drives canonicals, the sitemap, robots and the worksheet footer.
+3. After deploy, watch the events above against the report thresholds:
+   - map clicks vs search: `theme_gate_clicked` vs `search_performed`
+   - `zh_note_opened` ÷ `kanji_viewed` ≥ 8%
+   - `worksheet_printed` and `projector_opened` for teachers
+4. Optionally review the old radical `origin` texts, which now sit inside the labelled Memory story blocks; some read like history.
+5. The agent worktrees `/Users/harry/code/kanji-kaisen/.claude/worktrees/sa-*` and their `claude/sa-*` branches are all merged here and can be removed.
