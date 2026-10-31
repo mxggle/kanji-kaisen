@@ -4,8 +4,35 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-01
+
+"One Atlas": the story atlas redrawn as one product. See `docs/superpowers/plans/2026-10-31-one-atlas.md` and the boards in `docs/design/boards/`.
+
 ### Added
+- One design system, with five rules: colour = theme, line = role, fill = your ink, italic = story, glow = live. Its tokens live in `app/globals.css`, its shared components in `components/ui/` and its layouts in `components/Layout/`. `/system` (not indexed) shows every piece in both skins.
+- One form each for a kanji (tile), a radical (round seal) and a theme (arched gate). A seal's fill is the mean ink of its eight most common kanji. A group (theme, radical, deck) shows one painted bar.
+- Two page templates. Theme, radical and kanji pages use the Plate (a specimen beside the reading column, with an atlas path above it: Learn › theme › radical › kanji). Browse, My list and Teach use the Tool (a title row, a filter or source rail, then the result).
+- Phone tab bar (学 Learn · 探 Browse · 墨 My list · 教 Teach). On atlas pages the atlas path moves into the phone header, and kanji, theme and radical pages get a sticky action bar.
+- Home: a "Where you left off" card (the next learn step for your last kanji), ten theme gates, "Read a kanji by its parts" and "Other ways in".
+- Browse: several themes at once, a "Your ink" filter (`ink=`), a reading filter (`reading=`), counts that follow the other filters, and a folded filter panel on phones.
+- My list: your ink in five shades, ten theme bars, "Worth a revisit" (the oldest 淡/中 kanji, never counted as due) and study decks, including a revisit deck.
+- The learn layer opens at your first unfinished step. Its tabs are 会 Meet · 想 Recall · 描 Trace · 書 Write, with the current step lit.
+- `/about` explains the five rules in learner terms.
 - Ancient-form stages that Wikimedia Commons can't fill are now taken directly from Academia Sinica 小學堂 (CC0 1.0), starting with the radicals; 木 now has oracle bone, bronze and seal forms. `pnpm data:xiaoxue` fetches them, and `/about/ancient-forms` credits each glyph with its Sinica code and a link to its 小學堂 page.
+
+### Changed
+- The nav labels and URLs stay the same, but kanji pages now belong to Learn, not Browse. The footer is one row; the personal site and email moved to `/about`.
+- Kanji page: a specimen with Parts · Strokes · Ancient tabs (stroke order now appears only once), then reading blocks. Origin and memory story sit side by side, and connections are all shown as tiles.
+- Theme page: a radical seal grid drives a preview card, JLPT chips open Browse filtered to the theme, and the other nine themes are shown as gates.
+- Radical page: the journey player has stage tabs, a sourced origin, "Where it sits in a kanji" and "What it grows into" (sourced examples only).
+- Teach: the set builder sits on the Tool template, with Worksheet · Projector · Share link tabs. The worksheet still prints in 墨, with vermilion stroke highlights.
+- The 濃 fill in 夜 mixes 45% theme colour (was 60%), and small readings on 淡/中 use ink-2. Every theme × shade × text combination is now at least 4.5:1 (`node scripts/check-ink-contrast.mjs`).
+- The share card colours each part by its role, using the kanji's own theme colour: meaning and sound in the accent (sound dashed), form in grey, with no glow.
+
+### Removed
+- The mint accent and every JLPT colour (JLPT is a plain tag). Classic practice keeps its own colours.
+- The ink ring, theme scroll, ink dots and "you know N" counts; the featured-theme deck and the kanji of the day on home; the long "All kanji by radical" list on theme pages; the static numbered stroke diagram; and every glow apart from the live stroke and the current learn step.
+- The hamburger menu, the 12-link footer and the feedback card (now a "Send feedback" link).
 
 ## [2.1.0] - 2026-10-31
 

@@ -6,22 +6,24 @@
 
 The site has two skins: 夜 Night, the dark default, and 墨 Ink, light paper that is also used for printing. Teachers can print worksheets, present on a projector and share sets without student accounts.
 
+Every page follows one small system with five rules: **colour = theme**, **line = role** (solid for the part that carries meaning, dashed for the part that carries sound), **fill = your ink**, **italic = story** (only memory stories) and **glow = live** (only a stroke being drawn and the current learn step). A kanji is always a tile, a radical a round seal and a theme an arched gate.
+
 ## Features
 
 - 📖 **A page per kanji, readings first.** One block per reading (on'yomi in compounds, kun'yomi on its own) with the words that use it, and irregular readings marked. The page also has:
   - the parts with their role (meaning or sound)
   - "How it was built": the parts assemble, then the sourced ancient forms
   - a sourced **Origin** kept apart from the labelled **Memory story**
-  - a glowing stroke-order animation and a numbered diagram
+  - Parts · Strokes · Ancient tabs: the parts drawn by role, numbered stroke order with "Try writing it", and the sourced ancient forms
   - links to kanji built on the same parts, the sound family, kanji with the same on'yomi, and look-alikes compared side by side
   - an "In Chinese" note (simplified, traditional and pinyin)
   - a share card
 - 🪶 **Learn it in four steps.** 会 Meet, 想 Recall, 描 Trace and 書 Write open as a layer on any kanji page (`/kanji/海#learn`). Every step is optional, and writing is off by default.
-- 🖋️ **Five shades of ink.** 白 Not met, 淡 Met, 中 Learning, 濃 Familiar, 印 Mastered. Shades rise as you work and you can set them yourself. Wrong answers never lower them, and there is no review queue. Each theme's illustration regains colour as its kanji darken.
+- 🖋️ **Five shades of ink.** 白 Not met, 淡 Met, 中 Learning, 濃 Familiar, 印 Mastered. Shades rise as you work and you can set them yourself. Wrong answers never lower them, and there is no review queue. A tile's fill is its shade; a radical seal takes the mean of its common kanji; a theme, radical or deck shows one painted bar.
 - 🧭 **Radical journeys.** 230 radical pages play the sourced oracle bone → bronze → seal → today stages. Each page shows the origin, the memory story and what the radical grows into.
 - 🌋 **Ten themes.** Nature & Elements, Human Body & People, Tools & Weapons and more. Each theme has illustrated art and its radicals in a suggested order, which you are free to ignore.
-- 🔎 **Search and browse.** Search by kanji, English meaning, kana or romaji (`water`, `みず`, `mizu`, `水`). Browse with filters for JLPT level, strokes, theme or radical.
-- ⭐ **My list and Study.** Save kanji and study any deck (your list, a JLPT level, radical, theme or `?chars=` set) with flashcards or a meaning quiz.
+- 🔎 **Search and browse.** Search by kanji, English meaning, kana or romaji (`water`, `みず`, `mizu`, `水`). Browse with filters for JLPT level, theme (several at once), your ink, strokes, radical or reading.
+- ⭐ **My list and Study.** Your ink in five shades and by theme, saved kanji, a "worth a revisit" shelf that never counts anything as due, and decks (your list, a JLPT level, radical, theme or `?chars=` set) to study with flashcards, a meaning quiz or the four steps.
 - 🍎 **Teach.** Build a set from a theme, radical, JLPT level, My list or pasted text. Then print A4 or Letter worksheets (stroke order, tracing cells and 米字格 practice cells), present it one stroke per key press, or share a link students open without an account.
 - 🥋 **Classic practice.** The original step-by-step path is still at `/practice`.
 
@@ -29,11 +31,11 @@ The site has two skins: 夜 Night, the dark default, and 墨 Ink, light paper th
 
 | Route | What it is |
 |---|---|
-| `/` | Learn home: search, featured theme with ink progress, ten theme gates, kanji of the day |
+| `/` | Learn home: search, where you left off, ten theme gates, reading a kanji by its parts, other ways in |
 | `/kanji/[char]` | Kanji page (statically generated for every kanji); `#learn` opens the four-step layer |
 | `/radicals`, `/radical/[key]` | Radical index and radical journey pages |
 | `/categories`, `/category/[slug]` | Theme index and theme pages |
-| `/browse` | Filterable kanji list (`?jlpt=N5&min=1&max=10&sort=strokes&theme=…&radical=…`) |
+| `/browse` | Filterable kanji list (`?jlpt=N5&min=1&max=10&sort=strokes&theme=a,b&radical=…&ink=0,1&reading=…`) |
 | `/search?q=` | Full search results |
 | `/my-list`, `/study` | Saved kanji and study sessions (`/study?chars=海泳`) |
 | `/teach` | Teacher set builder |
@@ -41,8 +43,13 @@ The site has two skins: 夜 Night, the dark default, and 墨 Ink, light paper th
 | `/practice`, `/practice/[slug]` | Classic practice path |
 | `/about`, `/about/ancient-forms` | About, data sources and licences; per-file credits for ancient forms |
 | `/settings` | Skin, classic-practice options and reset tools |
+| `/system` | The design system's components in both skins (not indexed) |
 
 `/learn` redirects to `/practice` and `/heatmap` to `/browse`.
+
+## Design
+
+The approved boards are in `docs/design/boards/` (`node scripts/design-preview/server.mjs 3301` serves them) and the exact token and component values are in `docs/design/one-atlas.css`. In the app, tokens live in `app/globals.css`, shared components in `components/ui/` and page templates in `components/Layout/`; `/system` renders them all. `node scripts/check-ink-contrast.mjs` checks every ink fill against the text it carries in both skins.
 
 ## Data sources and credits
 
