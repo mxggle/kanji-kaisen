@@ -4,6 +4,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 import { BookmarkPlus, Check, RotateCcw } from "lucide-react";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import type { StudyStatus } from "@/lib/study-list";
+import { Button } from "@/components/ui/Button";
 import { KanjiDetails } from "./KanjiDetails";
 import { Checkbox } from "./ui";
 
@@ -17,12 +18,12 @@ interface FlashcardProps {
     onMark: (status: StudyStatus) => void;
 }
 
-/** True when a key press belongs to a focused control rather than the card shortcuts. */
 /** Text fields (e.g. the header search box) own every key, so shortcuts stay off there. */
 export function isTextEntry(target: EventTarget | null): boolean {
     return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 }
 
+/** True when a key press belongs to a focused control rather than the card shortcuts. */
 export function isTypingTarget(target: EventTarget | null): boolean {
     return target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(target.tagName);
 }
@@ -49,75 +50,57 @@ export function Flashcard({ entry, status, saveMarked, onSaveMarkedChange, onSav
     }, []);
 
     return (
-        <div>
-            <div className="w-full rounded-2xl border border-line bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 min-h-64">
+        <div className="flex flex-col gap-4">
+            <div className="flex min-h-64 w-full flex-col items-center gap-6 rounded-2xl border border-line bg-card p-6 sm:flex-row sm:p-8">
                 <button
                     type="button"
                     onClick={() => setFlipped((f) => !f)}
                     aria-label={flipped ? `Hide answer for ${entry.c}` : `Show answer for ${entry.c}`}
-                    className="font-japanese font-bold text-8xl sm:text-9xl leading-none text-ink shrink-0 rounded-lg px-2 hover:text-[var(--accent)] transition-colors"
+                    className="shrink-0 cursor-pointer rounded-xl px-2 font-jp text-[112px] font-extrabold leading-none text-ink transition-colors hover:text-ink-2 sm:text-[136px]"
                 >
-                    {entry.c}
+                    <span lang="ja">{entry.c}</span>
                 </button>
                 {flipped ? (
-                    <div className="w-full sm:flex-1 min-w-0" data-testid="flashcard-back">
+                    <div className="w-full min-w-0 sm:flex-1" data-testid="flashcard-back">
                         <KanjiDetails entry={entry} />
                     </div>
                 ) : (
                     <button
                         type="button"
                         onClick={() => setFlipped(true)}
-                        className="sm:flex-1 text-ink-3 text-sm inline-flex items-center justify-center gap-2 hover:text-ink transition-colors"
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 text-sm text-ink-3 transition-colors hover:text-ink sm:flex-1"
                     >
-                        <RotateCcw className="w-4 h-4" aria-hidden /> Recall the meaning, then tap or press Space to flip
+                        <RotateCcw className="size-4" aria-hidden /> Recall the meaning, then tap or press Space to flip
                     </button>
                 )}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm min-h-9">
+            <div className="flex min-h-9 flex-wrap items-center justify-between gap-3 text-sm">
                 {status ? (
-                    <span className="text-ink-3">
-                        In My list · {status === "known" ? "Known" : "Still learning"}
-                    </span>
+                    <span className="text-ink-3">In My list · {status === "known" ? "Knew it" : "Still learning"}</span>
                 ) : saveMarked ? (
                     <span className="text-ink-3">Not saved yet · marking it will save it</span>
                 ) : (
-                    <button
-                        type="button"
-                        onClick={onSave}
-                        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-line-2 text-ink hover:border-[var(--accent)] transition-colors"
-                    >
-                        <BookmarkPlus className="w-4 h-4" aria-hidden /> Save to My list
-                    </button>
+                    <Button size="sm" onClick={onSave}>
+                        <BookmarkPlus aria-hidden /> Save to My list
+                    </Button>
                 )}
                 <Checkbox checked={saveMarked} onChange={onSaveMarkedChange} label="Save cards I mark" />
             </div>
 
             {flipped ? (
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={() => onMark("learning")}
-                        className="h-14 rounded-xl border border-line-2 bg-card font-bold hover:border-ink-3 transition-colors"
-                    >
-                        Still learning <kbd className="hidden sm:inline text-xs text-ink-3 font-normal ml-1">1</kbd>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => onMark("known")}
-                        className="h-14 rounded-xl bg-[var(--accent)] text-onacc font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2"
-                    >
-                        <Check className="w-5 h-5" aria-hidden /> Knew it <kbd className="hidden sm:inline text-xs text-onacc/70 font-normal">2</kbd>
-                    </button>
+                <div className="grid grid-cols-2 gap-3">
+                    <Button size="lg" onClick={() => onMark("learning")} className="w-full">
+                        Still learning <kbd className="text-xs font-normal text-ink-3 max-sm:hidden">1</kbd>
+                    </Button>
+                    <Button variant="primary" size="lg" onClick={() => onMark("known")} className="w-full">
+                        <Check aria-hidden /> Knew it <kbd className="text-xs font-normal opacity-70 max-sm:hidden">2</kbd>
+                    </Button>
                 </div>
             ) : (
-                <button
-                    type="button"
-                    onClick={() => setFlipped(true)}
-                    className="mt-6 w-full h-14 rounded-xl border border-line-2 bg-card font-bold hover:border-[var(--accent)] transition-colors"
-                >
+                <Button variant="primary" size="lg" onClick={() => setFlipped(true)} className="w-full">
                     Show answer
-                </button>
+                </Button>
             )}
         </div>
     );

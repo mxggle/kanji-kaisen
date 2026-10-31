@@ -5,15 +5,6 @@ import { cn } from "@/lib/utils";
 import { SHADE_JP, SHADE_NAMES, SHADES, type Shade } from "@/lib/ink";
 import { useInkHydrated, useInkStore } from "@/lib/ink-store";
 
-// Swatches from the System board: blank paper, then darker ink, then the seal.
-const SWATCH: Record<Shade, string> = {
-    0: "border border-dashed border-line-2 text-ink-3",
-    1: "bg-ink/[.09] text-ink",
-    2: "bg-ink/[.22] text-ink",
-    3: "bg-ink/[.48] text-bg",
-    4: "bg-c text-onacc",
-};
-
 interface InkPickerProps {
     char: string;
     /** `source` of the `ink_changed` event. Default "self". */
@@ -23,7 +14,10 @@ interface InkPickerProps {
     className?: string;
 }
 
-/** Self-marking: pick any of the five shades for one kanji (up or down). */
+/**
+ * Self-marking: the five shades as swatches, filled like a tile (rule 3), for
+ * one kanji. Any shade, up or down. The colour follows the page's theme.
+ */
 export function InkPicker({ char, source = "self", label, className }: InkPickerProps) {
     const hydrated = useInkHydrated();
     const stored = useInkStore((state) => state.entries[char]?.shade ?? 0);
@@ -55,14 +49,16 @@ export function InkPicker({ char, source = "self", label, className }: InkPicker
             aria-label={label ?? `Your ink for ${char}`}
             aria-disabled={!hydrated || undefined}
             onKeyDown={hydrated ? onKeyDown : undefined}
-            className={cn("flex flex-wrap gap-2", className)}
+            className={cn("flex flex-wrap gap-1.5", className)}
         >
             {SHADES.map((shade) => {
                 const checked = hydrated && shade === current;
                 return (
                     <button
                         key={shade}
-                        ref={(el) => { refs.current[shade] = el; }}
+                        ref={(el) => {
+                            refs.current[shade] = el;
+                        }}
                         type="button"
                         role="radio"
                         aria-checked={checked}
@@ -71,21 +67,17 @@ export function InkPicker({ char, source = "self", label, className }: InkPicker
                         disabled={!hydrated}
                         onClick={() => choose(shade)}
                         className={cn(
-                            "group flex w-16 flex-col items-center gap-1.5 rounded-xl p-1.5 text-xs transition-colors",
-                            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
-                            checked ? "text-ink font-bold" : "text-ink-2 hover:text-ink",
-                            !hydrated && "opacity-60",
+                            "flex w-[60px] cursor-pointer flex-col items-center gap-1.5 rounded-xl px-0.5 py-1.5 text-xs transition-colors disabled:cursor-default",
+                            checked ? "font-bold text-ink" : "text-ink-2 hover:text-ink",
                         )}
                     >
                         <span
                             lang="ja"
                             aria-hidden
+                            data-ink={shade}
                             className={cn(
-                                "flex h-11 w-11 items-center justify-center rounded-[10px] font-jp text-[22px] font-extrabold leading-none",
-                                SWATCH[shade],
-                                // Outline, not ring: ring and halo would both claim box-shadow.
-                                checked && "outline-2 outline-offset-2 outline-[var(--accent)]",
-                                shade === 4 && "halo",
+                                "flex size-11 items-center justify-center rounded-[10px] border font-jp text-[22px] font-extrabold leading-none",
+                                checked && "outline-2 outline-offset-2 outline-ink",
                             )}
                         >
                             {SHADE_JP[shade]}

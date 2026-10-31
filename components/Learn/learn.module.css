@@ -1,0 +1,31 @@
+/*
+ * The #learn stage. Colours come from tokens on the strokes' own utilities;
+ * this file only draws a stroke in (paths need pathLength="1"). Hidden, not
+ * just offset, before it starts so round caps don't leave a dot.
+ */
+
+.draw {
+  stroke-dasharray: 1 2;
+  animation: learn-draw var(--dur, 0.7s) ease-out both;
+}
+
+@keyframes learn-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}

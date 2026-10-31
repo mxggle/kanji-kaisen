@@ -2,45 +2,110 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Lightbulb, Printer, Presentation, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Presentation, Printer, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
-import { shadeLabel, type InkStep } from "@/lib/ink";
+import { SHADE_JP, SHADE_NAMES, shadeLabel, type InkEntry, type InkStep, type Shade } from "@/lib/ink";
 import { useInkStore } from "@/lib/ink-store";
 import { kanjiPath } from "@/lib/atlas/paths";
-import { KanjiInkDots } from "@/components/Ink/InkDots";
+import type { ComponentRole } from "@/lib/atlas/types";
 import { InkPicker } from "@/components/Ink/InkPicker";
-import { PartChips } from "@/components/Kanji/PartChips";
 import { strokeTypeName } from "@/components/Kanji/strokes";
+import { Button, buttonClass } from "@/components/ui/Button";
+import { InkSwatch } from "@/components/ui/InkLegend";
+import { MemoryStory } from "@/components/ui/MemoryStory";
+import { PartChip, PartPlus, type PartRole } from "@/components/ui/PartChip";
+import { KindLabel } from "@/components/ui/SectionHeader";
+import { Tabs, tabId, tabPanelId } from "@/components/ui/Tabs";
+import { Tag } from "@/components/ui/Tag";
 import { LearnStage, type StageMode } from "./LearnStage";
 import { restoreLearnFocus } from "./learn-hash";
-import { LEARN_BUTTON_ID } from "./LearnButton";
+import { firstStep, nextShadeGoal, writeGoal } from "./next-shade";
+import { traceNote } from "./stage";
 import { LEARN_STEPS, type LearnData, type LearnStep } from "./types";
 import type { WriterApi } from "./WriteCanvas";
 
 const WriteCanvas = dynamic(() => import("./WriteCanvas").then((m) => m.WriteCanvas), {
     ssr: false,
-    loading: () => <div className="h-full w-full rounded-2xl border border-dashed border-line-2" aria-hidden />,
+    loading: () => <div className="h-full w-full" aria-hidden />,
 });
 
-const btn =
-    "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-line-2 px-5 text-[15px] text-ink transition-colors hover:border-[var(--c)] hover:text-[var(--c)] disabled:opacity-40";
-const btnMain =
-    "inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--c)] bg-[var(--c)] px-5 text-[15px] font-bold text-onacc transition-colors hover:border-ink hover:bg-ink hover:text-bg";
-const skipBtn = "self-start text-sm text-ink-3 underline-offset-4 hover:text-ink hover:underline";
-const kicker = "text-[13px] text-[var(--c)]";
+const READING_KIND = { on: "on'yomi", kun: "kun'yomi" } as const;
 
-const READING_KIND = { on: "On'yomi", kun: "Kun'yomi" } as const;
+/** Rule 2: a part that carries meaning (or meaning and sound) is solid, a sound part dashed, the rest grey. */
+const partRole = (role: ComponentRole): PartRole => (role === "sound" ? "sound" : role === "form" ? "form" : "meaning");
 
 function Kana({ r }: { r: LearnData["readings"][number] }) {
     return (
-        <span lang="ja" className="font-jp text-[26px] font-extrabold leading-none">
+        <span lang="ja" className="font-jp text-[22px] font-extrabold leading-tight sm:text-[26px] sm:leading-none">
             {r.suffix && <span className="text-ink-3">-</span>}
             {r.stem}
             {r.okurigana && <span className="text-ink-3">・{r.okurigana}</span>}
             {r.prefix && <span className="text-ink-3">-</span>}
         </span>
+    );
+}
+
+/** The kanji inside a word, in the theme colour. */
+function Highlight({ word, char }: { word: string; char: string }) {
+    return (
+        <>
+            {Array.from(word).map((ch, i) =>
+                ch === char ? (
+                    <b key={i} className="font-extrabold text-c">
+                        {ch}
+                    </b>
+                ) : (
+                    ch
+                ),
+            )}
+        </>
+    );
+}
+
+function ShadeMark({ shade, name }: { shade: Shade; name?: string }) {
+    return (
+        <>
+            <InkSwatch shade={shade} className="size-3 rounded-[3px]" />
+            <span lang="ja" className="font-jp">
+                {SHADE_JP[shade]}
+            </span>
+            {name && <span className="max-sm:sr-only lg:max-xl:sr-only">{name}</span>}
+        </>
+    );
+}
+
+/** The bar's shade tag: the change made in this visit ("淡 → 中"), else where the next shade comes from. */
+function ShadeTag({ start, entry }: { start: Shade; entry: InkEntry | undefined }) {
+    const shade = entry?.shade ?? 0;
+    const arrow = (
+        <>
+            <span aria-hidden>→</span>
+            <span className="sr-only">then</span>
+        </>
+    );
+    if (shade !== start) {
+        return (
+            <Tag className="shrink-0">
+                <span className="sr-only">Your ink:</span>
+                <ShadeMark shade={start} name={SHADE_NAMES[start]} />
+                {arrow}
+                <ShadeMark shade={shade} name={SHADE_NAMES[shade]} />
+            </Tag>
+        );
+    }
+    const goal = nextShadeGoal(entry);
+    return (
+        <Tag className="shrink-0">
+            <span className="sr-only">Your ink:</span>
+            <ShadeMark shade={shade} name={SHADE_NAMES[shade]} />
+            {goal && (
+                <>
+                    {arrow}
+                    <ShadeMark shade={goal.to} name={`after ${goal.after}`} />
+                </>
+            )}
+        </Tag>
     );
 }
 
@@ -52,23 +117,28 @@ interface LearnLayerProps {
 /**
  * The four-step loop on a kanji page (#learn): 会 Meet, 想 Recall, 描 Trace,
  * 書 Write. Every step can be skipped, wrong answers cost nothing, writing is
- * opt-in and checked locally. Completed steps raise the kanji's ink
+ * optional and checked locally. Completed steps raise the kanji's ink
  * (recordStep), and the learner can set any shade by hand.
  */
 export function LearnLayer({ data, onClose }: LearnLayerProps) {
     const { char } = data;
     const rootRef = useRef<HTMLDivElement>(null);
-    const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const panelRef = useRef<HTMLElement>(null);
     const writerApi = useRef<WriterApi | null>(null);
     const ids = useId();
     const titleId = `${ids}-title`;
-    const panelId = `${ids}-panel`;
-    const inkPanelId = `${ids}-ink`;
+    const tabsId = `${ids}-steps`;
+    const pickerId = `${ids}-ink`;
 
-    const [step, setStep] = useState<LearnStep>("meet");
+    // The layer only mounts after the ink store has hydrated, so this is the ink the learner arrived with.
+    const [arrived] = useState(() => useInkStore.getState().entries[char]);
+    const start: Shade = arrived?.shade ?? 0;
+    // Open at the first unfinished step; the tabs reach the others.
+    const [step, setStep] = useState<LearnStep>(() => firstStep(arrived));
     const [done, setDone] = useState<Set<LearnStep>>(() => new Set());
-    const [inkOpen, setInkOpen] = useState(false);
     const [inkMsg, setInkMsg] = useState("");
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const entry = useInkStore((state) => state.entries[char]);
 
     // Recall
     const [wrong, setWrong] = useState<Set<string>>(() => new Set());
@@ -80,7 +150,6 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
     const [replay, setReplay] = useState(0);
 
     // Write
-    const [writeOn, setWriteOn] = useState(false);
     const [written, setWritten] = useState(false);
     const [finished, setFinished] = useState(false);
 
@@ -102,7 +171,7 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
         return () => {
             made.forEach((el) => el.removeAttribute("inert"));
             html.style.overflow = overflow;
-            restoreLearnFocus(LEARN_BUTTON_ID);
+            restoreLearnFocus();
         };
     }, []);
 
@@ -118,7 +187,7 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
         return () => document.removeEventListener("keydown", onKey);
     }, [onClose]);
 
-    // Show each ink change for this kanji.
+    // Read out each ink change for this kanji.
     useEffect(
         () =>
             useInkStore.subscribe((state, prev) => {
@@ -129,6 +198,13 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
         [char],
     );
 
+    // A step's buttons go away with it: if focus went with them, put it on the new step.
+    useEffect(() => {
+        const root = rootRef.current;
+        const active = document.activeElement;
+        if (root && (!active || active === document.body || !root.contains(active))) panelRef.current?.focus({ preventScroll: true });
+    }, [step, finished]);
+
     const complete = (s: InkStep) => {
         useInkStore.getState().recordStep(char, s, true);
         trackEvent("learn_step_completed", { kanji: char, step: s });
@@ -138,19 +214,6 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
     const go = (s: LearnStep) => {
         setStep(s);
         if (s === "trace") setReplay((r) => r + 1);
-    };
-
-    const onTabKey = (e: KeyboardEvent) => {
-        const index = LEARN_STEPS.findIndex((s) => s.id === step);
-        let next: number | null = null;
-        if (e.key === "ArrowRight") next = (index + 1) % LEARN_STEPS.length;
-        else if (e.key === "ArrowLeft") next = (index - 1 + LEARN_STEPS.length) % LEARN_STEPS.length;
-        else if (e.key === "Home") next = 0;
-        else if (e.key === "End") next = LEARN_STEPS.length - 1;
-        if (next === null) return;
-        e.preventDefault();
-        go(LEARN_STEPS[next].id);
-        tabRefs.current[next]?.focus();
     };
 
     // Recall: 1–4 pick an option.
@@ -183,8 +246,8 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
             go("write");
         }
     };
-    const traceBack = () => {
-        setAt(Math.max(1, at - 1));
+    const traceTo = (n: number) => {
+        setAt(n);
         setReplay((r) => r + 1);
     };
 
@@ -194,25 +257,34 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
         complete("write");
     };
 
-    // Stage
-    let mode: StageMode = "lit";
+    const writing = step === "write" && !finished && total > 0;
+    const ended = step === "write" && finished;
+    let mode: StageMode = "meet";
+    if (step === "recall") mode = "recall";
     if (step === "trace" && total) mode = "trace";
-    if (step === "write" && !finished) mode = "ghost";
+    if (writing) mode = "write";
+
+    const partsLine = data.parts.map((p) => `${p.char}${p.gloss ? ` ${p.gloss}` : ""} (${p.roleLabel})`).join(", ");
     const stageLabel =
-        mode === "trace" ? `${char}, stroke ${at} of ${total}` : step === "write" && writeOn && !finished ? `Writing area for ${char}` : `${char}, ${data.meaning}`;
+        mode === "trace"
+            ? `${char}, stroke ${at} of ${total}`
+            : mode === "write"
+              ? `Writing area for ${char}`
+              : mode === "recall"
+                ? char
+                : `${char}, ${data.meaning}${partsLine ? `. Parts: ${partsLine}` : ""}`;
 
-    const currentStroke = data.strokes[at - 1];
-    const owner = data.owners[at - 1];
-    const ownerPart = owner ? data.parts.find((p) => p.char === owner) : null;
-    const strokeName = currentStroke ? strokeTypeName(currentStroke.type) : "";
-    const traceNote = [
-        strokeName ? strokeName[0].toUpperCase() + strokeName.slice(1) : at === 1 ? "Start here" : "Next stroke",
-        ownerPart ? `, in ${ownerPart.char}${ownerPart.gloss ? ` (${ownerPart.gloss})` : ""}` : "",
-        ".",
-    ].join("");
+    const stepIndex = LEARN_STEPS.findIndex((s) => s.id === step);
+    const current = LEARN_STEPS[stepIndex];
+    const headWord = data.meaning.split(",")[0];
 
-    const wrongFrom = [...wrong].map((t) => data.recall.options.find((o) => o.text === t)?.from).filter(Boolean);
+    const wrongFrom = [...wrong].map((t) => data.recall.options.find((o) => o.text === t)?.from);
     const lastWrong = wrongFrom[wrongFrom.length - 1];
+    const recallNote = right
+        ? `Right: ${char} means ${data.recall.answer}.`
+        : wrong.size
+          ? `Not quite${lastWrong ? `: that one is ${lastWrong}` : ""}. Your shade stays where it is. Try another.`
+          : "Pick one. Keys 1 to 4 work too.";
 
     return (
         <div
@@ -225,369 +297,315 @@ export function LearnLayer({ data, onClose }: LearnLayerProps) {
             className="fixed inset-0 z-[70] flex flex-col overflow-y-auto overscroll-contain bg-bg text-ink outline-none"
             style={{ "--tc": data.themeColor } as CSSProperties}
         >
-            {/* Header: close, title, ink */}
-            <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-line bg-bg/90 px-1 backdrop-blur-md lg:h-16 lg:px-6">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    aria-label={`Close and return to the ${char} page`}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-ink/10 hover:text-ink"
-                >
-                    <X size={20} aria-hidden />
-                </button>
-                <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm text-ink-2 lg:text-base">
-                    <span lang="ja" className="font-jp text-lg font-bold text-ink">
-                        {char}
-                    </span>{" "}
-                    {data.meaning}
-                    <span className="text-ink-3"> · learn it in four steps</span>
-                </h2>
-                <button
-                    type="button"
-                    aria-expanded={inkOpen}
-                    aria-controls={inkPanelId}
-                    onClick={() => setInkOpen((o) => !o)}
-                    className="flex h-11 items-center gap-2 rounded-full px-3 text-sm text-ink-2 transition-colors hover:bg-ink/10 hover:text-ink"
-                >
-                    <span className="hidden sm:inline">Your ink</span>
-                    <KanjiInkDots char={char} showName={false} label={`Your ink for ${char}`} />
-                </button>
+            {/* Bar: close, the kanji, the four steps, the shade change */}
+            <header className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2.5 border-b border-line bg-bg px-4 py-2.5 sm:px-6 lg:grid lg:h-16 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-5 lg:px-8 lg:py-0">
+                <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-5">
+                    <Button iconOnly onClick={onClose} aria-label={`Close and go back to ${char}`}>
+                        <X aria-hidden />
+                    </Button>
+                    <h2 id={titleId} className="flex min-w-0 items-baseline gap-2.5 whitespace-nowrap">
+                        <span lang="ja" className="font-jp text-[22px] font-extrabold leading-none">
+                            {char}
+                        </span>
+                        <b className="truncate font-bold">{headWord}</b>
+                        <span className="text-sm text-ink-2 max-xl:sr-only">· learn it in four steps</span>
+                    </h2>
+                </div>
+                <Tabs
+                    id={tabsId}
+                    label="Steps"
+                    value={step}
+                    onChange={go}
+                    items={LEARN_STEPS.map((s) => ({
+                        value: s.id,
+                        jp: s.jp,
+                        live: s.id === step,
+                        label: (
+                            <>
+                                {s.en}
+                                {done.has(s.id) && <span className="sr-only"> (done)</span>}
+                            </>
+                        ),
+                    }))}
+                    className="order-last w-full max-lg:[&>button]:flex-1 max-lg:[&>button]:justify-center max-sm:[&>button]:px-2 lg:order-none lg:w-fit"
+                />
+                <div className="flex justify-end">
+                    <ShadeTag start={start} entry={entry} />
+                </div>
             </header>
 
-            {inkOpen && (
-                <div id={inkPanelId} className="border-b border-line bg-card px-4 py-4 lg:px-8">
-                    <p className="mb-3 text-sm text-ink-2">Mark your ink for {char} yourself, up or down. Nothing is locked.</p>
-                    <InkPicker char={char} source="learn" />
-                </div>
-            )}
-
-            <p aria-live="polite" className={cn("px-4 text-center text-sm text-[var(--c)] lg:px-8", inkMsg ? "pt-3" : "sr-only")}>
+            <p aria-live="polite" className="sr-only">
                 {inkMsg}
             </p>
 
-            {/* Step tabs */}
-            <div role="tablist" aria-label="Steps" onKeyDown={onTabKey} className="flex shrink-0 border-b border-line px-3 lg:justify-center lg:gap-3 lg:border-0 lg:pt-5">
-                {LEARN_STEPS.map((s, i) => {
-                    const selected = s.id === step;
-                    const isDone = done.has(s.id);
-                    return (
-                        <button
-                            key={s.id}
-                            ref={(el) => {
-                                tabRefs.current[i] = el;
-                            }}
-                            type="button"
-                            role="tab"
-                            id={`${ids}-tab-${s.id}`}
-                            aria-selected={selected}
-                            aria-controls={panelId}
-                            tabIndex={selected ? 0 : -1}
-                            onClick={() => go(s.id)}
-                            className={cn(
-                                "flex h-[52px] flex-1 flex-col items-center justify-center gap-0.5 border-b-2 text-[11px] transition-colors",
-                                "lg:h-[50px] lg:flex-none lg:flex-row lg:gap-3 lg:rounded-full lg:border lg:pl-[7px] lg:pr-5 lg:text-[15px]",
-                                selected ? "border-[var(--c)] text-ink" : "border-transparent text-ink-3 hover:text-ink lg:border-line",
-                                isDone && !selected && "text-ink-2",
-                            )}
-                        >
-                            <b
-                                lang="ja"
-                                className={cn(
-                                    "font-jp text-[19px] font-extrabold leading-none",
-                                    "lg:flex lg:h-9 lg:w-9 lg:items-center lg:justify-center lg:rounded-full lg:border lg:text-lg",
-                                    selected ? "text-[var(--c)] lg:border-[var(--c)] lg:bg-[var(--c)] lg:text-onacc" : isDone ? "text-[var(--c)] lg:border-[var(--c)]" : "lg:border-line",
-                                )}
-                            >
-                                {s.jp}
-                            </b>
-                            <span className="inline-flex items-center gap-1">
-                                {s.en}
-                                {isDone && (
-                                    <>
-                                        <Check size={12} aria-hidden className="text-[var(--c)]" />
-                                        <span className="sr-only">(done)</span>
-                                    </>
-                                )}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Stage + panel */}
-            <div className="grid flex-1 content-start gap-3 px-3 pb-4 pt-4 lg:grid-cols-[minmax(0,1fr)_470px] lg:content-center lg:gap-6 lg:px-12 lg:pt-2">
-                <div className="flex items-center justify-center py-2 lg:py-6">
-                    <LearnStage data={data} mode={mode} at={at} replay={replay} label={stageLabel}>
-                        {step === "write" && writeOn && !finished && total > 0 ? (
-                            <WriteCanvas strokes={data.strokes} apiRef={writerApi} onComplete={onWritten} />
-                        ) : undefined}
+            {/* Stage and step card */}
+            <div className="grid flex-1 content-start justify-items-center gap-6 px-4 py-6 sm:px-8 lg:grid-cols-[minmax(0,520px)_minmax(0,480px)] lg:content-center lg:justify-center lg:gap-14 lg:px-10 lg:py-12">
+                <div className="w-full max-w-[300px] sm:max-w-[400px] lg:max-w-none">
+                    <LearnStage data={data} mode={mode} at={at} replay={replay} label={stageLabel} caption={writing ? "Write with your finger, mouse or pen" : undefined}>
+                        {writing ? <WriteCanvas strokes={data.strokes} apiRef={writerApi} onComplete={onWritten} /> : undefined}
                     </LearnStage>
                 </div>
 
                 <section
+                    ref={panelRef}
                     role="tabpanel"
-                    id={panelId}
-                    aria-labelledby={`${ids}-tab-${step}`}
-                    className="flex min-h-[260px] flex-col gap-4 self-center rounded-[22px] border border-line bg-card px-5 py-5 lg:rounded-2xl lg:px-7 lg:py-7"
+                    tabIndex={-1}
+                    id={tabPanelId(tabsId, step)}
+                    aria-labelledby={tabId(tabsId, step)}
+                    className="flex w-full max-w-[520px] flex-col gap-4 rounded-2xl border border-line bg-card p-5 outline-none sm:gap-5 sm:p-7 lg:max-w-none"
                 >
+                    {ended ? (
+                        <KindLabel jp="了">{written ? "Written from memory" : "That's the loop"}</KindLabel>
+                    ) : (
+                        <KindLabel jp={current.jp}>
+                            Step {stepIndex + 1} of 4 · {current.en}
+                        </KindLabel>
+                    )}
+
                     {step === "meet" && (
                         <>
-                            <p className={kicker}>Step 1 · Meet it</p>
-                            <p className="font-disp text-[34px] font-bold leading-none lg:text-[40px]">{data.meaning}</p>
-                            <p className="-mt-2 text-sm text-ink-3">{data.meta}</p>
-                            {data.readings.length > 0 ? (
-                                <div className="flex flex-wrap gap-x-7 gap-y-3 border-y border-line py-3">
-                                    {data.readings.map((r, i) => (
-                                        <p key={i} className="flex flex-col gap-1">
-                                            <span className="text-xs text-ink-3">{READING_KIND[r.kind]}</span>
-                                            <span className="flex items-baseline gap-2">
-                                                <Kana r={r} />
-                                                <span className="text-sm text-ink-3">{r.romaji}</span>
-                                            </span>
-                                        </p>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="border-y border-line py-3 text-sm text-ink-2">No reading of its own: it is read as part of each word.</p>
-                            )}
-                            {data.parts.length > 0 && <PartChips parts={data.parts} size="sm" />}
-                            {data.memory && (
-                                <div>
-                                    <p className="text-xs text-ink-3">Memory story</p>
-                                    <p className="font-disp text-xl italic leading-snug">“{data.memory}”</p>
-                                </div>
-                            )}
-                            <div className="mt-auto flex flex-wrap items-center gap-3 pt-1">
-                                <button
-                                    type="button"
-                                    className={btnMain}
-                                    onClick={() => {
-                                        complete("meet");
-                                        go("recall");
-                                    }}
-                                >
-                                    I&apos;ve met it <ArrowRight size={16} aria-hidden />
-                                </button>
+                            <div className="flex flex-col gap-2">
+                                <h3 className="type-title">{data.meaning}</h3>
+                                <p className="text-sm text-ink-3">{data.meta}</p>
                             </div>
+                            {data.readings.length > 0 ? (
+                                <ul className="grid grid-cols-2 gap-3">
+                                    {data.readings.map((r, i) => (
+                                        <li key={i} className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-line bg-bg px-4 py-3.5">
+                                            <Kana r={r} />
+                                            <span className="text-[13px] text-ink-3">
+                                                {READING_KIND[r.kind]} · {r.romaji}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-ink-2">No reading of its own: it is read as part of each word.</p>
+                            )}
+                            {data.parts.length > 0 && (
+                                <ul aria-label="Parts" className="flex flex-wrap items-center gap-2.5">
+                                    {data.parts.map((part, i) => (
+                                        <li key={part.char} className="flex items-center gap-2.5">
+                                            {i > 0 && <PartPlus />}
+                                            <PartChip
+                                                char={part.char}
+                                                role={partRole(part.role)}
+                                                label={part.gloss ?? undefined}
+                                                note={part.roleLabel}
+                                                href={part.href ?? undefined}
+                                                size="sm"
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {data.memory && (
+                                <MemoryStory className="border-0 bg-transparent p-0" label="Memory story · made up to help you remember">
+                                    {data.memory}
+                                </MemoryStory>
+                            )}
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="self-start"
+                                onClick={() => {
+                                    complete("meet");
+                                    go("recall");
+                                }}
+                            >
+                                I&apos;ve met it · next <ArrowRight aria-hidden />
+                            </Button>
                         </>
                     )}
 
                     {step === "recall" && (
                         <>
-                            <p className={kicker}>Step 2 · Recall</p>
-                            <p className="font-disp text-[28px] font-bold leading-tight lg:text-[34px]">
-                                What does{" "}
-                                <span lang="ja" className="font-jp text-[var(--c)]">
-                                    {char}
-                                </span>{" "}
-                                mean?
-                            </p>
-                            <div className="flex flex-col gap-2">
+                            <h3 className="type-section">What does it mean?</h3>
+                            <ul className="grid gap-2.5 sm:grid-cols-2">
                                 {data.recall.options.map((o, i) => {
                                     const isWrong = wrong.has(o.text);
                                     const isRight = right && o.text === data.recall.answer;
                                     return (
-                                        <button
-                                            key={o.text}
-                                            type="button"
-                                            onClick={() => pick(o.text)}
-                                            aria-disabled={right || isWrong || undefined}
-                                            className={cn(
-                                                "flex min-h-[50px] w-full items-center gap-3 rounded-[10px] border px-4 py-2 text-left text-[15px] transition-colors",
-                                                isRight
-                                                    ? "border-[var(--c)] bg-[color-mix(in_oklab,var(--c)_14%,transparent)]"
-                                                    : isWrong
-                                                      ? "border-bad text-bad line-through"
-                                                      : right
-                                                        ? "border-line-2 opacity-45"
-                                                        : "border-line-2 hover:border-[var(--c)]",
-                                            )}
-                                        >
-                                            <span className="w-5 shrink-0 text-ink-3">{"ABCD"[i]}</span>
-                                            <span className="min-w-0 flex-1">{o.text}</span>
-                                            {isRight && <Check size={18} aria-hidden className="text-[var(--c)]" />}
-                                        </button>
+                                        <li key={o.text}>
+                                            <button
+                                                type="button"
+                                                onClick={() => pick(o.text)}
+                                                aria-pressed={isRight || isWrong}
+                                                className={cn(
+                                                    buttonClass({ size: "lg" }),
+                                                    "h-auto min-h-[52px] w-full whitespace-normal py-2.5 text-center leading-snug",
+                                                    isRight && "border-c bg-c/15 hover:border-c",
+                                                    isWrong && "border-dashed border-ink-3 text-ink-2 hover:border-ink-3",
+                                                    right && !isRight && "text-ink-3 hover:border-line-2",
+                                                )}
+                                            >
+                                                <span className="sr-only">{i + 1}. </span>
+                                                {o.text}
+                                                {isRight && <Check aria-hidden className="text-c" />}
+                                                {isWrong && <span className="sr-only"> (not this one)</span>}
+                                            </button>
+                                        </li>
                                     );
                                 })}
-                            </div>
-                            <p aria-live="polite" className="min-h-[1.5em] text-[15px] leading-relaxed text-ink-2">
-                                {right
-                                    ? `Right: ${char} means ${data.recall.answer}.`
-                                    : lastWrong
-                                      ? `Not quite: that one is ${lastWrong}. Try another, no harm done.`
-                                      : "Pick the meaning. Keys 1 to 4 work too."}
+                            </ul>
+                            <p aria-live="polite" className="min-h-[3em] text-[15px] leading-relaxed text-ink-2">
+                                {recallNote}
                             </p>
-                            <div className="mt-auto flex flex-wrap items-center gap-4">
-                                {right ? (
-                                    <button type="button" className={btnMain} onClick={() => go("trace")}>
-                                        Next: trace it <ArrowRight size={16} aria-hidden />
-                                    </button>
-                                ) : (
-                                    <button type="button" className={skipBtn} onClick={() => go("trace")}>
-                                        Skip this step
-                                    </button>
-                                )}
-                            </div>
+                            <Button variant="primary" size="lg" className="self-start" onClick={() => go("trace")}>
+                                Next: trace it <ArrowRight aria-hidden />
+                            </Button>
                         </>
                     )}
 
-                    {step === "trace" && (
-                        <>
-                            <p className={kicker}>Step 3 · Trace</p>
-                            {total > 0 ? (
-                                <>
-                                    <p className="font-disp text-[32px] font-bold leading-none lg:text-[40px]">
-                                        Stroke {at} <span className="font-semibold text-ink-3">of {total}</span>
-                                    </p>
-                                    <p aria-live="polite" className="text-[15px] leading-relaxed text-ink-2">
-                                        {traceNote}
-                                    </p>
-                                    <div aria-hidden className="flex gap-[5px]">
-                                        {data.strokes.map((_, i) => (
-                                            <i key={i} className={cn("h-[5px] flex-1 rounded-[3px]", i < at ? "bg-[var(--c)]" : "bg-line-2")} />
-                                        ))}
-                                    </div>
-                                    <p className="text-sm text-ink-3">Follow the glowing stroke with your finger or eyes, then go on.</p>
-                                    <div className="mt-auto flex flex-wrap gap-2.5">
-                                        <button type="button" className={btn} onClick={traceBack} disabled={at <= 1} aria-label="Previous stroke">
-                                            <ArrowLeft size={16} aria-hidden />
-                                        </button>
-                                        <button type="button" className={btn} onClick={() => setReplay((r) => r + 1)}>
-                                            <Lightbulb size={16} aria-hidden /> Hint
-                                        </button>
-                                        <button type="button" className={btnMain} onClick={traceNext}>
-                                            {at < total ? (
-                                                <>
-                                                    Next stroke <ArrowRight size={16} aria-hidden />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Done tracing <Check size={16} aria-hidden />
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                    <button type="button" className={skipBtn} onClick={() => go("write")}>
+                    {step === "trace" &&
+                        (total > 0 ? (
+                            <>
+                                <h3 className="type-section">Trace each stroke</h3>
+                                <p aria-live="polite" className="text-[15px] leading-relaxed text-ink-2">
+                                    Start at the dot. {traceNote(at, total, strokeTypeName(data.strokes[at - 1]?.type ?? ""), data.owners, data.parts)}
+                                </p>
+                                <p className="text-sm text-ink-3 max-sm:hidden">Follow it with your finger or your eyes, then go on.</p>
+                                <div className="flex flex-wrap items-center gap-2.5">
+                                    <Button iconOnly onClick={() => traceTo(Math.max(1, at - 1))} disabled={at <= 1} aria-label="Previous stroke">
+                                        <ArrowLeft aria-hidden />
+                                    </Button>
+                                    <Button onClick={() => setReplay((r) => r + 1)}>Show me</Button>
+                                    <Button variant="quiet" onClick={() => traceTo(1)} disabled={at <= 1}>
+                                        Restart
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2.5">
+                                    <Button variant="primary" size="lg" onClick={traceNext}>
+                                        {at < total ? "Next stroke" : "Done · next: write it"} <ArrowRight aria-hidden />
+                                    </Button>
+                                    <Button variant="quiet" onClick={() => go("write")}>
                                         Skip this step
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-[15px] text-ink-2">No stroke data for this kanji yet, so there is nothing to trace.</p>
-                                    <button type="button" className={btnMain} onClick={() => go("write")}>
-                                        Go on <ArrowRight size={16} aria-hidden />
-                                    </button>
-                                </>
-                            )}
-                        </>
-                    )}
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="type-section">Trace each stroke</h3>
+                                <p className="text-[15px] leading-relaxed text-ink-2">No stroke data for this kanji yet, so there is nothing to trace.</p>
+                                <Button variant="primary" size="lg" className="self-start" onClick={() => go("write")}>
+                                    Go on <ArrowRight aria-hidden />
+                                </Button>
+                            </>
+                        ))}
 
                     {step === "write" && !finished && (
                         <>
-                            <p className={kicker}>Step 4 · Write (optional)</p>
-                            <p className="font-disp text-[28px] font-bold leading-tight lg:text-[34px]">
-                                Write <span className="text-[var(--c)]">{data.meaning.split(",")[0]}</span> from memory
-                            </p>
-                            {!writeOn ? (
+                            <h3 className="type-section">Write it from memory</h3>
+                            {total > 0 ? (
                                 <>
                                     <p className="text-[15px] leading-relaxed text-ink-2">
-                                        Optional, for anyone who wants to practise writing. Draw each stroke in order; it is checked here in your
-                                        browser, and nothing is sent anywhere.
+                                        {total} {total === 1 ? "stroke" : "strokes"}, checked here in your browser. A stroke in the wrong place fades; just try it again.{" "}
+                                        {writeGoal(char, entry)}
                                     </p>
-                                    <div className="mt-auto flex flex-col gap-3">
-                                        <button type="button" className={btnMain} onClick={() => setWriteOn(true)} disabled={!total}>
-                                            Try writing from memory
-                                        </button>
-                                        <button type="button" className={skipBtn} onClick={() => setFinished(true)}>
-                                            Skip writing and finish
-                                        </button>
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                        <Button onClick={() => writerApi.current?.hint()}>Show next stroke</Button>
+                                        <Button variant="quiet" onClick={() => writerApi.current?.clear()}>
+                                            Clear
+                                        </Button>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                        <Button variant="primary" size="lg" onClick={() => setFinished(true)}>
+                                            Finish
+                                        </Button>
+                                        <span className="text-sm text-ink-3">Writing is optional.</span>
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-[15px] leading-relaxed text-ink-2">
-                                        Draw in the box. A stroke in the wrong place or order fades away; just try it again.
-                                    </p>
-                                    <div className="mt-auto flex flex-wrap gap-2.5">
-                                        <button type="button" className={btn} onClick={() => writerApi.current?.hint()}>
-                                            <Lightbulb size={16} aria-hidden /> Hint
-                                        </button>
-                                        <button type="button" className={btn} onClick={() => writerApi.current?.clear()}>
-                                            <RotateCcw size={16} aria-hidden /> Clear
-                                        </button>
-                                        <button type="button" className={btn} onClick={() => setFinished(true)}>
-                                            Finish
-                                        </button>
-                                    </div>
+                                    <p className="text-[15px] leading-relaxed text-ink-2">No stroke data for this kanji yet, so it can&apos;t be checked here.</p>
+                                    <Button variant="primary" size="lg" className="self-start" onClick={() => setFinished(true)}>
+                                        Finish
+                                    </Button>
                                 </>
                             )}
                         </>
                     )}
 
-                    {step === "write" && finished && (
+                    {ended && (
                         <>
-                            <p className={kicker}>{written ? "Written from memory" : "That's the loop"}</p>
-                            <p className="font-disp text-[28px] font-bold leading-tight lg:text-[32px]">
-                                {written ? `You wrote ${char}.` : `You've been through ${char}.`}
-                            </p>
-                            <p className="flex flex-wrap items-center gap-3 text-[15px] text-ink-2">
-                                Your ink for{" "}
-                                <span lang="ja" className="font-jp font-bold text-ink">
-                                    {char}
-                                </span>
-                                <KanjiInkDots char={char} />
-                            </p>
-                            <p className="text-sm leading-relaxed text-ink-3">
-                                Ink darkens as you meet, recall, trace and write. Writing it again on another day takes it further. You can also set
-                                it yourself:
+                            <h3 className="type-section">{written ? `You wrote ${char}.` : `You've been through ${char}.`}</h3>
+                            <p className="text-[15px] leading-relaxed text-ink-2">
+                                Ink darkens as you meet, recall, trace and write; writing it again on another day takes it further. Or set it yourself:
                             </p>
                             <InkPicker char={char} source="learn" />
-                            <div className="mt-auto flex flex-wrap gap-2.5 pt-1">
+                            <div className="flex flex-wrap gap-2.5 pt-1">
                                 {data.next && (
-                                    <Link href={`${kanjiPath(data.next.char)}#learn`} className={btnMain}>
+                                    <Button variant="primary" size="lg" href={`${kanjiPath(data.next.char)}#learn`}>
                                         Next:{" "}
                                         <span lang="ja" className="font-jp">
                                             {data.next.char}
                                         </span>{" "}
-                                        {data.next.meaning} <ArrowRight size={16} aria-hidden />
-                                    </Link>
+                                        {data.next.meaning} <ArrowRight aria-hidden />
+                                    </Button>
                                 )}
-                                <button type="button" className={btn} onClick={onClose}>
+                                <Button variant={data.next ? "secondary" : "primary"} size="lg" onClick={onClose}>
                                     Back to{" "}
                                     <span lang="ja" className="font-jp">
                                         {char}
                                     </span>
-                                </button>
+                                </Button>
                             </div>
                         </>
+                    )}
+
+                    {!ended && (
+                        <div className="flex flex-col gap-3 border-t border-line pt-4">
+                            <p className="text-xs leading-normal text-ink-3">
+                                A wrong answer never lowers a shade.{" "}
+                                <button
+                                    type="button"
+                                    aria-expanded={pickerOpen}
+                                    aria-controls={pickerId}
+                                    onClick={() => setPickerOpen((o) => !o)}
+                                    className="cursor-pointer text-ink-2 underline underline-offset-2 hover:text-ink"
+                                >
+                                    {pickerOpen ? "Hide the shades" : "Set the shade yourself"}
+                                </button>
+                            </p>
+                            {pickerOpen && (
+                                <div id={pickerId}>
+                                    <InkPicker char={char} source="learn" />
+                                </div>
+                            )}
+                        </div>
                     )}
                 </section>
             </div>
 
-            {/* Desktop footer: words and teaching tools */}
-            <footer className="hidden h-[72px] shrink-0 items-center gap-6 border-t border-line px-12 lg:flex">
+            {/* Words and teaching tools */}
+            <footer className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-t border-line px-4 py-3 sm:px-8 lg:min-h-16">
                 {data.words.length > 0 && (
                     <>
-                        <span className="text-[13px] text-ink-3">Words</span>
-                        <span className="flex min-w-0 gap-6 overflow-hidden text-[15px] text-ink-2">
+                        <span className="type-label">Words</span>
+                        <ul className="flex min-w-0 flex-wrap gap-x-6 gap-y-1">
                             {data.words.map((w) => (
-                                <span key={w.word} className="truncate">
-                                    <span lang="ja" className="font-jp font-bold text-ink">
-                                        {w.word}
-                                    </span>{" "}
-                                    {w.meaning}
-                                </span>
+                                <li key={w.word} className="flex min-w-0 items-baseline gap-2.5 py-1 text-sm text-ink-2">
+                                    <span lang="ja" className="whitespace-nowrap font-jp text-[19px] font-extrabold text-ink">
+                                        <Highlight word={w.word} char={char} />
+                                    </span>
+                                    <span lang="ja" className="whitespace-nowrap text-[13px] text-ink-3">
+                                        {w.reading}
+                                    </span>
+                                    <span className="min-w-0">{w.meaning}</span>
+                                </li>
                             ))}
-                        </span>
+                        </ul>
                     </>
                 )}
                 <span className="flex-1" />
-                <a href={data.presentHref} rel="nofollow" className="inline-flex h-10 items-center gap-2 rounded-full border border-line px-3.5 text-sm text-ink-2 hover:border-line-2 hover:text-ink">
-                    <Presentation size={15} aria-hidden /> Present
-                </a>
-                <a href={data.printHref} rel="nofollow" className="inline-flex h-10 items-center gap-2 rounded-full border border-line px-3.5 text-sm text-ink-2 hover:border-line-2 hover:text-ink">
-                    <Printer size={15} aria-hidden /> Print practice sheet
-                </a>
+                <div className="flex flex-wrap gap-1">
+                    <Button variant="quiet" size="sm" href={data.presentHref} prefetch={false} rel="nofollow">
+                        <Presentation aria-hidden /> Present
+                    </Button>
+                    <Button variant="quiet" size="sm" href={data.printHref} prefetch={false} rel="nofollow">
+                        <Printer aria-hidden /> Print practice sheet
+                    </Button>
+                </div>
             </footer>
         </div>
     );

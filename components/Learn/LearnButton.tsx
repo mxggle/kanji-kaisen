@@ -1,15 +1,30 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { buttonClass, type ButtonSize } from "@/components/ui/Button";
 import { LEARN_HASH, openLearn } from "./learn-hash";
 
+/**
+ * @deprecated One Atlas: LearnButton no longer sets a fixed id (a page can have
+ * two); the layer refocuses its opener or the shown `[data-learn-button]`.
+ */
 export const LEARN_BUTTON_ID = "learn-it";
 
-/** "Learn it · 4 steps": opens the #learn layer (a plain #learn link without JS). */
-export function LearnButton({ char, className }: { char: string; className?: string }) {
+interface LearnButtonProps {
+    char: string;
+    className?: string;
+    /** Button size; lg by default (md for a phone action bar). */
+    size?: ButtonSize;
+    /** Optional element id. None by default, so two buttons on a page don't clash. */
+    id?: string;
+}
+
+/** "Learn it · 4 steps", the page's primary (ink, rule 1): opens the #learn layer (a plain #learn link without JS). */
+export function LearnButton({ char, className, size = "lg", id }: LearnButtonProps) {
     return (
         <a
-            id={LEARN_BUTTON_ID}
+            id={id}
+            data-learn-button=""
             href={LEARN_HASH}
             role="button"
             onClick={(e) => {
@@ -23,10 +38,7 @@ export function LearnButton({ char, className }: { char: string; className?: str
                     openLearn(char, e.currentTarget);
                 }
             }}
-            className={cn(
-                "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-ink bg-ink px-6 text-[15px] font-bold text-bg transition-colors hover:border-[var(--c)] hover:bg-[var(--c)] hover:text-onacc",
-                className,
-            )}
+            className={cn(buttonClass({ variant: "primary", size }), className)}
         >
             Learn it <span aria-hidden>·</span> 4 steps
         </a>

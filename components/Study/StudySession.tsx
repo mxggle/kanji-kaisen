@@ -1,21 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Layers, ListChecks, X } from "lucide-react";
+import { useId, useMemo, useState, type ReactNode } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { useStudyStore } from "@/lib/study-store";
 import type { StudyStatus } from "@/lib/study-list";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
+import { Button } from "@/components/ui/Button";
+import { PaintedBar } from "@/components/ui/PaintedBar";
+import { KindLabel } from "@/components/ui/SectionHeader";
 import { Flashcard } from "./Flashcard";
 import { QuizCard } from "./QuizCard";
 import { SessionSummary, type CardResult } from "./SessionSummary";
-import { Checkbox, SessionSkeleton } from "./ui";
+import { Checkbox, SessionSkeleton, STUDY_COLUMN } from "./ui";
 import { useSearchIndex } from "./useSearchIndex";
 import { SESSION_SIZE, sessionRanges, shuffled, toQuizCandidate, type StudyMode } from "./session";
 
-export type DeckSource = "list" | "learning" | "jlpt" | "radical" | "theme" | "chars";
+export type DeckSource = "list" | "learning" | "jlpt" | "radical" | "theme" | "chars" | "revisit";
 
 interface StudySessionProps {
     source: DeckSource;
@@ -25,6 +29,8 @@ interface StudySessionProps {
     backLabel: string;
     initialMode: StudyMode | null;
     categoryOf: (char: string) => string | null;
+    /** A theme deck takes its theme's colour. */
+    category?: string | null;
 }
 
 interface ActiveSession {
@@ -35,19 +41,20 @@ interface ActiveSession {
     retry: boolean;
 }
 
-const MODES: { id: StudyMode; label: string; hint: string }[] = [
-    { id: "flashcards", label: "Flashcards", hint: "See the kanji, recall it, flip to check. Mark “Knew it” or “Still learning”." },
-    { id: "quiz", label: "Meaning quiz", hint: "Pick the right meaning from four options. Wrong answers cost nothing." },
+const MODES: { id: StudyMode; jp: string; label: string; hint: string }[] = [
+    { id: "flashcards", jp: "札", label: "Flashcards", hint: "See the kanji, recall it, flip to check. Mark “Knew it” or “Still learning”." },
+    { id: "quiz", jp: "問", label: "Meaning quiz", hint: "Pick the right meaning from four. A wrong answer costs nothing." },
 ];
 
 /** A fresh shuffle seed per session (only called from event handlers). */
 const randomSeed = () => Math.floor(Math.random() * 2 ** 31);
 
-export function StudySession({ source, title, chars, backHref, backLabel, initialMode, categoryOf }: StudySessionProps) {
+export function StudySession({ source, title, chars, backHref, backLabel, initialMode, categoryOf, category }: StudySessionProps) {
     const { entries: index, byChar, error, retry: retryIndex } = useSearchIndex();
     const saved = useStudyStore((s) => s.entries);
     const setStatus = useStudyStore((s) => s.setStatus);
     const save = useStudyStore((s) => s.save);
+    const rangeId = useId();
 
     const [phase, setPhase] = useState<"setup" | "running" | "summary">("setup");
     const [mode, setMode] = useState<StudyMode>(initialMode ?? "flashcards");
@@ -122,20 +129,28 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
         setResults((r) => [...r, { char, outcome: correct ? "correct" : "missed" }]);
     }
 
-    if (!byChar && !error) return <SessionSkeleton />;
+    const shell = (children: ReactNode) => (
+        <div className={STUDY_COLUMN} style={category ? themeVars(category) : undefined}>
+            {children}
+        </div>
+    );
+
+    if (!byChar && !error) return shell(<SessionSkeleton />);
 
     if (error) {
-        return (
-            <div className="rounded-xl border border-line bg-card p-6 text-ink-2">
-                <p className="font-medium text-ink">Couldn’t load kanji details.</p>
-                <button type="button" onClick={retryIndex} className="mt-3 text-[var(--accent)] hover:underline">Try again</button>
-            </div>
+        return shell(
+            <div role="alert" className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                <p className="text-ink">Couldn&apos;t load kanji details.</p>
+                <Button size="sm" onClick={retryIndex}>
+                    Try again
+                </Button>
+            </div>,
         );
     }
 
     if (phase === "summary" && session) {
         const nextRange = !session.retry && rangeIndex + 1 < ranges.length ? ranges[rangeIndex + 1] : null;
-        return (
+        return shell(
             <SessionSummary
                 title={title}
                 mode={mode}
@@ -144,6 +159,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 results={results}
                 byChar={byChar!}
                 saved={saved}
+                categoryOf={categoryOf}
                 onSave={(list) => list.forEach((c) => save(c))}
                 onAgain={() => begin(session.cards, session.label, true)}
                 onMissed={(list) => begin(list, mode === "quiz" ? "Missed cards" : "Still-learning cards", true)}
@@ -152,36 +168,27 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 onSetup={() => setPhase("setup")}
                 backHref={backHref}
                 backLabel={backLabel}
-            />
+            />,
         );
     }
 
     if (phase === "running" && session) {
         const char = session.cards[position];
         const entry = byChar!.get(char) as SearchIndexEntry;
-        const answeredCurrent = results.length > position;
-        return (
-            <div>
-                <div className="flex items-center justify-between gap-3 mb-4">
+        return shell(
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-xs text-ink-3 truncate">{title} · {mode === "quiz" ? "Meaning quiz" : "Flashcards"}</p>
-                        <p className="text-sm font-medium" aria-live="polite">
+                        <p className="type-label truncate">
+                            {title} · {mode === "quiz" ? "Meaning quiz" : "Flashcards"}
+                        </p>
+                        <p className="text-sm text-ink-2" aria-live="polite">
                             Card {position + 1} of {session.cards.length}
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => finish(results)}
-                        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-line-2 text-sm text-ink hover:border-ink-3 transition-colors"
-                    >
-                        <X className="w-4 h-4" aria-hidden /> End session
-                    </button>
-                </div>
-                <div className="h-1 rounded-full bg-ink/10 mb-6 overflow-hidden" aria-hidden>
-                    <div
-                        className="h-full bg-[var(--accent)] transition-[width]"
-                        style={{ width: `${((position + (answeredCurrent ? 1 : 0)) / session.cards.length) * 100}%` }}
-                    />
+                    <Button size="sm" onClick={() => finish(results)}>
+                        <X aria-hidden /> End session
+                    </Button>
                 </div>
 
                 {mode === "flashcards" ? (
@@ -205,23 +212,29 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                         onNext={() => advance(results)}
                     />
                 )}
-            </div>
+            </div>,
         );
     }
 
     // Setup
-    return (
-        <div>
-            <h1 className="text-3xl font-bold mb-2">{title}</h1>
-            <p className="text-ink-2 text-sm mb-6">
-                {deck.length} kanji
-                {ranges.length > 1 && ` · studied ${SESSION_SIZE} at a time`}.{" "}
-                <Link href={backHref} className="text-[var(--accent)] hover:underline">{backLabel}</Link>
-            </p>
+    return shell(
+        <div className="flex flex-col gap-8">
+            <header className="flex flex-col gap-3">
+                <KindLabel jp="学習">Study</KindLabel>
+                <h1 className="type-title">{title}</h1>
+                <p className="text-base leading-relaxed text-ink-2">
+                    {deck.length} kanji
+                    {ranges.length > 1 && `, studied ${SESSION_SIZE} at a time`}.{" "}
+                    <Link href={backHref} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
+                        {backLabel}
+                    </Link>
+                </p>
+                <PaintedBar chars={deck} caption label="Your ink in this deck" className="max-w-md pt-1" />
+            </header>
 
-            <fieldset className="mb-6">
-                <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">Mode</legend>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <fieldset className="flex flex-col gap-3">
+                <legend className="type-label mb-3">Mode</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
                     {MODES.map((m) => (
                         <button
                             key={m.id}
@@ -229,34 +242,48 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                             aria-pressed={mode === m.id}
                             onClick={() => setMode(m.id)}
                             className={cn(
-                                "text-left rounded-xl border p-4 transition-colors",
-                                mode === m.id ? "border-[var(--accent)] bg-[var(--accent)]/10" : "border-line bg-card hover:border-line-2",
+                                "flex cursor-pointer items-start gap-3.5 rounded-2xl border px-5 py-4 text-left transition-colors",
+                                mode === m.id ? "border-ink bg-raise" : "border-line bg-card hover:border-ink-3",
                             )}
                         >
-                            <span className="flex items-center gap-2 font-bold">
-                                {m.id === "flashcards" ? <Layers className="w-4 h-4" aria-hidden /> : <ListChecks className="w-4 h-4" aria-hidden />}
-                                {m.label}
+                            <span
+                                aria-hidden
+                                lang="ja"
+                                className={cn(
+                                    "flex size-11 flex-none items-center justify-center rounded-full border font-jp text-[21px] font-extrabold leading-none",
+                                    mode === m.id ? "border-ink bg-ink text-bg" : "border-line-2",
+                                )}
+                            >
+                                {m.jp}
                             </span>
-                            <span className="block mt-1 text-sm text-ink-2">{m.hint}</span>
+                            <span className="flex min-w-0 flex-col gap-1">
+                                <span className="text-[17px] font-bold leading-snug">{m.label}</span>
+                                <span className="text-sm text-ink-2">{m.hint}</span>
+                            </span>
                         </button>
                     ))}
                 </div>
             </fieldset>
 
-            <div className="rounded-xl border border-line bg-card p-4 space-y-4 mb-6">
+            <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card px-[22px] py-5">
                 {ranges.length > 1 && (
-                    <label className="block max-w-xs">
-                        <span className="block text-xs font-medium text-ink-2 uppercase tracking-wider mb-1.5">Cards</span>
+                    <div className="flex max-w-xs flex-col gap-1.5">
+                        <label htmlFor={rangeId} className="type-label">
+                            Cards
+                        </label>
                         <select
+                            id={rangeId}
                             value={rangeIndex}
                             onChange={(e) => setRangeIndex(Number(e.target.value))}
-                            className="w-full h-10 rounded-md bg-card border border-line px-2 text-sm text-ink focus:outline-none focus:border-[var(--accent)]"
+                            className="h-11 w-full rounded-xl border border-line-2 bg-card px-3 text-sm text-ink focus:border-ink"
                         >
                             {ranges.map((r, i) => (
-                                <option key={r.start} value={i}>{r.label} of {deck.length}</option>
+                                <option key={r.start} value={i}>
+                                    {r.label} of {deck.length}
+                                </option>
                             ))}
                         </select>
-                    </label>
+                    </div>
                 )}
                 <Checkbox checked={shuffle} onChange={setShuffle} label="Shuffle cards" />
                 {mode === "flashcards" && (
@@ -264,19 +291,14 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                         checked={saveMarked}
                         onChange={setSaveMarked}
                         label="Save cards I mark to My list"
-                        hint="Saved kanji always get their status updated. Leave this off to study without saving anything new."
+                        hint="Saved kanji always get their mark updated. Leave this off to study without saving anything new."
                     />
                 )}
             </div>
 
-            <button
-                type="button"
-                onClick={() => beginRange(rangeIndex)}
-                disabled={deck.length === 0}
-                className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-[var(--accent)] text-onacc font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
-            >
-                Start {range ? `(${range.end - range.start} cards)` : ""}
-            </button>
-        </div>
+            <Button variant="primary" size="lg" onClick={() => beginRange(rangeIndex)} disabled={deck.length === 0} className="self-start">
+                Start{range ? ` · ${range.end - range.start} ${range.end - range.start === 1 ? "card" : "cards"}` : ""}
+            </Button>
+        </div>,
     );
 }

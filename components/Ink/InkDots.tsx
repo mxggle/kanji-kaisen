@@ -17,6 +17,8 @@ interface InkDotsProps {
  * Four dots filled up to the shade (0–4), plus its name. Dots use --c, so they
  * follow the theme in 夜 when inside a themeVars() container and turn
  * vermilion in 墨.
+ *
+ * @deprecated One Atlas: a kanji's shade shows only as its tile fill (components/ui/KanjiTile) or an InkSwatch in a Tag (rule 3).
  */
 export function InkDots({ shade, label = "Ink", showName = true, className }: InkDotsProps) {
     return (
@@ -37,7 +39,11 @@ function Dots({ filled }: { filled: number }) {
     );
 }
 
-/** InkDots for one kanji from the ink store. Shows empty dots until the store hydrates. */
+/**
+ * InkDots for one kanji from the ink store. Shows empty dots until the store hydrates.
+ *
+ * @deprecated One Atlas: a kanji's shade shows only as its tile fill (components/ui/KanjiTile) or an InkSwatch in a Tag (rule 3).
+ */
 export function KanjiInkDots({ char, label, showName = true, className }: { char: string; label?: string; showName?: boolean; className?: string }) {
     const hydrated = useInkHydrated();
     const shade = useShade(char);

@@ -18,6 +18,8 @@ interface ThemeScrollProps {
  * "Your Nature scroll · 38% painted": the theme art in grey with a colour layer
  * revealed to painted%, a glowing edge in 夜 and ink wash in 墨. Renders the
  * unpainted scroll on the server and until the ink store hydrates.
+ *
+ * @deprecated One Atlas: a theme shows its progress as one components/ui/PaintedBar (rule 3).
  */
 export function ThemeScroll({ theme, chars, className }: ThemeScrollProps) {
     const progress = useThemeProgress(chars);

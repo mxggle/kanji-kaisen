@@ -3,7 +3,8 @@ import { getAllKanji, getCategories, getCategory, getKanji, getKanjiByJlpt, getR
 import { CATEGORIES } from "@/lib/atlas/categories";
 import { browsePath, categoryPath, radicalPath } from "@/lib/atlas/paths";
 import { setPath } from "@/lib/teach-set";
-import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
+import { PageShell } from "@/components/Atlas/PageShell";
+import { InkPaint } from "@/components/Ink/InkPaint";
 import { StudyClient, type PickerData, type ServerDeck } from "@/components/Study/StudyClient";
 import { parseStudyParams, studyPath, type DeckRequest, type StudyParams } from "@/components/Study/session";
 
@@ -17,7 +18,7 @@ interface StudyPageProps {
     searchParams: Promise<StudyParams>;
 }
 
-/** Resolves radical, theme, JLPT and shared-set decks from the atlas; list decks are resolved on the client. */
+/** Resolves radical, theme, JLPT, revisit and shared-set decks from the atlas; list decks are resolved on the client. */
 function resolveServerDeck(request: DeckRequest): ServerDeck | null {
     switch (request.kind) {
         case "jlpt":
@@ -37,6 +38,7 @@ function resolveServerDeck(request: DeckRequest): ServerDeck | null {
                 chars: radical.kanji.map((k) => k.char),
                 backHref: radicalPath(radical.key),
                 backLabel: `Back to ${radical.char} ${radical.name}`,
+                category: radical.category,
             };
         }
         case "theme": {
@@ -48,6 +50,7 @@ function resolveServerDeck(request: DeckRequest): ServerDeck | null {
                 chars: category.kanji.map((k) => k.char),
                 backHref: categoryPath(category.name),
                 backLabel: `Back to ${category.name}`,
+                category: category.name,
             };
         }
         case "chars": {
@@ -60,6 +63,17 @@ function resolveServerDeck(request: DeckRequest): ServerDeck | null {
                 chars,
                 backHref: setPath("set", { chars, title: request.title }),
                 backLabel: "Back to the set",
+            };
+        }
+        case "revisit": {
+            const chars = request.chars.filter((c) => getKanji(c) !== null);
+            if (chars.length === 0) return null;
+            return {
+                source: "revisit",
+                title: "Worth a revisit",
+                chars,
+                backHref: "/my-list",
+                backLabel: "Back to My list",
             };
         }
         default:
@@ -93,17 +107,18 @@ export default async function StudyPage({ searchParams }: StudyPageProps) {
 
     return (
         <PageShell>
-            <Breadcrumbs items={[{ href: "/", label: "Home" }, ...(request && !notFound ? [{ href: "/study", label: "Study" }, { label: serverDeck?.title ?? (request.kind === "learning" ? "Still learning" : "My list") }] : [{ label: "Study" }])]} />
-            {/* Keyed by the deck so navigating between decks resets the session. */}
-            <StudyClient
-                key={key}
-                request={notFound ? null : request}
-                notFound={notFound}
-                serverDeck={serverDeck}
-                initialMode={mode}
-                categoryCodes={categoryCodes}
-                picker={picker}
-            />
+            <InkPaint>
+                {/* Keyed by the deck so navigating between decks resets the session. */}
+                <StudyClient
+                    key={key}
+                    request={notFound ? null : request}
+                    notFound={notFound}
+                    serverDeck={serverDeck}
+                    initialMode={mode}
+                    categoryCodes={categoryCodes}
+                    picker={picker}
+                />
+            </InkPaint>
         </PageShell>
     );
 }
