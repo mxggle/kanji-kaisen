@@ -16,12 +16,17 @@ export interface ShapeInfo {
     elements: { char: string; strokes: number[] }[];
     /** Start/end point of each stroke ([x0, y0, x1, y1], 109-unit box); small kanji only. */
     ends?: number[][];
+    /** Top-level parts that are not the radical (待's 寺, 板's 反). */
+    sideParts?: string[];
 }
 
 export const MAX_STROKE_DIFFERENCE = 2;
 export const MAX_LOOK_ALIKES = 6;
 const COMPONENT_THRESHOLD = 0.6;
 const LARGEST_SHARED_MIN = 0.4;
+/** Same non-radical part, different radical (坂/板 share 反: 4 of 8 strokes) is the classic confusion. */
+const SHARED_SIDE_THRESHOLD = 0.45;
+const SHARED_SIDE_MIN_STROKES = 3;
 const TYPE_THRESHOLD = 0.8;
 /** Above this many strokes a matching stroke sequence alone is not a look-alike. */
 const TYPE_ONLY_MAX_STROKES = 6;
@@ -156,8 +161,13 @@ export function lookAlikeScore(a: ShapeInfo, b: ShapeInfo): number {
     const types = strokeTypeSimilarity(a, b);
     // Shared components first (one of them big: 日 + 大 in 俺 and 春 is not a
     // look-alike); a matching stroke sequence adds a little.
-    const componentMatch = components >= COMPONENT_THRESHOLD && largest > LARGEST_SHARED_MIN;
-    let score = componentMatch ? Math.min(1, components + 0.1 * types) : 0;
+    const sharedSide = (a.sideParts ?? []).some((p) =>
+        (b.sideParts ?? []).includes(p) &&
+        (a.elements.find((e) => e.char === p)?.strokes.length ?? 0) >= SHARED_SIDE_MIN_STROKES);
+    const componentMatch =
+        (components >= COMPONENT_THRESHOLD && largest > LARGEST_SHARED_MIN) ||
+        (sharedSide && components >= SHARED_SIDE_THRESHOLD);
+    let score = componentMatch ? Math.min(1, components + (sharedSide ? 0.15 : 0) + 0.1 * types) : 0;
     if (types >= TYPE_THRESHOLD && Math.max(a.strokeCount, b.strokeCount) <= TYPE_ONLY_MAX_STROKES) {
         const geometry = geometrySimilarity(a, b);
         if (geometry >= GEOMETRY_THRESHOLD) score = Math.max(score, ((types + geometry) / 2) * 0.95);

@@ -255,13 +255,19 @@ const inAtlas = new Set(records.map((k) => k.char));
 // ---------------------------------------------------------------------------
 // Components, phonetic series, same on'yomi, look-alikes
 
+// Roles: KanjiVG marks the phonetic (kvg:phon) and the radical (kvg:radical:
+// general, else tradit, else nelson). A phonetic part is "both" only when it is
+// also the main radical (問: 門 is the sound, 口 the meaning, though 門 carries
+// a secondary radical mark). The rest of a phono-semantic compound is meaning;
+// unmarked parts of other kanji are "form" (no source states their role).
 function componentsFor(char) {
     const entry = kvgLayer[char];
     if (!entry) return [];
     const hasSound = entry.parts.some((p) => p.ph);
+    const mainRadical = ['general', 'tradit', 'nelson'].map((type) => entry.parts.find((p) => p.r === type)).find(Boolean);
     return entry.parts.map((p) => {
         let role;
-        if (p.ph && p.r) role = 'both';
+        if (p.ph && p === mainRadical) role = 'both';
         else if (p.ph) role = 'sound';
         else if (p.r || hasSound) role = 'meaning';
         else role = 'form';
@@ -285,7 +291,14 @@ for (const k of records) for (const r of k.onyomi) byOn.set(r, [...(byOn.get(r) 
 
 const shapes = records.filter((k) => kvgLayer[k.char]).map((k) => {
     const e = kvgLayer[k.char];
-    return { char: k.char, strokeCount: e.n, types: e.t, ends: e.g, elements: e.el.map(([c, s]) => ({ char: c, strokes: expandStrokeRanges(s) })) };
+    return {
+        char: k.char,
+        strokeCount: e.n,
+        types: e.t,
+        ends: e.g,
+        elements: e.el.map(([c, s]) => ({ char: c, strokes: expandStrokeRanges(s) })),
+        sideParts: e.parts.filter((p) => !p.r).map((p) => p.c),
+    };
 });
 const shapeByChar = new Map(shapes.map((s) => [s.char, s]));
 
