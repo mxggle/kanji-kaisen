@@ -88,7 +88,8 @@ export function RadicalSeal({
         </>
     );
     const style = category ? ({ "--tc": getThemeColor(category) } as CSSProperties) : undefined;
-    const base = cn("group inline-flex min-w-0 flex-col items-center gap-2 text-center text-ink", className);
+    // The focus ring follows the seal: round alone, softly rounded with captions.
+    const base = cn("group inline-flex min-w-0 flex-col items-center gap-2 text-center text-ink", name || count ? "rounded-lg" : "rounded-full", className);
 
     if (href) {
         return (

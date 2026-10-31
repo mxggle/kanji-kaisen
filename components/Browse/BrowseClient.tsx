@@ -110,8 +110,6 @@ export function BrowseClient({ items, initialFilters, radicals }: BrowseClientPr
                     </Button>
                 </>
             }
-            // The rail is taller than a laptop screen: let it scroll inside its sticky card.
-            className="lg:[&_aside]:max-h-[calc(100dvh-3rem)] lg:[&_aside]:overflow-y-auto lg:[&_aside]:overscroll-contain"
             rail={
                 <FilterPanel activeCount={tags.length}>
                     <JlptFilter value={filters.jlpt} counts={counts} onChange={(jlpt) => update({ jlpt })} />

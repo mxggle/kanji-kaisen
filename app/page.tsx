@@ -47,7 +47,7 @@ export default function HomePage() {
                         <p className="hidden max-w-[560px] text-lg leading-relaxed text-ink-2 sm:block">
                             Search {total.toLocaleString("en")} kanji by meaning, reading or the kanji itself. Free, no account, no review queue.
                         </p>
-                        <SearchBox variant="hero" placeholder="water, みず, mizu or 水" className="max-w-[640px]" />
+                        <SearchBox variant="hero" shortcut="/" placeholder="water, みず, mizu or 水" className="max-w-[640px]" />
                         <div className="hidden flex-wrap items-center gap-2 sm:flex">
                             <span className="text-xs text-ink-3">Try</span>
                             <Chip href={kanjiPath("休")} aria-label="休 rest">

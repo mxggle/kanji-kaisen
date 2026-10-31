@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { KindLabel } from "@/components/ui/SectionHeader";
 
 interface ToolProps {
@@ -36,7 +35,11 @@ export function Tool({ jp, kind, title, lede, actions, rail, railLabel = "Filter
                 {actions && <div className="flex flex-wrap items-center gap-2.5 sm:ml-auto">{actions}</div>}
             </div>
             <div className="grid items-start gap-8 lg:grid-cols-[288px_minmax(0,1fr)]">
-                <aside aria-label={railLabel} className={cn("flex min-w-0 flex-col gap-[26px] rounded-2xl border border-line bg-card p-[22px] lg:sticky lg:top-6")}>
+                {/* A rail taller than the screen scrolls inside its sticky card. */}
+                <aside
+                    aria-label={railLabel}
+                    className="flex min-w-0 flex-col gap-[26px] rounded-2xl border border-line bg-card p-[22px] lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain"
+                >
                     {rail}
                 </aside>
                 <div className="min-w-0">{children}</div>
