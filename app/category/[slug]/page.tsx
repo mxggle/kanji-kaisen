@@ -1,16 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GraduationCap, Swords } from "lucide-react";
-import { getCategories, getCategory, getRadical, JLPT_LEVELS } from "@/lib/atlas";
-import { categoryPath, practiceCategoryPath } from "@/lib/atlas/paths";
-import { PageShell, Breadcrumbs, Section } from "@/components/Atlas/PageShell";
-import { JlptBadge, StatBadge } from "@/components/Atlas/JlptBadge";
-import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
-import { RadicalLinkCard } from "@/components/Atlas/radical/RadicalLinkCard";
-import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
-import { CategoryCardArt } from "@/components/Atlas/category/CategoryCardArt";
-import { getThemeStyle, themeVars, TOKEN_THEME_CLASS } from "@/components/Atlas/category/themeStyles";
+import { getCategories, getCategory } from "@/lib/atlas";
+import { categoryPath } from "@/lib/atlas/paths";
+import { Breadcrumbs } from "@/components/Atlas/PageShell";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
+import { getThemeOrder, panelRadicals } from "@/components/Theme/data";
+import { Fog, shadeGradient, ThemeImage } from "@/components/Theme/parts";
+import { ThemeExplorer, ThemeKnown, ThemeProvider } from "@/components/Theme/ThemeExplorer";
+import { ThemeKanjiIndex } from "@/components/Theme/ThemeKanjiIndex";
+import { ThemeStory } from "@/components/Theme/ThemeStory";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -32,94 +30,89 @@ export async function generateMetadata({ params }: Params) {
 }
 
 export default async function CategoryPage({ params }: Params) {
-    const category = getCategory((await params).slug);
-    if (!category) notFound();
+    const slug = (await params).slug;
+    const order = getThemeOrder(slug);
+    const story = getCategory(slug)?.story ?? null;
+    if (!order) notFound();
 
-    const theme = getThemeStyle(category.name);
-    const Icon = theme.icon;
-    const kanjiByLevel = JLPT_LEVELS.map((level) => ({
-        level,
-        kanji: category.kanji.filter((k) => k.jlpt === level),
-    })).filter((g) => g.kanji.length > 0);
+    const { meta, groups, sideForms, otherSideForms } = order;
 
     return (
-        <PageShell style={themeVars(category.name)}>
-            <Breadcrumbs
-                items={[
-                    { href: "/", label: "Home" },
-                    { href: "/categories", label: "Themes" },
-                    { label: category.name },
-                ]}
-            />
-
-            {/* Hero */}
-            <header className="group relative overflow-hidden rounded-3xl border border-c/30 bg-card p-6 sm:p-10">
-                <CategoryCardArt category={category.name} theme={theme} />
-                <div className="relative z-10">
-                    <div className="inline-flex p-3 rounded-2xl bg-ink/10 text-c backdrop-blur-md border border-line mb-4">
-                        <Icon size={28} aria-hidden />
+        <ThemeProvider theme={meta} radicals={panelRadicals(groups)}>
+            <div style={themeVars(meta.name)} className="relative isolate text-ink">
+                {/* Theme art: a banner on phones (M-Theme), the right of a wide hero on desktop (Theme). */}
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[380px] overflow-hidden sm:h-[460px] lg:h-[860px]">
+                    <div className="absolute inset-0 bg-bg lg:left-auto lg:w-[78%]">
+                        <ThemeImage src={meta.image} sizes="(min-width: 1024px) 78vw, 100vw" preload className="object-[50%_30%]" />
                     </div>
-                    {category.story?.title && (
-                        <p className="text-xs uppercase tracking-widest text-ink-3 mb-1">{category.story.title}</p>
-                    )}
-                    <h1 className="glow text-3xl sm:text-4xl font-bold mb-3 text-c">{category.name}</h1>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                        <StatBadge>{category.radicalCount} radicals</StatBadge>
-                        <StatBadge>{category.kanjiCount} kanji</StatBadge>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                        <Link
-                            href={`/study?theme=${category.slug}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-onacc font-semibold hover:opacity-90 transition-opacity"
-                        >
-                            <GraduationCap size={18} aria-hidden /> Study this theme
-                        </Link>
-                        <Link
-                            href={practiceCategoryPath(category.name)}
-                            prefetch={false}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-bg/40 border border-line-2 hover:bg-ink/10 transition-colors"
-                        >
-                            <Swords size={18} aria-hidden /> Practice this theme (classic)
-                        </Link>
-                    </div>
+                    <div
+                        className="absolute inset-0 lg:hidden"
+                        style={{ background: shadeGradient("180deg", [[0.55, 0], [0.05, 30], [0.75, 70], [1, 100]]) }}
+                    />
+                    <div
+                        className="absolute inset-0 hidden lg:block"
+                        style={{
+                            background: `${shadeGradient("0deg", [[1, 0], [0, 45]])}, ${shadeGradient("90deg", [[0.97, 0], [0.85, 34], [0.25, 70], [0.55, 100]])}`,
+                        }}
+                    />
+                    <Fog className="top-[48%] h-[160px] lg:left-[20%] lg:top-[40%] lg:h-[200px]" />
+                    <span
+                        lang="ja"
+                        className="absolute -right-3.5 top-16 select-none font-jp text-[220px] font-extrabold leading-none text-c opacity-[.14] lg:right-[30%] lg:top-20 lg:text-[440px] lg:opacity-[.11]"
+                    >
+                        {meta.mark}
+                    </span>
                 </div>
-            </header>
 
-            {category.story && (
-                <div className="mt-10">
-                    <CategoryStoryContent story={category.story} themeClass={TOKEN_THEME_CLASS} headingAs="h2" />
-                </div>
-            )}
-
-            <Section title={`Radicals in ${category.name}`} id="radicals" className="scroll-mt-24">
-                <ul className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {category.radicals.map((radical) => (
-                        <li key={radical.key}>
-                            <RadicalLinkCard
-                                radical={radical}
-                                variantOf={radical.kanjiCount === 0 ? getRadical(radical.key)?.variantOf : null}
-                            />
-                        </li>
-                    ))}
-                </ul>
-            </Section>
-
-            <Section title={`${category.name} kanji`} id="kanji" className="scroll-mt-24">
-                <p className="text-ink-3 text-sm mb-4">
-                    {category.kanjiCount} kanji whose radical belongs to this theme, by JLPT level and frequency.
-                </p>
-                <div className="space-y-8">
-                    {kanjiByLevel.map(({ level, kanji }) => (
-                        <div key={level}>
-                            <h3 className="flex items-center gap-2 mb-3">
-                                <JlptBadge level={level} />
-                                <span className="text-ink-3 text-sm">{kanji.length} kanji</span>
-                            </h3>
-                            <KanjiTileGrid items={kanji} />
+                <div className="mx-auto w-full max-w-7xl px-4 pb-16 lg:px-8">
+                    <header className="flex min-h-[340px] flex-col justify-between pt-[76px] sm:min-h-[420px] lg:block lg:min-h-0 lg:pt-24">
+                        <Breadcrumbs
+                            items={[
+                                { href: "/", label: "Home" },
+                                { href: "/categories", label: "Themes" },
+                                { label: meta.name },
+                            ]}
+                        />
+                        <div className="max-w-[640px] lg:pt-8">
+                            <p className="flex items-center gap-3.5">
+                                <span lang="ja" className="font-jp text-sm text-c lg:text-lg">{meta.jp}</span>
+                                <span aria-hidden className="h-px w-12 bg-c opacity-60" />
+                                <span className="font-disp text-base italic text-ink-2 lg:text-[19px]">{meta.sub}</span>
+                            </p>
+                            <h1 className="glow mt-2 text-balance font-disp text-[46px] font-bold leading-[.95] text-c lg:mt-[18px] lg:text-[88px] lg:leading-[.92]">
+                                {meta.name}
+                            </h1>
                         </div>
-                    ))}
+                    </header>
+                    <div className="max-w-[640px]">
+                        <p className="mt-4 text-[15px] leading-relaxed text-ink-2 lg:mt-[22px] lg:text-[17px]">{meta.lore}</p>
+                        <p className="mt-2.5 text-sm text-ink-3 lg:mt-3.5">
+                            {meta.radicalCount} radicals · {meta.kanjiCount} kanji
+                            <ThemeKnown />
+                        </p>
+                    </div>
+
+                    <div className="mt-8 lg:mt-14">
+                        <ThemeExplorer />
+                    </div>
+
+                    <div className="mt-16 lg:mt-24">
+                        <ThemeKanjiIndex
+                            name={meta.name}
+                            kanjiCount={meta.kanjiCount}
+                            groups={groups}
+                            sideForms={sideForms}
+                            otherSideForms={otherSideForms}
+                        />
+                    </div>
+
+                    {story && (
+                        <div className="mt-16 lg:mt-24">
+                            <ThemeStory story={story} name={meta.name} />
+                        </div>
+                    )}
                 </div>
-            </Section>
-        </PageShell>
+            </div>
+        </ThemeProvider>
     );
 }

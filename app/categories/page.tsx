@@ -1,7 +1,8 @@
 import { getCategories } from "@/lib/atlas";
 import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
-import { ThemeCard } from "@/components/Atlas/category/ThemeCard";
 import { atlasMetadata } from "@/components/Atlas/metadata";
+import { themeChars, themeMeta } from "@/components/Theme/data";
+import { CategoryGates } from "@/components/Theme/CategoryGates";
 
 export const dynamic = "force-static";
 
@@ -21,21 +22,16 @@ export default function CategoriesPage() {
         <PageShell className="max-w-7xl">
             <Breadcrumbs items={[{ href: "/", label: "Home" }, { label: "Themes" }]} />
 
-            <header className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold mb-3">Kanji themes</h1>
-                <p className="text-ink-2 max-w-2xl leading-relaxed">
-                    Every radical belongs to one of {categories.length} themes. Pick a theme to read its story, meet its
-                    radicals and see every kanji built from them.
+            <header className="mb-8 lg:mb-10">
+                <h1 className="font-disp text-4xl font-bold sm:text-5xl">Ten kanji themes</h1>
+                <p className="mt-3 max-w-2xl leading-relaxed text-ink-2">
+                    Every radical belongs to one of {categories.length} themes. They sit side by side with no order, so
+                    start anywhere: each theme has its story, its radicals in a suggested order and every kanji built
+                    from them.
                 </p>
             </header>
 
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {categories.map((category) => (
-                    <li key={category.slug}>
-                        <ThemeCard category={category} />
-                    </li>
-                ))}
-            </ul>
+            <CategoryGates themes={categories.map(themeMeta)} chars={themeChars()} />
         </PageShell>
     );
 }
