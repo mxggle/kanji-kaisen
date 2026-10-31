@@ -4,14 +4,14 @@ import { readingToRomaji, splitReading } from "@/lib/atlas/readings";
 export function Reading({ reading }: { reading: string }) {
     const { prefix, suffix, stem, okurigana } = splitReading(reading);
     return (
-        <span className="inline-flex flex-col items-start px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
+        <span className="inline-flex flex-col items-start px-3 py-1.5 bg-card border border-line rounded-lg">
             <span className="text-xl font-japanese leading-tight">
-                {suffix && <span className="text-white/40">-</span>}
+                {suffix && <span className="text-ink-3">-</span>}
                 {stem}
-                {okurigana && <span className="text-white/40">{okurigana}</span>}
-                {prefix && <span className="text-white/40">-</span>}
+                {okurigana && <span className="text-ink-3">{okurigana}</span>}
+                {prefix && <span className="text-ink-3">-</span>}
             </span>
-            <span className="text-xs text-white/50">{readingToRomaji(reading)}</span>
+            <span className="text-xs text-ink-3">{readingToRomaji(reading)}</span>
         </span>
     );
 }
@@ -19,8 +19,8 @@ export function Reading({ reading }: { reading: string }) {
 export function ReadingList({ label, hint, readings }: { label: string; hint: string; readings: string[] }) {
     return (
         <div>
-            <h3 className="text-white/50 text-xs uppercase tracking-wider mb-2">
-                {label} <span className="normal-case tracking-normal text-white/30">({hint})</span>
+            <h3 className="text-ink-3 text-xs uppercase tracking-wider mb-2">
+                {label} <span className="normal-case tracking-normal text-ink-3">({hint})</span>
             </h3>
             {readings.length > 0 ? (
                 <ul className="flex flex-wrap gap-2">
@@ -31,7 +31,7 @@ export function ReadingList({ label, hint, readings }: { label: string; hint: st
                     ))}
                 </ul>
             ) : (
-                <p className="text-sm text-white/40">None</p>
+                <p className="text-sm text-ink-3">None</p>
             )}
         </div>
     );

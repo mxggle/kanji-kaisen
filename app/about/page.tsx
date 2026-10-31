@@ -54,14 +54,14 @@ export default function AboutPage() {
     return (
         <PageShell className="max-w-3xl">
             <h1 className="text-4xl font-bold mb-4">About Kanji Kaisen</h1>
-            <p className="text-lg text-white/70 leading-relaxed">
+            <p className="text-lg text-ink-2 leading-relaxed">
                 Kanji Kaisen is a free kanji atlas. Every one of its {kanjiCount.toLocaleString("en")} kanji has its own page with
                 stroke order, readings, example words and the radical it is built from. Kanji are grouped by JLPT level, by
                 radical ({radicalCount} of them, each with a short story) and by ten themes such as nature, the body and tools.
             </p>
 
             <Section title="Logic, not magic">
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-ink-2 leading-relaxed">
                     Most kanji are made of smaller parts, and the radical usually hints at the meaning: 海 (sea), 泳 (swim) and
                     池 (pond) all carry 氵, the water radical. Learning the radical first turns a wall of strokes into a few
                     familiar pieces. Radical stories are memory aids written for this site; where they touch on history, they
@@ -70,7 +70,7 @@ export default function AboutPage() {
             </Section>
 
             <Section title="Studying">
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-ink-2 leading-relaxed">
                     You can save kanji to <Link href="/my-list" className="text-[var(--accent)] hover:underline">My list</Link>,
                     mark them as still learning or known, and review them with flashcards or a quick quiz on the{" "}
                     <Link href="/study" className="text-[var(--accent)] hover:underline">Study</Link> page. Your list stays in
@@ -82,12 +82,12 @@ export default function AboutPage() {
             <Section title="Data sources and licenses">
                 <ul className="space-y-4">
                     {SOURCES.map((source) => (
-                        <li key={source.name} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                            <a href={source.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-bold text-white hover:text-[var(--accent)]">
+                        <li key={source.name} className="rounded-xl border border-line bg-card p-4">
+                            <a href={source.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-bold text-ink hover:text-[var(--accent)]">
                                 {source.name} <ExternalLink size={14} aria-hidden />
                             </a>
-                            <p className="text-sm text-white/50">{source.author}</p>
-                            <p className="mt-2 text-sm text-white/70">{source.usedFor}</p>
+                            <p className="text-sm text-ink-3">{source.author}</p>
+                            <p className="mt-2 text-sm text-ink-2">{source.usedFor}</p>
                             <p className="mt-2 text-sm">
                                 License:{" "}
                                 <a href={source.licenseHref} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">
@@ -97,7 +97,7 @@ export default function AboutPage() {
                         </li>
                     ))}
                 </ul>
-                <p className="mt-4 text-sm text-white/50 leading-relaxed">
+                <p className="mt-4 text-sm text-ink-3 leading-relaxed">
                     Data for a few kanji (分, 誰, 的 and others) was taken from{" "}
                     <a href="https://github.com/davidluzgouveia/kanji-data" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">
                         davidluzgouveia/kanji-data
@@ -109,7 +109,7 @@ export default function AboutPage() {
             </Section>
 
             <Section title="Source code and feedback">
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-ink-2 leading-relaxed">
                     The site is open source on{" "}
                     <a href="https://github.com/mxggle/kanji-kaisen" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">GitHub</a>{" "}
                     under the MIT license (the data keeps its own licenses above). Found a wrong reading or a story that doesn&apos;t

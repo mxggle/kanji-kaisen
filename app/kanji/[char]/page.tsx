@@ -81,7 +81,7 @@ export default async function KanjiPage({ params }: PageProps) {
 
             {/* Hero */}
             <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
-                <div className="aspect-square w-40 sm:w-48 shrink-0 self-center flex items-center justify-center bg-white/5 rounded-3xl border border-white/10 text-8xl sm:text-9xl font-bold font-japanese" aria-hidden>
+                <div className="aspect-square w-40 sm:w-48 shrink-0 self-center flex items-center justify-center bg-card rounded-3xl border border-line text-8xl sm:text-9xl font-bold font-japanese" aria-hidden>
                     {kanji.char}
                 </div>
                 <div className="min-w-0 space-y-4">
@@ -90,7 +90,7 @@ export default async function KanjiPage({ params }: PageProps) {
                         {kanji.meanings.slice(0, 4).join(", ")}
                     </h1>
                     {kanji.meanings.length > 4 && (
-                        <p className="text-white/60">Also: {kanji.meanings.slice(4).join(", ")}</p>
+                        <p className="text-ink-2">Also: {kanji.meanings.slice(4).join(", ")}</p>
                     )}
                     <div className="flex flex-wrap gap-2">
                         <JlptBadge level={kanji.jlpt} />
@@ -113,7 +113,7 @@ export default async function KanjiPage({ params }: PageProps) {
                     <ReadingList label="Kun'yomi" hint="native Japanese" readings={kanji.kunyomi} />
                 </div>
                 {kanji.kunyomi.some((r) => r.includes(".")) && (
-                    <p className="mt-3 text-xs text-white/40">Faded kana are okurigana, written in hiragana after the kanji.</p>
+                    <p className="mt-3 text-xs text-ink-3">Faded kana are okurigana, written in hiragana after the kanji.</p>
                 )}
             </Section>
 
@@ -122,10 +122,10 @@ export default async function KanjiPage({ params }: PageProps) {
                     <div className="grid md:grid-cols-2 gap-6 items-start">
                         <figure className="flex flex-col items-center gap-2">
                             <div
-                                className="w-full max-w-[300px] aspect-square p-2 rounded-xl bg-white/5 border border-white/10 text-white [&>svg]:w-full [&>svg]:h-full"
+                                className="w-full max-w-[300px] aspect-square p-2 rounded-xl bg-card border border-line text-ink [&>svg]:w-full [&>svg]:h-full"
                                 dangerouslySetInnerHTML={{ __html: strokeSvg }}
                             />
-                            <figcaption className="text-xs text-white/50 text-center">
+                            <figcaption className="text-xs text-ink-3 text-center">
                                 Numbers show stroke order. Diagram:{" "}
                                 <a href="https://kanjivg.tagaini.net" className="underline hover:text-[var(--accent)]" rel="noopener">KanjiVG</a>{" "}
                                 (CC BY-SA 3.0)
@@ -134,7 +134,7 @@ export default async function KanjiPage({ params }: PageProps) {
                         <StrokeOrderPanel char={kanji.char} />
                     </div>
                 ) : (
-                    <p className="text-white/50 text-sm">No stroke order data is available for this kanji yet.</p>
+                    <p className="text-ink-3 text-sm">No stroke order data is available for this kanji yet.</p>
                 )}
             </Section>
 
@@ -142,18 +142,18 @@ export default async function KanjiPage({ params }: PageProps) {
                 {kanji.examples.length > 0 ? (
                     <ExampleList examples={kanji.examples} />
                 ) : (
-                    <p className="text-white/50 text-sm">No example words for this kanji yet.</p>
+                    <p className="text-ink-3 text-sm">No example words for this kanji yet.</p>
                 )}
             </Section>
 
             <Section title="Composition">
                 {radical ? (
-                    <div className="p-4 sm:p-5 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-line space-y-3">
                         <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-sm text-white/50">Radical</span>
+                            <span className="text-sm text-ink-3">Radical</span>
                             <RadicalChip radical={{ key: radical.key, char: radical.char, name: radical.name, meaning: radical.meaning }} />
                         </div>
-                        {storySummary && <p className="text-white/80 leading-relaxed">{storySummary}</p>}
+                        {storySummary && <p className="text-ink leading-relaxed">{storySummary}</p>}
                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                             {radical.hasStory && (
                                 <Link href={radicalPath(radical.key)} className="inline-flex items-center gap-1 text-[var(--accent)] hover:underline">
@@ -161,14 +161,14 @@ export default async function KanjiPage({ params }: PageProps) {
                                 </Link>
                             )}
                             {kanji.category && (
-                                <Link href={categoryPath(kanji.category)} className="inline-flex items-center gap-1 text-white/70 hover:text-[var(--accent)]">
+                                <Link href={categoryPath(kanji.category)} className="inline-flex items-center gap-1 text-ink-2 hover:text-[var(--accent)]">
                                     Theme: {kanji.category} <ArrowRight size={14} aria-hidden />
                                 </Link>
                             )}
                         </div>
                     </div>
                 ) : (
-                    <p className="text-white/50 text-sm">No radical is assigned to this character.</p>
+                    <p className="text-ink-3 text-sm">No radical is assigned to this character.</p>
                 )}
             </Section>
 

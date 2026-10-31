@@ -126,8 +126,8 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
 
     if (error) {
         return (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-white/70">
-                <p className="font-medium text-white">Couldn’t load kanji details.</p>
+            <div className="rounded-xl border border-line bg-card p-6 text-ink-2">
+                <p className="font-medium text-ink">Couldn’t load kanji details.</p>
                 <button type="button" onClick={retryIndex} className="mt-3 text-[var(--accent)] hover:underline">Try again</button>
             </div>
         );
@@ -164,7 +164,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
             <div>
                 <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="min-w-0">
-                        <p className="text-xs text-white/50 truncate">{title} · {mode === "quiz" ? "Meaning quiz" : "Flashcards"}</p>
+                        <p className="text-xs text-ink-3 truncate">{title} · {mode === "quiz" ? "Meaning quiz" : "Flashcards"}</p>
                         <p className="text-sm font-medium" aria-live="polite">
                             Card {position + 1} of {session.cards.length}
                         </p>
@@ -172,12 +172,12 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                     <button
                         type="button"
                         onClick={() => finish(results)}
-                        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-white/20 text-sm text-white/80 hover:border-white/50 transition-colors"
+                        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-line-2 text-sm text-ink hover:border-ink-3 transition-colors"
                     >
                         <X className="w-4 h-4" aria-hidden /> End session
                     </button>
                 </div>
-                <div className="h-1 rounded-full bg-white/10 mb-6 overflow-hidden" aria-hidden>
+                <div className="h-1 rounded-full bg-ink/10 mb-6 overflow-hidden" aria-hidden>
                     <div
                         className="h-full bg-[var(--accent)] transition-[width]"
                         style={{ width: `${((position + (answeredCurrent ? 1 : 0)) / session.cards.length) * 100}%` }}
@@ -213,14 +213,14 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
     return (
         <div>
             <h1 className="text-3xl font-bold mb-2">{title}</h1>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-ink-2 text-sm mb-6">
                 {deck.length} kanji
                 {ranges.length > 1 && ` · studied ${SESSION_SIZE} at a time`}.{" "}
                 <Link href={backHref} className="text-[var(--accent)] hover:underline">{backLabel}</Link>
             </p>
 
             <fieldset className="mb-6">
-                <legend className="text-xs font-medium text-white/60 uppercase tracking-wider mb-2">Mode</legend>
+                <legend className="text-xs font-medium text-ink-2 uppercase tracking-wider mb-2">Mode</legend>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {MODES.map((m) => (
                         <button
@@ -230,27 +230,27 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                             onClick={() => setMode(m.id)}
                             className={cn(
                                 "text-left rounded-xl border p-4 transition-colors",
-                                mode === m.id ? "border-[var(--accent)] bg-[var(--accent)]/10" : "border-white/10 bg-white/5 hover:border-white/30",
+                                mode === m.id ? "border-[var(--accent)] bg-[var(--accent)]/10" : "border-line bg-card hover:border-line-2",
                             )}
                         >
                             <span className="flex items-center gap-2 font-bold">
                                 {m.id === "flashcards" ? <Layers className="w-4 h-4" aria-hidden /> : <ListChecks className="w-4 h-4" aria-hidden />}
                                 {m.label}
                             </span>
-                            <span className="block mt-1 text-sm text-white/60">{m.hint}</span>
+                            <span className="block mt-1 text-sm text-ink-2">{m.hint}</span>
                         </button>
                     ))}
                 </div>
             </fieldset>
 
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-4 mb-6">
+            <div className="rounded-xl border border-line bg-card p-4 space-y-4 mb-6">
                 {ranges.length > 1 && (
                     <label className="block max-w-xs">
-                        <span className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Cards</span>
+                        <span className="block text-xs font-medium text-ink-2 uppercase tracking-wider mb-1.5">Cards</span>
                         <select
                             value={rangeIndex}
                             onChange={(e) => setRangeIndex(Number(e.target.value))}
-                            className="w-full h-10 rounded-md bg-neutral-900 border border-white/15 px-2 text-sm text-white focus:outline-none focus:border-[var(--accent)]"
+                            className="w-full h-10 rounded-md bg-card border border-line px-2 text-sm text-ink focus:outline-none focus:border-[var(--accent)]"
                         >
                             {ranges.map((r, i) => (
                                 <option key={r.start} value={i}>{r.label} of {deck.length}</option>
@@ -273,7 +273,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 type="button"
                 onClick={() => beginRange(rangeIndex)}
                 disabled={deck.length === 0}
-                className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-[var(--accent)] text-black font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
+                className="inline-flex items-center justify-center h-12 px-8 rounded-full bg-[var(--accent)] text-onacc font-bold hover:opacity-90 disabled:opacity-40 transition-opacity"
             >
                 Start {range ? `(${range.end - range.start} cards)` : ""}
             </button>

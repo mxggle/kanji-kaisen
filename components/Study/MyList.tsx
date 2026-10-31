@@ -26,7 +26,7 @@ export function MyList() {
     return (
         <>
             <h1 className="text-3xl font-bold mb-2">My list</h1>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-ink-2 text-sm mb-6">
                 Kanji you saved, stored in this browser only. Mark them “Known” when they stick, or study them as flashcards or a quiz.
             </p>
             {hydrated ? <MyListContent /> : <MyListSkeleton />}
@@ -39,12 +39,12 @@ export function MyListSkeleton() {
         <div aria-busy="true" aria-label="Loading your list">
             <div className="flex gap-2 mb-6">
                 {[0, 1, 2].map((i) => (
-                    <div key={i} className="h-9 w-24 rounded-full bg-white/5 animate-pulse" />
+                    <div key={i} className="h-9 w-24 rounded-full bg-card animate-pulse" />
                 ))}
             </div>
             <ul className={GRID}>
                 {Array.from({ length: 8 }, (_, i) => (
-                    <li key={i} className="aspect-square rounded-lg bg-white/5 border border-white/10 animate-pulse" />
+                    <li key={i} className="aspect-square rounded-lg bg-card border border-line animate-pulse" />
                 ))}
             </ul>
         </div>
@@ -84,14 +84,14 @@ function MyListContent() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
                 <Link
                     href={studyPath({ kind: "list" })}
-                    className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] text-black font-bold text-sm hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] text-onacc font-bold text-sm hover:opacity-90 transition-opacity"
                 >
                     <Layers className="w-4 h-4" aria-hidden /> Study these ({counts.all})
                 </Link>
                 {counts.learning > 0 && (
                     <Link
                         href={studyPath({ kind: "learning" })}
-                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-white/20 hover:border-[var(--accent)] text-sm font-medium transition-colors"
+                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
                     >
                         <RotateCcw className="w-4 h-4" aria-hidden /> Review {counts.learning} still-learning kanji
                     </Link>
@@ -108,10 +108,10 @@ function MyListContent() {
                         onClick={() => setFilter(f.id)}
                         className={cn(
                             "h-9 px-3 rounded-full text-sm font-medium border transition-colors",
-                            filter === f.id ? "bg-white text-black border-white" : "border-white/20 text-white/60 hover:border-white/50",
+                            filter === f.id ? "bg-ink text-bg border-ink" : "border-line-2 text-ink-2 hover:border-ink-3 hover:text-ink",
                         )}
                     >
-                        {f.label} <span className={filter === f.id ? "text-black/60" : "text-white/40"}>{counts[f.id]}</span>
+                        {f.label} <span className={filter === f.id ? "text-bg/70" : "text-ink-3"}>{counts[f.id]}</span>
                     </button>
                 ))}
             </div>
@@ -119,14 +119,14 @@ function MyListContent() {
             {removed && <UndoBar removed={removed} onUndo={() => { restore(removed.char, removed.entry); setRemoved(null); }} />}
 
             {error && (
-                <p className="mb-4 text-sm text-white/60">
+                <p className="mb-4 text-sm text-ink-2">
                     Couldn’t load kanji details.{" "}
                     <button type="button" onClick={retry} className="text-[var(--accent)] hover:underline">Try again</button>
                 </p>
             )}
 
             {chars.length === 0 ? (
-                <p className="text-white/50 text-sm py-6">
+                <p className="text-ink-3 text-sm py-6">
                     {filter === "known"
                         ? "Nothing marked as known yet. Use the status buttons below a kanji, or “Knew it” in flashcards."
                         : "Nothing still learning. Nice work!"}
@@ -144,7 +144,7 @@ function MyListContent() {
                                     <Link
                                         href={kanjiPath(char)}
                                         className={cn(
-                                            "flex items-center justify-center aspect-square rounded-lg bg-white/5 border border-white/10 border-b-4 text-3xl sm:text-4xl font-bold font-japanese hover:border-[var(--accent)]",
+                                            "flex items-center justify-center aspect-square rounded-lg bg-card border border-line border-b-4 text-3xl sm:text-4xl font-bold font-japanese hover:border-[var(--accent)]",
                                             !byChar && !error && "animate-pulse",
                                         )}
                                     >
@@ -161,7 +161,7 @@ function MyListContent() {
                                             "flex-1 min-w-0 inline-flex items-center justify-center gap-1 h-8 rounded-md text-[11px] font-medium border transition-colors",
                                             status === "known"
                                                 ? "border-[var(--accent)]/50 text-[var(--accent)] bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20"
-                                                : "border-white/15 text-white/70 hover:border-white/40",
+                                                : "border-line text-ink-2 hover:border-line-2",
                                         )}
                                     >
                                         {status === "known" ? <Check className="w-3 h-3 shrink-0" aria-hidden /> : <BookOpen className="w-3 h-3 shrink-0" aria-hidden />}
@@ -172,7 +172,7 @@ function MyListContent() {
                                         onClick={() => remove(char)}
                                         aria-label={`Remove ${char} from My list`}
                                         title="Remove from My list"
-                                        className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md border border-white/15 text-white/50 hover:text-white hover:border-white/40 transition-colors"
+                                        className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md border border-line text-ink-3 hover:text-ink hover:border-line-2 transition-colors"
                                     >
                                         <X className="w-3.5 h-3.5" aria-hidden />
                                     </button>
@@ -188,9 +188,9 @@ function MyListContent() {
 
 function UndoBar({ removed, onUndo }: { removed: { char: string }; onUndo: () => void }) {
     return (
-        <div role="status" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm">
-            <span className="text-white/70">
-                Removed <span className="font-japanese text-white">{removed.char}</span> from My list.
+        <div role="status" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-line bg-card px-4 py-2 text-sm">
+            <span className="text-ink-2">
+                Removed <span className="font-japanese text-ink">{removed.char}</span> from My list.
             </span>
             <button type="button" onClick={onUndo} className="text-[var(--accent)] font-medium hover:underline">Undo</button>
         </div>
@@ -199,27 +199,27 @@ function UndoBar({ removed, onUndo }: { removed: { char: string }; onUndo: () =>
 
 function EmptyState() {
     return (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 sm:p-8 text-white/70">
-            <p className="text-lg font-medium text-white">Your list is empty.</p>
+        <div className="rounded-xl border border-line bg-card p-6 sm:p-8 text-ink-2">
+            <p className="text-lg font-medium text-ink">Your list is empty.</p>
             <p className="mt-2 text-sm">
                 Open any kanji and press Save to add it here. A good place to start is the JLPT N5 kanji.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
                 <Link
                     href={browsePath({ jlpt: "N5" })}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full bg-[var(--accent)] text-black font-bold text-sm hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center justify-center h-11 px-5 rounded-full bg-[var(--accent)] text-onacc font-bold text-sm hover:opacity-90 transition-opacity"
                 >
                     Browse N5 kanji
                 </Link>
                 <Link
                     href={browsePath()}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-white/20 hover:border-[var(--accent)] text-sm font-medium transition-colors"
+                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
                 >
                     Browse all kanji
                 </Link>
                 <Link
                     href={studyPath({ kind: "jlpt", level: "N5" })}
-                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-white/20 hover:border-[var(--accent)] text-sm font-medium transition-colors"
+                    className="inline-flex items-center justify-center h-11 px-5 rounded-full border border-line-2 hover:border-[var(--accent)] text-sm font-medium transition-colors"
                 >
                     Study N5 without saving
                 </Link>

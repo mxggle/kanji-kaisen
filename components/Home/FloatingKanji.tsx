@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 interface FloatingParticle {
@@ -50,6 +50,7 @@ const FLOATING_PARTICLES = createFloatingParticles(30);
 // Floating Kanji Background Animation - Disabled on mobile for performance
 export function FloatingKanji() {
   const [isMobile, setIsMobile] = useState(true); // Default to true to prevent flash on mobile
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // Check if we're on mobile
@@ -65,8 +66,8 @@ export function FloatingKanji() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Don't render floating kanji on mobile devices for performance
-  if (isMobile) {
+  // Don't render floating kanji on mobile devices (performance) or when motion is reduced.
+  if (isMobile || reduceMotion) {
     return null;
   }
 
@@ -89,8 +90,9 @@ export function FloatingKanji() {
             style={{
               left: `${startX}%`,
               fontSize: `${size}rem`,
-              color: `rgba(255, 255, 255, ${opacity})`,
-              textShadow: '0 0 10px rgba(255,255,255,0.3)',
+              color: `color-mix(in oklab, var(--ink) ${Math.round(opacity * 100)}%, transparent)`,
+              // Glows only in 夜 (see --glow-off in globals.css).
+              textShadow: "var(--glow-off, 0 0 10px color-mix(in oklab, var(--ink) 30%, transparent))",
             }}
             initial={{
               y: `${startY}vh`,

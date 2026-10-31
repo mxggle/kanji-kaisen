@@ -52,70 +52,70 @@ export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: 
                 <section>
                     <div className="flex items-center gap-2 mb-3">
                         <BookOpen size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-white">Origin</H>
+                        <H className="text-lg font-semibold text-ink">Origin</H>
                     </div>
-                    <p className="text-white/70 leading-relaxed">{story.origin}</p>
+                    <p className="text-ink-2 leading-relaxed">{story.origin}</p>
                 </section>
             )}
 
             {story.story && (
-                <section className={`p-5 rounded-2xl border bg-gradient-to-br from-white/5 to-transparent ${borderClass}`}>
+                <section className={`p-5 rounded-2xl border bg-gradient-to-br from-ink/5 to-transparent ${borderClass}`}>
                     <div className="flex items-center gap-2 mb-3">
                         <Sparkles size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-white">The Story</H>
+                        <H className="text-lg font-semibold text-ink">The Story</H>
                     </div>
-                    <p className="text-white/80 leading-relaxed text-lg italic">&ldquo;{story.story}&rdquo;</p>
+                    <p className="text-ink leading-relaxed text-lg italic">&ldquo;{story.story}&rdquo;</p>
                 </section>
             )}
 
             {story.position && (
-                <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
+                <section className="flex items-start gap-4 p-4 rounded-xl bg-card">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgColorClass} flex-shrink-0`}>
-                        <MapPin size={20} className="text-white" aria-hidden />
+                        <MapPin size={20} className="text-onacc" aria-hidden />
                     </div>
                     <div>
-                        <H className="text-white font-medium mb-1">Where It Appears</H>
-                        <p className="text-white/60 text-sm">{story.position}</p>
+                        <H className="text-ink font-medium mb-1">Where It Appears</H>
+                        <p className="text-ink-2 text-sm">{story.position}</p>
                     </div>
                 </section>
             )}
 
             {story.transformsMeaning && (
-                <section className="flex items-start gap-4 p-4 rounded-xl bg-white/5">
+                <section className="flex items-start gap-4 p-4 rounded-xl bg-card">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgColorClass} flex-shrink-0`}>
-                        <PenTool size={20} className="text-white" aria-hidden />
+                        <PenTool size={20} className="text-onacc" aria-hidden />
                     </div>
                     <div>
-                        <H className="text-white font-medium mb-1">How It Changes Meaning</H>
-                        <p className="text-white/60 text-sm">{story.transformsMeaning}</p>
+                        <H className="text-ink font-medium mb-1">How It Changes Meaning</H>
+                        <p className="text-ink-2 text-sm">{story.transformsMeaning}</p>
                     </div>
                 </section>
             )}
 
             {examples.length > 0 && (
                 <section>
-                    <H className="text-lg font-semibold text-white mb-4">Example Kanji</H>
+                    <H className="text-lg font-semibold text-ink mb-4">Example Kanji</H>
                     <ul className="space-y-3">
                         {examples.map((example, index) => {
                             const body = (
                                 <>
-                                    <span className={`w-14 h-14 rounded-xl flex items-center justify-center bg-black/30 border ${borderClass} flex-shrink-0`}>
-                                        <span className="text-3xl font-japanese text-white">{example.char}</span>
+                                    <span className={`w-14 h-14 rounded-xl flex items-center justify-center bg-bg/30 border ${borderClass} flex-shrink-0`}>
+                                        <span className="text-3xl font-japanese text-ink">{example.char}</span>
                                     </span>
                                     <span className="flex-1 min-w-0">
                                         <span className="flex flex-wrap items-center gap-x-2 mb-1">
                                             <span className={`font-bold font-japanese ${colorClass}`}>{example.char}</span>
-                                            <span className="text-white/60" aria-hidden>•</span>
-                                            <span className="text-white/80">{example.meaning}</span>
+                                            <span className="text-ink-2" aria-hidden>•</span>
+                                            <span className="text-ink">{example.meaning}</span>
                                         </span>
-                                        <span className="block text-white/50 text-sm">{example.explanation}</span>
+                                        <span className="block text-ink-3 text-sm">{example.explanation}</span>
                                     </span>
                                     {example.exists && (
-                                        <ArrowRight size={18} className="text-white/30 group-hover:text-[var(--accent)] flex-shrink-0 transition-colors" aria-hidden />
+                                        <ArrowRight size={18} className="text-ink-3 group-hover:text-[var(--accent)] flex-shrink-0 transition-colors" aria-hidden />
                                     )}
                                 </>
                             );
-                            const rowClass = "group flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors";
+                            const rowClass = "group flex items-center gap-4 p-4 rounded-xl bg-card border border-line hover:bg-ink/10 transition-colors";
                             return (
                                 <li key={index}>
                                     {example.exists ? (

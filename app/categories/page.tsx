@@ -23,7 +23,7 @@ export default function CategoriesPage() {
 
             <header className="mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold mb-3">Kanji themes</h1>
-                <p className="text-white/60 max-w-2xl leading-relaxed">
+                <p className="text-ink-2 max-w-2xl leading-relaxed">
                     Every radical belongs to one of {categories.length} themes. Pick a theme to read its story, meet its
                     radicals and see every kanji built from them.
                 </p>

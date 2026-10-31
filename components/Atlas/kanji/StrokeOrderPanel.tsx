@@ -10,7 +10,7 @@ const prefersReducedMotion = () =>
     typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 const buttonClass =
-    "flex-1 py-2 px-3 bg-zinc-800 rounded-lg flex items-center justify-center gap-2 hover:bg-zinc-700 transition-colors text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--accent)]";
+    "flex-1 py-2 px-3 bg-ink/10 rounded-lg flex items-center justify-center gap-2 hover:bg-ink/15 transition-colors text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--accent)]";
 
 /**
  * Animated stroke order (KanjiCanvas view mode) with replay, plus a
@@ -51,7 +51,7 @@ export function StrokeOrderPanel({ char }: { char: string }) {
                 />
             </div>
 
-            <p className="text-sm text-white/60 min-h-5 text-center" aria-live="polite">
+            <p className="text-sm text-ink-2 min-h-5 text-center" aria-live="polite">
                 {mode === "view"
                     ? "Watch the strokes in order."
                     : done
@@ -66,10 +66,10 @@ export function StrokeOrderPanel({ char }: { char: string }) {
                     </button>
                 ) : (
                     <>
-                        <button type="button" onClick={clear} className={cn(buttonClass, "text-white")}>
+                        <button type="button" onClick={clear} className={cn(buttonClass, "text-ink")}>
                             <Trash2 size={16} aria-hidden /> Clear
                         </button>
-                        <button type="button" onClick={() => canvasRef.current?.hint()} className={cn(buttonClass, "text-amber-400")}>
+                        <button type="button" onClick={() => canvasRef.current?.hint()} className={cn(buttonClass, "text-tip")}>
                             <Lightbulb size={16} aria-hidden /> Hint
                         </button>
                     </>
@@ -80,7 +80,7 @@ export function StrokeOrderPanel({ char }: { char: string }) {
                 type="button"
                 onClick={switchMode}
                 aria-pressed={mode === "practice"}
-                className="w-full max-w-[300px] py-2 px-3 rounded-lg border border-white/15 bg-white/5 hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                className="w-full max-w-[300px] py-2 px-3 rounded-lg border border-line bg-card hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors text-sm font-medium flex items-center justify-center gap-2"
             >
                 {mode === "view" ? (
                     <><PenLine size={16} aria-hidden /> Try writing</>

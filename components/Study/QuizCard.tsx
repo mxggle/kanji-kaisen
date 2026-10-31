@@ -54,9 +54,9 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
 
     return (
         <div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 flex flex-col items-center">
-                <span className="font-japanese font-bold text-8xl sm:text-9xl leading-none text-white">{entry.c}</span>
-                <p className="mt-4 text-sm text-white/50">What does this kanji mean?</p>
+            <div className="rounded-2xl border border-line bg-card p-6 flex flex-col items-center">
+                <span className="font-japanese font-bold text-8xl sm:text-9xl leading-none text-ink">{entry.c}</span>
+                <p className="mt-4 text-sm text-ink-3">What does this kanji mean?</p>
             </div>
 
             <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -72,10 +72,10 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 aria-pressed={isPicked}
                                 className={cn(
                                     "w-full min-h-14 text-left rounded-xl border px-4 py-3 flex items-center gap-3 transition-colors",
-                                    !answered && "border-white/15 bg-white/5 hover:border-[var(--accent)]",
-                                    answered && isAnswer && "border-[var(--accent)] bg-[var(--accent)]/15 text-white",
-                                    answered && isPicked && !isAnswer && "border-white/50 border-dashed bg-white/10 text-white/80",
-                                    answered && !isAnswer && !isPicked && "border-white/10 text-white/40",
+                                    !answered && "border-line bg-card hover:border-[var(--accent)]",
+                                    answered && isAnswer && "border-[var(--accent)] bg-[var(--accent)]/15 text-ink",
+                                    answered && isPicked && !isAnswer && "border-line-2 border-dashed bg-ink/10 text-ink",
+                                    answered && !isAnswer && !isPicked && "border-line text-ink-3",
                                 )}
                             >
                                 <span className="shrink-0 w-6 h-6 rounded-full border border-current text-xs flex items-center justify-center opacity-60">
@@ -83,7 +83,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 </span>
                                 <span className="min-w-0 break-words">
                                     {option}
-                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-white/50">Your answer</span>}
+                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-ink-3">Your answer</span>}
                                 </span>
                             </button>
                         </li>
@@ -92,8 +92,8 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
             </ul>
 
             {answered && (
-                <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] p-4" role="status">
-                    <p className={cn("font-bold mb-3", correct ? "text-[var(--accent)]" : "text-white")}>
+                <div className="mt-6 rounded-xl border border-line bg-card p-4" role="status">
+                    <p className={cn("font-bold mb-3", correct ? "text-[var(--accent)]" : "text-ink")}>
                         {correct ? "Correct!" : <>Not quite — it means “{target.meaning}”.</>}
                     </p>
                     <KanjiDetails entry={entry} showMeanings={!correct} />
@@ -105,7 +105,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                     ref={nextRef}
                     type="button"
                     onClick={onNext}
-                    className="mt-4 w-full h-14 rounded-xl bg-[var(--accent)] text-black font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2"
+                    className="mt-4 w-full h-14 rounded-xl bg-[var(--accent)] text-onacc font-bold hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2"
                 >
                     {isLast ? "See summary" : "Next"} <ArrowRight className="w-5 h-5" aria-hidden />
                 </button>

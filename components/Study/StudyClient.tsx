@@ -47,8 +47,8 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
         return (
             <>
                 {notFound && (
-                    <div role="alert" className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
-                        <p className="font-medium text-white">Deck not found.</p>
+                    <div role="alert" className="mb-6 rounded-xl border border-line bg-card p-4 text-sm text-ink-2">
+                        <p className="font-medium text-ink">Deck not found.</p>
                         <p className="mt-1">That link doesn’t match a radical, theme or JLPT level. Pick a deck below instead.</p>
                     </div>
                 )}
@@ -128,8 +128,8 @@ function ListDeckSnapshot({ kind, initialMode, categoryOf, picker }: ListDeckPro
 
 function EmptyDeck({ title, message }: { title: string; message: string }) {
     return (
-        <div className="mb-8 rounded-xl border border-white/10 bg-white/5 p-6 text-white/70">
-            <h2 className="text-2xl font-bold text-white">{title}</h2>
+        <div className="mb-8 rounded-xl border border-line bg-card p-6 text-ink-2">
+            <h2 className="text-2xl font-bold text-ink">{title}</h2>
             <p className="mt-2 text-sm">{message}</p>
             <p className="mt-2 text-sm">
                 <Link href={browsePath({ jlpt: "N5" })} className="text-[var(--accent)] hover:underline">Browse N5 kanji</Link>{" "}
