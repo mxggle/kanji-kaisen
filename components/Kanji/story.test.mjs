@@ -53,6 +53,12 @@ test("journeyCaptions name the etymon and the redirected file", () => {
     assert.equal(captions.today, "Today: 𦥯 (sound) + 子 child (meaning).");
 });
 
+test("journeyCaptions name 小學堂 for a 小學堂 file filed under another char", () => {
+    const xx = [{ char: "學", src: "/ancient/05b78-oracle.svg" }, { char: "斆", src: "/ancient/06586-seal.svg", provider: "xiaoxue" }];
+    const captions = journeyCaptions("学", "學", stages, xx, null, null);
+    assert.match(captions.seal, /^Seal form filed under 斆 in Academia Sinica 小學堂\. /);
+});
+
 test("journeyCaptions keep plain captions for the kanji's own forms", () => {
     const own = [{ stage: "oracle", src: "/a.svg", credit: { text: "x" } }];
     const captions = journeyCaptions("休", "休", own, [{ char: "休", src: "/a.svg" }], "A man leaning against a tree, resting.", null);

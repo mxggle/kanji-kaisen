@@ -6,6 +6,7 @@ import type {
     AncientFormFile,
     AncientFormsEntry,
     AncientFormsManifest,
+    AncientProvider,
     EtymologyData,
     EtymologyEntry,
 } from "./types.ts";
@@ -35,7 +36,7 @@ export function createStory(ancient: AncientFormsManifest, etymology: EtymologyD
             stages.push({
                 stage,
                 src: file.src,
-                credit: { text: creditText(stage, file.license, !!file.source), href: file.url },
+                credit: { text: creditText(stage, file.license, !!file.source, file.provider), href: file.url },
                 when: stageWhen(stage, file.period),
             });
         }
@@ -70,11 +71,15 @@ export function createStory(ancient: AncientFormsManifest, etymology: EtymologyD
         return etymology.radicals[key] ?? etymology.entries[char] ?? null;
     }
 
-    /** Every kept Commons file, sorted by name, for an attribution list. */
-    function getAncientFormCredits(): (AncientFormFile & { name: string })[] {
+    /**
+     * Every kept file (Commons and 小學堂), sorted by name, for an attribution
+     * list; pass a provider to list only its files.
+     */
+    function getAncientFormCredits(provider?: AncientProvider): (AncientFormFile & { name: string })[] {
         return Object.keys(ancient.files)
             .sort()
-            .map(fileEntry);
+            .map(fileEntry)
+            .filter((f) => !provider || (f.provider ?? "commons") === provider);
     }
 
     return { getAncientForms, getRadicalAncientForms, getEtymology, getRadicalEtymology, getAncientFormCredits };

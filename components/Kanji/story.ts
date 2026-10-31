@@ -49,6 +49,8 @@ export interface AncientFile {
     src?: string;
     /** The code point the file depicts (學 for 学, 斆 for a redirected seal). */
     char: string;
+    /** Where the file comes from; Commons when unset. */
+    provider?: "commons" | "xiaoxue";
 }
 
 /**
@@ -67,14 +69,16 @@ export function journeyCaptions(
 ): Partial<Record<JourneyStageId, string>> {
     const captions: Partial<Record<JourneyStageId, string>> = {};
     stages.forEach((stage, i) => {
-        const depicted = files.find((f) => f.src === stage.src)?.char ?? etymon;
+        const file = files.find((f) => f.src === stage.src);
+        const depicted = file?.char ?? etymon;
         const name = STAGE_META[stage.stage as AncientStage].name;
         let prefix = "";
         if (depicted !== char) {
+            const where = file?.provider === "xiaoxue" ? "in Academia Sinica 小學堂" : "on Wikimedia Commons";
             prefix =
                 depicted === etymon
                     ? `${name} of ${depicted}, the older form of ${char}. `
-                    : `${name} filed under ${depicted} on Wikimedia Commons. `;
+                    : `${name} filed under ${depicted} ${where}. `;
         }
         const body = i === 0 && etymologyText ? etymologyText : defaultCaption(stage.stage, char);
         captions[stage.stage] = `${prefix}${body}`;

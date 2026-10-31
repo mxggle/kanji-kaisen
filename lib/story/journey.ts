@@ -14,7 +14,7 @@ export interface JourneyCredit {
 
 export interface AncientJourneyStage {
     stage: AncientStage;
-    // Monochrome SVG, drawn in the accent colour (used as a CSS mask).
+    // Monochrome SVG or transparent PNG, drawn in the accent colour (used as a CSS mask).
     src: string;
     credit: JourneyCredit;
     // Overrides the stage's default date line ("Warring States · 475–221 BCE").
@@ -56,9 +56,22 @@ export function defaultCaption(stage: JourneyStageId, char: string): string {
     }
 }
 
-/** "Oracle bone form: Wikimedia Commons, public domain". */
-export function creditText(stage: AncientStage, license: AccLicense, sinica: boolean): string {
-    const from = sinica ? "Wikimedia Commons, traced from Academia Sinica" : "Wikimedia Commons";
+/**
+ * "Oracle bone form: Wikimedia Commons, public domain", or for a glyph taken
+ * directly from 小學堂 "Oracle bone form: Academia Sinica 小學堂, CC0".
+ */
+export function creditText(
+    stage: AncientStage,
+    license: AccLicense,
+    sinica: boolean,
+    provider: "commons" | "xiaoxue" = "commons",
+): string {
+    const from =
+        provider === "xiaoxue"
+            ? "Academia Sinica 小學堂"
+            : sinica
+              ? "Wikimedia Commons, traced from Academia Sinica"
+              : "Wikimedia Commons";
     return `${STAGE_META[stage].name}: ${from}, ${license === "CC0" ? "CC0" : "public domain"}`;
 }
 
