@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { BookOpen, MonitorPlay, Printer } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { decodeSet, setPath } from "@/lib/teach-set";
-import { KanjiTile } from "@/components/Atlas/KanjiTile";
-import { jlptLevelOf, studyPath } from "@/components/Study/session";
+import { KanjiTile } from "@/components/ui/KanjiTile";
+import { KindLabel } from "@/components/ui/SectionHeader";
+import { InkPaint } from "@/components/Ink/InkPaint";
+import { studyPath } from "@/components/Study/session";
 import { useSearchIndex } from "@/components/Study/useSearchIndex";
 import { BUTTON, BUTTON_MAIN } from "./ui";
 
@@ -31,7 +33,7 @@ export function SetClient() {
     if (count === 0) {
         return (
             <div className="py-10">
-                <h1 className="font-disp text-4xl font-bold">{settled ? "This set is empty" : "Loading the set…"}</h1>
+                <h1 className="type-title">{settled ? "This set is empty" : "Loading the set…"}</h1>
                 {settled && (
                     <p className="mt-3 text-ink-2">
                         The link has no kanji we know.{" "}
@@ -45,8 +47,8 @@ export function SetClient() {
 
     return (
         <div>
-            <p className="text-sm text-ink-3">Shared kanji set</p>
-            <h1 className="mt-1 font-disp text-[clamp(2.25rem,6vw,3.5rem)] font-bold leading-[1.05] break-words">{set.title || "Kanji set"}</h1>
+            <KindLabel jp="教">Shared kanji set</KindLabel>
+            <h1 className="type-title mt-3 break-words">{set.title || "Kanji set"}</h1>
             <p className="mt-2 text-ink-2">
                 {count} kanji · No account needed
             </p>
@@ -63,24 +65,18 @@ export function SetClient() {
                 </Link>
             </div>
 
-            <ul className="mt-8 grid grid-cols-3 min-[420px]:grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2" aria-label="Kanji in this set">
-                {set.chars.map((char) => {
-                    const entry = byChar?.get(char);
-                    return (
-                        <li key={char}>
-                            <KanjiTile
-                                kanji={{
-                                    char,
-                                    meanings: entry?.m ?? [],
-                                    jlpt: jlptLevelOf(entry?.j ?? 1),
-                                    onyomi: entry?.on ?? [],
-                                    kunyomi: entry?.kun ?? [],
-                                }}
-                            />
-                        </li>
-                    );
-                })}
-            </ul>
+            <InkPaint>
+                <ul className="mt-8 grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2.5" aria-label="Kanji in this set">
+                    {set.chars.map((char) => {
+                        const entry = byChar?.get(char);
+                        return (
+                            <li key={char}>
+                                <KanjiTile kanji={{ char, meanings: entry?.m ?? [], onyomi: entry?.on ?? [], kunyomi: entry?.kun ?? [] }} />
+                            </li>
+                        );
+                    })}
+                </ul>
+            </InkPaint>
 
             <p className="mt-10 text-sm text-ink-3">
                 Each kanji opens its page with readings, words and stroke order. Teachers:{" "}

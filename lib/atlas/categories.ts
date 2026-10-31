@@ -70,20 +70,6 @@ export const THEME_JP: Record<CategoryName, string> = {
     "Time & Sequence": "時と順序",
 };
 
-/** Italic subtitle shown next to the Japanese title. */
-export const THEME_SUB: Record<CategoryName, string> = {
-    "Nature & Elements": "The world around us",
-    "Human Body & People": "The human experience",
-    "Action & Movement": "Motion and change",
-    "Structures & Home": "Shelter and civilization",
-    "Animals & Wildlife": "Creatures of the world",
-    "Tools & Weapons": "Instruments of creation and conflict",
-    "Communication & Thought": "Mind and expression",
-    "Textiles, Plants & Food": "Sustenance and craft",
-    "States & Attributes": "Qualities and conditions",
-    "Time & Sequence": "The flow of time",
-};
-
 /** One-line lore for theme heroes. */
 export const THEME_LORE: Record<CategoryName, string> = {
     "Nature & Elements": "Water, fire, earth, wood, mountain and sky. The first scribes drew what they saw, and those pictures still sit inside hundreds of kanji.",

@@ -18,7 +18,7 @@ type CardState =
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const buttonClass =
-    "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
+    "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export interface ShareCardDialogProps {
     input: ShareCardInput;
@@ -130,12 +130,12 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
             aria-describedby={descriptionId}
             onKeyDown={onKeyDown}
             onClick={onClick}
-            className="m-auto w-[min(92vw,460px)] max-h-[94dvh] overflow-y-auto rounded-2xl border border-line-2 bg-card p-0 text-ink shadow-2xl backdrop:bg-black/70"
+            className="m-auto w-[min(92vw,460px)] max-h-[94dvh] overflow-y-auto rounded-2xl border border-line-2 bg-card p-0 text-ink backdrop:bg-black/70"
         >
             <div className="flex flex-col gap-4 p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <h2 id={titleId} className="font-disp text-2xl font-semibold leading-tight">
+                        <h2 id={titleId} className="type-section">
                             Share card for <span lang="ja" className="font-jp">{model.char}</span>
                         </h2>
                         <p id={descriptionId} className="mt-1 text-sm text-ink-2">
@@ -146,7 +146,7 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
                         type="button"
                         onClick={close}
                         aria-label="Close"
-                        className="shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-bg hover:text-ink focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                        className="shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-bg hover:text-ink focus-visible:outline-2 focus-visible:outline-ink"
                     >
                         <X size={18} aria-hidden />
                     </button>
@@ -172,20 +172,20 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
 
                 <div className="flex flex-wrap gap-2">
                     {card.status === "error" ? (
-                        <button type="button" onClick={retry} className={`${buttonClass} bg-[var(--accent)] text-onacc`}>
+                        <button type="button" onClick={retry} className={`${buttonClass} bg-ink text-bg hover:opacity-90`}>
                             <RefreshCw size={16} aria-hidden /> Try again
                         </button>
                     ) : card.status === "ready" ? (
-                        <a href={card.url} download={model.fileName} onClick={onDownload} className={`${buttonClass} bg-[var(--accent)] text-onacc`}>
+                        <a href={card.url} download={model.fileName} onClick={onDownload} className={`${buttonClass} bg-ink text-bg hover:opacity-90`}>
                             <Download size={16} aria-hidden /> Download PNG
                         </a>
                     ) : (
-                        <button type="button" disabled className={`${buttonClass} bg-[var(--accent)] text-onacc opacity-50`}>
+                        <button type="button" disabled className={`${buttonClass} bg-ink text-bg opacity-50`}>
                             <Download size={16} aria-hidden /> Download PNG
                         </button>
                     )}
                     {card.status === "ready" && card.file && (
-                        <button type="button" onClick={share} className={`${buttonClass} border border-line-2 text-ink hover:border-[var(--accent)]`}>
+                        <button type="button" onClick={share} className={`${buttonClass} border border-line-2 text-ink hover:border-ink`}>
                             <Share2 size={16} aria-hidden /> Share…
                         </button>
                     )}

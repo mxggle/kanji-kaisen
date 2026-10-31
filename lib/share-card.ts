@@ -68,7 +68,7 @@ export interface CardPart {
     gloss: string;
     /** "meaning", "sound", "meaning + sound", or "" for a part whose role no source states. */
     roleLabel: string;
-    /** Theme colour (used in 夜). */
+    /** The kanji's theme colour (used in 夜): a part never takes its own theme's colour. */
     color: string;
     /** 1-based inclusive KanjiVG stroke ranges in the kanji. */
     strokes: [number, number][];
@@ -300,6 +300,7 @@ export function shareCardInput(kanji: CardSource, lookup: ShareCardLookup): Shar
 export function buildCardModel(input: ShareCardInput, { origin = SHARE_ORIGIN }: { origin?: string } = {}): CardModel {
     const { char, category } = input;
     const meaning = headlineMeaning(input.meanings);
+    const color = getThemeColor(category);
     const components: CardPart[] = input.components.map((component) => {
         const info = input.parts?.[component.char];
         return {
@@ -307,7 +308,7 @@ export function buildCardModel(input: ShareCardInput, { origin = SHARE_ORIGIN }:
             role: component.role,
             gloss: componentGloss(component, info, input.phonetic),
             roleLabel: ROLE_LABELS[component.role],
-            color: getThemeColor(info?.category ?? null),
+            color,
             strokes: component.strokes,
         };
     });
@@ -337,7 +338,7 @@ export function buildCardModel(input: ShareCardInput, { origin = SHARE_ORIGIN }:
         components,
         equation,
         hiddenParts: equation.length ? components.length - equation.length : 0,
-        color: getThemeColor(category),
+        color,
         art: isCategoryName(category) ? getCategoryImage(category) : FALLBACK_ART,
         url,
         urlLabel: label,
@@ -346,22 +347,41 @@ export function buildCardModel(input: ShareCardInput, { origin = SHARE_ORIGIN }:
     };
 }
 
-/** A component's stroke colour: its theme in 夜; vermilion for meaning parts and ink otherwise in 墨. */
+/**
+ * A component's line, as on every page (rule 2): a part that carries meaning
+ * or sound is drawn in the accent (the kanji's theme colour in 夜, vermilion
+ * in 墨), a form-only part in grey ink.
+ */
 export function partColor(part: Pick<CardPart, "role" | "color">, skin: CardSkin): string {
-    if (skin === "night") return part.color;
-    return part.role === "meaning" || part.role === "both" ? VERMILION : CARD_PALETTE.ink.ink;
+    if (part.role === "form") return CARD_PALETTE[skin].ink2;
+    return skin === "night" ? part.color : VERMILION;
 }
 
-/** One colour per KanjiVG stroke; strokes outside every component take the kanji's colour (夜) or ink (墨). */
-export function strokeColors(model: Pick<CardModel, "color" | "components">, skin: CardSkin, strokeCount: number): string[] {
-    const colors = Array.from({ length: strokeCount }, () => (skin === "night" ? model.color : CARD_PALETTE.ink.ink));
+/** Sound parts are dashed (rule 2). */
+export function partDashed(part: Pick<CardPart, "role">): boolean {
+    return part.role === "sound";
+}
+
+export interface StrokeStyle {
+    color: string;
+    dashed: boolean;
+}
+
+/** One style per KanjiVG stroke; strokes outside every component take the kanji's colour (夜) or ink (墨). */
+export function strokeStyles(model: Pick<CardModel, "color" | "components">, skin: CardSkin, strokeCount: number): StrokeStyle[] {
+    const styles = Array.from({ length: strokeCount }, () => ({ color: skin === "night" ? model.color : CARD_PALETTE.ink.ink, dashed: false }));
     for (const part of model.components) {
-        const color = partColor(part, skin);
+        const style = { color: partColor(part, skin), dashed: partDashed(part) };
         for (const index of strokeIndexes(part.strokes)) {
-            if (index < strokeCount) colors[index] = color;
+            if (index < strokeCount) styles[index] = style;
         }
     }
-    return colors;
+    return styles;
+}
+
+/** The colour of each stroke (see strokeStyles). */
+export function strokeColors(model: Pick<CardModel, "color" | "components">, skin: CardSkin, strokeCount: number): string[] {
+    return strokeStyles(model, skin, strokeCount).map((s) => s.color);
 }
 
 /** 0-based path indexes for 1-based inclusive ranges: [[1, 2], [5, 5]] -> [0, 1, 4]. */

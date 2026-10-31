@@ -8,9 +8,6 @@ import type { ShareCardInput } from "@/lib/share-card";
 import { MoreMenu } from "./MoreMenu";
 import { SaveButton } from "./SaveButton";
 
-// ShareCardButton keeps its own look; these classes make it a quiet button
-// (and drop its old accent hover and focus colours).
-const QUIET_CARD = cn(buttonClass({ variant: "quiet" }), "py-0 font-medium hover:border-transparent focus-visible:outline-ink");
 const MENU_ITEM = "h-11 w-full justify-start rounded-xl px-3";
 
 const hrefs = (char: string) => {
@@ -29,7 +26,7 @@ export function KanjiActions({ char, card }: { char: string; card: ShareCardInpu
             <LearnButton char={char} />
             <SaveButton char={char} />
             <span aria-hidden className="flex-1" />
-            <ShareCardButton {...card} className={cn(QUIET_CARD, "[&_svg]:hidden")} />
+            <ShareCardButton {...card} className="[&_svg]:hidden" />
             <Button variant="quiet" href={print} prefetch={false} rel="nofollow">
                 Print sheet
             </Button>
@@ -48,7 +45,7 @@ export function KanjiActionBar({ char, card }: { char: string; card: ShareCardIn
             <LearnButton char={char} />
             <SaveButton char={char} size="md" iconOnly />
             <MoreMenu label="More: card, print, present">
-                <ShareCardButton {...card} className={cn(QUIET_CARD, MENU_ITEM)} />
+                <ShareCardButton {...card} className={MENU_ITEM} />
                 <a href={print} rel="nofollow" className={cn(buttonClass({ variant: "quiet" }), MENU_ITEM)}>
                     <Printer aria-hidden /> Print sheet
                 </a>

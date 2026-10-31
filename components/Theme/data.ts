@@ -11,7 +11,6 @@ import {
     THEME_LORE,
     THEME_MARK,
     THEME_SHORT,
-    THEME_SUB,
 } from "@/lib/atlas/categories";
 import { storyExcerpt, suggestedOrder, type RadicalGroup } from "./order";
 import { radicalGloss } from "./view";
@@ -24,7 +23,6 @@ export function themeMeta(summary: AtlasCategorySummary): ThemeMeta {
         slug: summary.slug,
         short: known ? THEME_SHORT[known] : summary.name,
         jp: known ? THEME_JP[known] : "",
-        sub: known ? THEME_SUB[known] : summary.title,
         lore: known ? THEME_LORE[known] : summary.title,
         mark: known ? THEME_MARK[known] : "",
         color: getThemeColor(summary.name),

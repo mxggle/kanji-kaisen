@@ -17,13 +17,15 @@ import {
     parseStrokePaths,
     posterize,
     partColor,
+    partDashed,
     pathBounds,
-    strokeColors,
     strokeIndexes,
+    strokeStyles,
     type CardModel,
     type CardPart,
     type CardSkin,
     type Measure,
+    type StrokeStyle,
 } from "@/lib/share-card";
 
 type Ctx = CanvasRenderingContext2D;
@@ -189,43 +191,28 @@ function drawBackground(ctx: Ctx, skin: CardSkin, pal: Palette, art: HTMLImageEl
 
 // --- Strokes ---------------------------------------------------------------------
 
-const withAlpha = (hex: string, alpha: number) => {
-    const n = parseInt(hex.slice(1), 16);
-    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
-};
-
 /**
  * Strokes KanjiVG paths (109×109 units) with the current transform, grouped
- * by colour. In 夜 each group glows like the board's two drop-shadows
- * (shadow blur is in canvas pixels, so the transform doesn't affect it).
+ * by style. Sound parts are dashed (rule 2); nothing glows (rule 5).
  */
-function strokePaths(ctx: Ctx, paths: string[], colors: string[], lineWidth: number, glow: { wide: number; tight: number } | null) {
-    const groups = new Map<string, Path2D[]>();
+function strokePaths(ctx: Ctx, paths: string[], styles: StrokeStyle[], lineWidth: number) {
+    const groups = new Map<string, { style: StrokeStyle; paths: Path2D[] }>();
     paths.forEach((d, i) => {
-        const color = colors[i] ?? colors[0];
-        const list = groups.get(color) ?? [];
-        list.push(new Path2D(d));
-        groups.set(color, list);
+        const style = styles[i] ?? styles[0];
+        const key = `${style.color}|${style.dashed}`;
+        const group = groups.get(key) ?? { style, paths: [] };
+        group.paths.push(new Path2D(d));
+        groups.set(key, group);
     });
     ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    for (const [color, list] of groups) {
-        ctx.strokeStyle = color;
-        const passes = glow
-            ? [
-                  { blur: glow.wide, shadow: withAlpha(color, 0.6) },
-                  { blur: glow.tight, shadow: color },
-              ]
-            : [{ blur: 0, shadow: "transparent" }];
-        for (const pass of passes) {
-            ctx.shadowBlur = pass.blur;
-            ctx.shadowColor = pass.shadow;
-            for (const path of list) ctx.stroke(path);
-        }
+    for (const { style, paths: list } of groups.values()) {
+        ctx.strokeStyle = style.color;
+        ctx.setLineDash(style.dashed ? [lineWidth * 1.6, lineWidth * 1.4] : []);
+        for (const path of list) ctx.stroke(path);
     }
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = "transparent";
+    ctx.setLineDash([]);
 }
 
 function drawGlyph(ctx: Ctx, model: CardModel, skin: CardSkin, pal: Palette, assets: Assets) {
@@ -240,11 +227,11 @@ function drawGlyph(ctx: Ctx, model: CardModel, skin: CardSkin, pal: Palette, ass
         ctx.restore();
         return;
     }
-    const colors = strokeColors(model, skin, assets.glyph.length);
+    const styles = strokeStyles(model, skin, assets.glyph.length);
     ctx.save();
     ctx.translate(GLYPH.x, GLYPH.y);
     ctx.scale(GLYPH.size / 109, GLYPH.size / 109);
-    strokePaths(ctx, assets.glyph, colors, GLYPH.stroke, skin === "night" ? { wide: 18, tight: 4 } : null);
+    strokePaths(ctx, assets.glyph, styles, GLYPH.stroke);
     ctx.restore();
 }
 
@@ -266,7 +253,7 @@ function drawPart(ctx: Ctx, part: CardPart, own: string[] | null, assets: Assets
     ctx.save();
     ctx.translate(x + fit.x, y + fit.y);
     ctx.scale(fit.scale, fit.scale);
-    strokePaths(ctx, paths, [color], PART_STROKE_PX / fit.scale, skin === "night" ? { wide: 12, tight: 3 } : null);
+    strokePaths(ctx, paths, [{ color, dashed: partDashed(part) }], PART_STROKE_PX / fit.scale);
     ctx.restore();
 }
 

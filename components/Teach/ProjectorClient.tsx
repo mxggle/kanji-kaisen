@@ -287,7 +287,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                             key={option}
                                             className={cn(
                                                 "px-[1.4vw] py-[1.4vh] min-h-[7vh] flex items-center rounded-xl border border-line-2 text-[clamp(1.15rem,2.2vw,2.6rem)] leading-tight transition-opacity",
-                                                revealed && correct && "border-c text-c halo",
+                                                revealed && correct && "border-c text-c",
                                                 revealed && !correct && "opacity-40",
                                             )}
                                         >

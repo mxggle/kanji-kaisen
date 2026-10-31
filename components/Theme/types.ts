@@ -8,11 +8,6 @@ export interface ThemeMeta {
     short: string;
     /** Japanese title ("自然と元素"). */
     jp: string;
-    /**
-     * Italic subtitle ("The world around us").
-     * @deprecated One Atlas: the theme page has no subtitle (only memory stories are italic).
-     */
-    sub: string;
     lore: string;
     /** Large faint glyph behind the art. */
     mark: string;

@@ -17,7 +17,7 @@ import { ShareCardButton } from "@/components/ShareCard/ShareCardButton";
 import { getShareCardProps } from "@/components/ShareCard/getShareCardProps";
 import { JourneyPlayer } from "@/components/Story/JourneyPlayer";
 import { ActionBar } from "@/components/ui/ActionBar";
-import { Button, buttonClass } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { KanjiTile } from "@/components/ui/KanjiTile";
 import { MemoryStory } from "@/components/ui/MemoryStory";
 import { PaintedBar } from "@/components/ui/PaintedBar";
@@ -181,7 +181,7 @@ export default async function RadicalPage({ params }: Params) {
                     </Button>
                 )}
                 {cardKanji && (
-                    <ShareCardButton {...getShareCardProps(cardKanji)} className={`${buttonClass({ variant: "quiet" })} hover:border-transparent`} />
+                    <ShareCardButton {...getShareCardProps(cardKanji)} />
                 )}
             </div>
         </div>

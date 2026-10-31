@@ -29,7 +29,7 @@ export function AccountPanel() {
     return (
         <section id="account" className="scroll-mt-24 rounded-2xl border border-line bg-card p-4 md:p-5">
             <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
+                <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-ink/10 text-ink border border-line-2">
                     <Cloud size={20} />
                 </div>
                 <div>
@@ -59,13 +59,13 @@ export function AccountPanel() {
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                             placeholder="you@example.com"
-                            className="mt-1 w-full rounded-xl border border-line-2 bg-bg/40 px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 focus:border-[var(--accent)]"
+                            className="mt-1 w-full rounded-xl border border-line-2 bg-bg/40 px-3 py-2 text-sm text-ink outline-none transition-colors placeholder:text-ink-3 focus:border-ink"
                         />
                     </label>
                     <button
                         type="submit"
                         disabled={sendingMagicLink || loading}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-bold text-onacc transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-3 py-2 text-sm font-bold text-bg transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {sendingMagicLink ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
                         Send Magic Link
@@ -98,7 +98,7 @@ export function AccountPanel() {
                             </p>
                         </div>
                         {syncStatus === "syncing" ? (
-                            <Loader2 size={18} className="animate-spin text-[var(--accent)]" />
+                            <Loader2 size={18} className="animate-spin text-ink" />
                         ) : syncStatus === "error" ? (
                             <TriangleAlert size={18} className="text-tip" />
                         ) : (

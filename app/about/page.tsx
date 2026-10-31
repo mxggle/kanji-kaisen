@@ -190,8 +190,8 @@ export default function AboutPage() {
                     </Rule>
                     <Rule n={5} title="Only what moves lights up">
                         <p>
-                            In 夜, the stroke being drawn and the learn step you are on glow. Headings, buttons and cards never do, and in 墨
-                            nothing glows at all.
+                            In 夜, the stroke being drawn and the learn step you are on light up. Headings, buttons and cards never do, and in
+                            墨 nothing lights up at all.
                         </p>
                     </Rule>
                 </ol>
