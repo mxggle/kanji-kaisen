@@ -1,19 +1,16 @@
-"use client";
-
-import Link from "next/link";
-import { useMemo } from "react";
-import { cn } from "@/lib/utils";
 import { radicalPath } from "@/lib/atlas/paths";
-import { sealState, SEAL_LABELS } from "@/components/Theme/order";
-import { FOCUS_RING, sealClass } from "@/components/Theme/parts";
-import { shadeReader, useInkEntries } from "@/components/Theme/useInk";
-import styles from "@/components/Theme/theme.module.css";
+import { RadicalSeal } from "@/components/ui/RadicalSeal";
+import { Tag } from "@/components/ui/Tag";
 
 export interface SealRadical {
     key: string;
     char: string;
+    /** Romanised name ("Sanzui"). */
     name: string;
+    /** Full meaning ("Water (3 drops)"). */
     meaning: string;
+    /** First plain gloss, for the caption ("water"). */
+    gloss: string;
     /** Its kanji, most common first, concatenated (a side form gets its base's). */
     chars: string;
     /** Sourced ancient stages (0–3). */
@@ -23,44 +20,36 @@ export interface SealRadical {
 }
 
 /**
- * One theme's radicals as seals linking to their journey pages. Seals fill
- * with ink once the store hydrates (blank on the server, like the home and
- * theme pages); 古 marks radicals with sourced ancient forms.
+ * Radicals as seals linking to their pages, filled by the page's <InkPaint>.
+ * 古 marks radicals with sourced ancient forms. The colour comes from the
+ * nearest theme (--tc). Server-safe.
  */
 export function RadicalSealGrid({ radicals }: { radicals: SealRadical[] }) {
-    const entries = useInkEntries();
-    const lists = useMemo(() => radicals.map((r) => Array.from(r.chars)), [radicals]);
-    const shadeOf = useMemo(() => (entries ? shadeReader(entries) : null), [entries]);
-
     return (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-x-2 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-            {radicals.map((r, i) => {
-                const state = shadeOf ? sealState(lists[i], shadeOf) : null;
-                const detail = r.sideOf ? `side form of ${r.sideOf}` : `${lists[i].length} kanji`;
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-x-2 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(92px,1fr))] sm:gap-x-3">
+            {radicals.map((r) => {
+                const count = Array.from(r.chars).length;
+                const detail = r.sideOf ? `side form of ${r.sideOf}` : `${count} kanji`;
                 return (
-                    <li key={r.key}>
-                        <Link
+                    <li key={r.key} className="flex min-w-0 justify-center">
+                        <RadicalSeal
+                            char={r.char}
+                            chars={r.chars}
                             href={radicalPath(r.key)}
-                            title={r.meaning}
-                            aria-label={`${r.char} ${r.name}, ${r.meaning}, ${detail}${r.ancient ? ", with ancient forms" : ""}${state ? `, ${SEAL_LABELS[state]}` : ""}`}
-                            className={cn("group flex flex-col items-center gap-1.5 rounded-xl px-1 text-center", FOCUS_RING)}
-                        >
-                            <span className="relative">
-                                <span className={sealClass(state, cn("size-14 text-[26px] sm:size-16 sm:text-[29px]", styles.pressable, r.sideOf && "border-dashed!"))}>
-                                    <span lang="ja" aria-hidden>{r.char}</span>
+                            name={r.gloss}
+                            count={
+                                <span className="inline-flex items-center gap-1.5">
+                                    {r.sideOf ? "side form" : detail}
+                                    {r.ancient > 0 && (
+                                        <Tag className="h-[18px] px-1.5 text-[11px]">
+                                            <span lang="ja">古</span>
+                                        </Tag>
+                                    )}
                                 </span>
-                                {r.ancient > 0 && (
-                                    <span
-                                        aria-hidden
-                                        className="absolute -right-1.5 -top-1 flex size-5 items-center justify-center rounded-full border border-c/60 bg-bg font-jp text-[11px] font-bold leading-none text-c"
-                                    >
-                                        古
-                                    </span>
-                                )}
-                            </span>
-                            <span aria-hidden className="w-full truncate text-xs text-ink group-hover:text-c">{r.name}</span>
-                            <span aria-hidden className="-mt-1 w-full truncate text-[11px] text-ink-3">{r.sideOf ? "side form" : detail}</span>
-                        </Link>
+                            }
+                            label={`${r.char} ${r.name}, ${r.meaning}, ${detail}${r.ancient > 0 ? ", with ancient forms" : ""}`}
+                            className="w-full"
+                        />
                     </li>
                 );
             })}

@@ -1,8 +1,9 @@
-import { getCategories } from "@/lib/atlas";
-import { PageShell, Breadcrumbs } from "@/components/Atlas/PageShell";
+import { getCategories, getKanjiByCategory } from "@/lib/atlas";
+import { PageShell } from "@/components/Atlas/PageShell";
 import { atlasMetadata } from "@/components/Atlas/metadata";
-import { themeChars, themeMeta } from "@/components/Theme/data";
+import { InkPaint } from "@/components/Ink/InkPaint";
 import { CategoryGates } from "@/components/Theme/CategoryGates";
+import { KindLabel } from "@/components/ui/SectionHeader";
 
 export const dynamic = "force-static";
 
@@ -17,21 +18,25 @@ export function generateMetadata() {
 
 export default function CategoriesPage() {
     const categories = getCategories();
+    const themes = categories.map((c) => ({ name: c.name, chars: getKanjiByCategory(c.name).map((k) => k.char).join("") }));
+    const radicals = categories.reduce((n, c) => n + c.radicalCount, 0);
 
     return (
-        <PageShell className="max-w-7xl">
-            <Breadcrumbs items={[{ href: "/", label: "Home" }, { label: "Themes" }]} />
+        <InkPaint>
+            <PageShell className="pt-8 sm:pt-10">
+                <header className="flex max-w-3xl flex-col gap-3 pb-8">
+                    <KindLabel jp="十の主題">
+                        Learn · {categories.length} themes · {radicals} radicals
+                    </KindLabel>
+                    <h1 className="type-title">Ten kanji themes</h1>
+                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2">
+                        Every radical belongs to one of {categories.length} themes. They sit side by side with no order, so start anywhere: each theme has its story, its
+                        radicals in a suggested order and every kanji built from them.
+                    </p>
+                </header>
 
-            <header className="mb-8 lg:mb-10">
-                <h1 className="font-disp text-4xl font-bold sm:text-5xl">Ten kanji themes</h1>
-                <p className="mt-3 max-w-2xl leading-relaxed text-ink-2">
-                    Every radical belongs to one of {categories.length} themes. They sit side by side with no order, so
-                    start anywhere: each theme has its story, its radicals in a suggested order and every kanji built
-                    from them.
-                </p>
-            </header>
-
-            <CategoryGates themes={categories.map(themeMeta)} chars={themeChars()} />
-        </PageShell>
+                <CategoryGates themes={themes} source="categories" />
+            </PageShell>
+        </InkPaint>
     );
 }
