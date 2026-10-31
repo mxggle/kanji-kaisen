@@ -16,7 +16,8 @@ interface KanjiHeroProps {
 
 /** Big glyph, meaning headline, part chips, the JLPT/strokes/grade line and your ink. */
 export function KanjiHero({ kanji, headline, meanings, parts }: KanjiHeroProps) {
-    const grade = gradeLabel(kanji.grade);
+    // KANJIDIC grades 9–10 already say "name kanji"; the flag below says it too.
+    const grade = kanji.nameKanji && !kanji.joyo ? null : gradeLabel(kanji.grade);
     const extra = meanings.slice(2);
     return (
         <header className="flex flex-col gap-3.5">
