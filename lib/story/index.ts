@@ -1,5 +1,6 @@
 // Server-only entry point for the sourced story layer: ancient forms from
-// Wikimedia Commons (lib/core/ancient-forms.json, public/ancient/*.svg) and
+// Wikimedia Commons and Academia Sinica 小學堂 (lib/core/ancient-forms.json,
+// public/ancient/*.svg and *.png) and
 // glyph origins from Wiktionary (lib/core/etymology.wiktionary.json).
 // Client components get this data via props.
 

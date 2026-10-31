@@ -55,6 +55,7 @@ Each source keeps its own file and licence. Share-alike data is never mixed into
 - **[Unihan](https://www.unicode.org/charts/unihan.html)**: simplified and traditional forms, pinyin, old forms, jōyō and name-kanji flags (`lib/core/unihan.json`). [Unicode License v3](https://www.unicode.org/license.txt).
 - **[Wiktionary](https://en.wiktionary.org)**: glyph origins, each with its page revision (`lib/core/etymology.wiktionary.json`). CC BY-SA 4.0.
 - **[Wikimedia Commons, Ancient Chinese characters project](https://commons.wikimedia.org/wiki/Commons:Ancient_Chinese_characters_project)**: oracle bone, bronze and seal forms (`public/ancient`). Only public-domain files and CC0 tracings from Academia Sinica are used; Richard Sears–sourced files are excluded. Per-file credits are in `lib/core/ancient-forms.json` and at `/about/ancient-forms`.
+- **[Academia Sinica 小學堂 字形演變](https://xiaoxue.iis.sinica.edu.tw/yanbian)**: oracle bone, bronze and seal glyphs for stages Commons can't fill (`public/ancient/*.png`). Glyph images and glyph data from its query interface are [CC0 1.0](https://xiaoxue.iis.sinica.edu.tw/License/License); they are cropped, made transparent and recoloured, never redrawn.
 - JLPT levels are unofficial community lists (via [kanjiapi.dev](https://kanjiapi.dev)); jōyō kanji missing from them are shown as N1. Memory stories are original mnemonics written for this site, kept apart from sourced origins.
 
 ## Development
@@ -73,6 +74,7 @@ Data pipeline (outputs are committed; raw downloads go to the git-ignored `data-
 pnpm data:sources    # download KANJIDIC2, Unihan, JMdict and JmdictFurigana into data-cache/
 pnpm data:layers     # data-cache/ + KanjiVG -> lib/core/*.json, lib/ja/*.json
 pnpm data:ancient    # Commons ancient forms (licence-filtered) -> lib/core/ancient-forms.json, public/ancient/
+pnpm data:xiaoxue    # fill missing radical stages from Academia Sinica 小學堂 -> same files (run after data:ancient)
 pnpm data:etymology  # Wiktionary glyph origins -> lib/core/etymology.wiktionary.json
 pnpm data:stories    # lib/stories/**/*.md -> lib/compiled-stories.json
 pnpm data:atlas      # all layers -> lib/atlas/kanji-atlas.json, public/data/search-index.json

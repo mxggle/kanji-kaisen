@@ -13,6 +13,10 @@
 // frequency, then the rest of jōyō (Unihan kJoyoKanji). Each char is looked
 // up under its etymon candidates (学 -> 學, 氵 -> 水; lib/story/etymon.ts).
 //
+// Stages Commons can't fill are filled from Academia Sinica 小學堂 by
+// scripts/fetch-xiaoxue-forms.mjs (pnpm data:xiaoxue). A rebuild here keeps
+// those 小學堂 files for every stage that Commons still leaves empty.
+//
 // Usage: pnpm data:ancient [--scope radicals|top600|joyo] [--refresh] [--offline]
 //   --refresh  re-query Commons instead of using data-cache/commons
 //   --offline  rebuild from data-cache only (no network)
@@ -25,6 +29,7 @@ import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { classifyAccWikitext, normalizePeriod } from "../lib/story/acc-license.ts";
 import { sanitizeAncientSvg } from "../lib/story/svg-sanitize.ts";
+import { ANCIENT_RULE, ANCIENT_STAGES_NOTE, XIAOXUE_ABOUT, applyFills, providerFills } from "../lib/story/xiaoxue.ts";
 import {
     codePointHex,
     etymonCandidates,
@@ -455,6 +460,7 @@ async function main() {
         if (verdict.ref) entry.ref = verdict.ref;
         if (period) entry.period = period;
         if (info.via) entry.via = info.via;
+        entry.provider = "commons";
         entry.revid = page.revid;
         entry.sha1 = page.image.sha1;
         entry.fetched = prev && prev.revid === page.revid && prev.sha1 === page.image.sha1 ? prev.fetched : today;
@@ -480,21 +486,28 @@ async function main() {
         else radicals[lookup.key] = entry;
     }
 
-    writeJson(OUT_JSON, {
+    const commonsOnly = {
         about: {
-            source: "Wikimedia Commons, Ancient Chinese characters project",
+            source: "Wikimedia Commons, Ancient Chinese characters project; gaps filled from Academia Sinica 小學堂",
             sourceUrl: "https://commons.wikimedia.org/wiki/Commons:Ancient_Chinese_characters_project",
-            rule:
-                "Only files under {{ACClicense}} without the Richard Sears parameter (public domain), or CC0 files traced from Academia Sinica 小學堂. Files are never redrawn; a stage without such a file is left out.",
-            stages: "oracle, bronze and seal are shown and self-hosted under /ancient; `other` lists big seal, slip and silk files that pass the same filter (recorded, not downloaded).",
+            rule: ANCIENT_RULE,
+            stages: ANCIENT_STAGES_NOTE,
             radicals:
                 "Radicals whose kanji mostly belong to another Kangxi radical than the display char suggests (Unihan kRSUnicode), e.g. 月 nikuzuki -> 肉.",
             generatedBy: "scripts/fetch-ancient-forms.mjs",
+            ...XIAOXUE_ABOUT,
         },
         files,
         chars,
         radicals,
-    });
+    };
+    // Keep the 小學堂 fills of the previous manifest wherever Commons still
+    // has no file for the stage (pnpm data:xiaoxue rebuilds them).
+    const carried = providerFills(previous.chars ? previous : { files: {}, chars: {}, radicals: {} }, "xiaoxue");
+    const manifest = applyFills(commonsOnly, previous.files ?? {}, carried);
+    const kept = carried.filter((f) => manifest[f.table][f.key]?.[f.stage] === f.file).length;
+    if (carried.length) console.log(`Kept ${kept} of ${carried.length} 小學堂 stage fills (rerun pnpm data:xiaoxue to refresh)`);
+    writeJson(OUT_JSON, manifest);
 
     // SVGs: write the used ones, remove stale ones.
     fs.mkdirSync(OUT_DIR, { recursive: true });

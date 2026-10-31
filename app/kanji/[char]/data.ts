@@ -280,7 +280,7 @@ export interface KanjiPageData {
     memory: MemoryStoryView | null;
     /** Sourced glyph origin (Wiktionary), null when there is none. */
     etymology: EtymologyView | null;
-    /** Sourced ancient forms (Wikimedia Commons), null when none passed the filter. */
+    /** Sourced ancient forms (Wikimedia Commons, Academia Sinica 小學堂), null when none passed the filter. */
     journey: JourneyView | null;
     alsoBuiltOn: AlsoBuiltOn[];
     soundFamily: SoundFamilyView | null;
