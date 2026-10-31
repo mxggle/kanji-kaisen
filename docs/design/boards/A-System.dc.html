@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One Atlas system</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="width:1440px;padding:72px 80px 96px;display:flex;flex-direction:column;gap:88px">
+
+  <!-- Intro -->
+  <header style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:64px;align-items:end">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <p class="kind"><span class="k">図鑑</span><span class="t-lab">Round 6 · the system every page uses</span></p>
+      <h1 style="font-family:var(--disp);font-weight:700;font-size:84px;line-height:.95">One atlas.<br>One hand.</h1>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <p class="t-body" style="font-size:18px">Every page is a plate in the same book. It has the same path at the top, the same specimen beside the same reading, and the same three objects: a theme gate, a radical seal and a kanji tile. Five rules decide every colour, line, fill and glow, so a learner who understands one page can read all of them.</p>
+      <div class="skin" role="group" aria-label="Skin" style="align-self:flex-start"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+    </div>
+  </header>
+
+  <!-- Five rules -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">五則</span><h2>Five rules</h2><span class="aside">If a design choice isn't covered here, it should be ink and line, not colour.</span></div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px">
+
+      <div class="card" style="display:flex;flex-direction:column;gap:16px;padding:22px">
+        <p class="t-lab">1 · Colour = theme</p>
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
+          <sc-for list="{{themes}}" as="t" hint-placeholder-count="10">
+            <span title="{{t.name}}" style="height:28px;border-radius:6px;background:{{t.c}}"></span>
+          </sc-for>
+        </div>
+        <p class="t-sm">A page takes the colour of the theme it belongs to. Nothing else gets a colour: buttons are ink, JLPT levels are plain tags. In 墨 every theme becomes one vermilion.</p>
+      </div>
+
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:16px;padding:22px">
+        <p class="t-lab">2 · Line = role</p>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+          <span class="part mean"><span class="o" lang="ja">氵</span>water<span class="r">meaning</span></span>
+          <span class="part snd"><span class="o" lang="ja">毎</span>マイ→カイ<span class="r">sound</span></span>
+        </div>
+        <p class="t-sm">A solid line marks the part that carries meaning, and a dashed line marks the part that carries sound. This is the method, drawn the same way on every page.</p>
+      </div>
+
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:16px;padding:22px">
+        <p class="t-lab">3 · Fill = your ink</p>
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
+          <span class="tile sq i0"><span class="g" lang="ja" style="font-size:22px">白</span></span>
+          <span class="tile sq i1"><span class="g" lang="ja" style="font-size:22px">淡</span></span>
+          <span class="tile sq i2"><span class="g" lang="ja" style="font-size:22px">中</span></span>
+          <span class="tile sq i3"><span class="g" lang="ja" style="font-size:22px">濃</span></span>
+          <span class="tile sq i4"><span class="g" lang="ja" style="font-size:22px">印</span></span>
+        </div>
+        <p class="t-sm">How well you know a kanji is shown by how dark it is, and that's the only progress mark. Groups show one painted bar. There are no rings, percentages or streaks.</p>
+      </div>
+
+      <div class="card" style="display:flex;flex-direction:column;gap:16px;padding:22px">
+        <p class="t-lab">4 · Italic = story</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p style="font-size:15px;line-height:1.45">A man leaning against a tree.<span class="src" style="display:block">Origin · Wiktionary</span></p>
+          <p class="story" style="font-size:19px">“Rest in the shade of a tree.”<span class="src" style="display:block;font-family:var(--ui);font-style:normal">Memory story</span></p>
+        </div>
+        <p class="t-sm">Sourced etymology is set in roman type with its source. Mnemonics are always italic and labelled, so readers never mistake a story for a fact.</p>
+      </div>
+
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:16px;padding:22px">
+        <p class="t-lab">5 · Glow = live</p>
+        <div style="height:60px;display:flex;align-items:center;gap:14px">
+          <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes live" style="width:60px;height:60px;stroke:var(--c);stroke-width:5"><path d="M19.5,39.86c2.45,0.57,5.23,0.8,8.04,0.57C40.75,39.38,63,36.5,79.78,36.15c2.8-0.06,4.54,0.1,7.34,0.5"></path><path d="M51.75,10.5c1.19,1.19,2,3,2,5c0,8.65,0,55.15-0.14,74.75c-0.03,4.19-0.07,7.15-0.11,8.25"></path><path d="M50.75,39.5c0,1.12-0.61,2.44-1.42,3.95C41.75,57.5,26.7,73.93,15.75,80.25" style="stroke:var(--line-2)"></path><path d="M54.5,39c4.62,6,23,25.75,31.76,34.61c2.27,2.29,4.61,4.39,7.49,5.64" style="stroke:var(--line-2)"></path></svg>
+          <span class="t-cap">stroke 2 of 4,<br>being drawn</span>
+        </div>
+        <p class="t-sm">Only something that is moving glows: a stroke being drawn, or the step you're on. Headings, buttons and cards never glow. In 墨 nothing glows.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before / after -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">統一</span><h2>One object, one form</h2><span class="aside">What v2.1 draws today → what replaces it</span></div>
+    <div style="display:flex;flex-direction:column;border-top:1px solid var(--line-2)">
+
+      <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 420px;gap:40px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line)">
+        <p class="t-h3">A kanji in a list</p>
+        <p class="t-sm" style="color:var(--ink-3)"><s>Browse tile with a JLPT-coloured underline</s> · <s>radical-page tile</s> · <s>“connected” tile</s> · <s>look-alike pill</s> · <s>Kanji-of-the-day card</s> · <s>ink-dot strip under the hero</s></p>
+        <div style="--tc:#34D399;display:grid;grid-template-columns:96px 84px 64px;gap:14px;align-items:end">
+          <a href="#" class="tile big i3"><span class="g" lang="ja">海</span><span class="m">sea</span><span class="r">カイ · うみ</span></a>
+          <a href="#" class="tile i2"><span class="g" lang="ja">池</span><span class="m">pond</span><span class="r">チ</span></a>
+          <a href="#" class="tile sq i0"><span class="g" lang="ja">沖</span></a>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 420px;gap:40px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line)">
+        <p class="t-h3">A radical</p>
+        <p class="t-sm" style="color:var(--ink-3)"><s>Theme-page circle</s> · <s>radicals-index circle with four dots</s> · <s>part chip in two theme colours</s> · <s>coloured legend pill</s></p>
+        <div style="--tc:#34D399;display:flex;gap:22px;align-items:flex-end">
+          <span class="seal"><span class="so lg i2" lang="ja">木</span><span class="nm">tree</span></span>
+          <span class="seal"><span class="so i4" lang="ja">氵</span><span class="nm">water</span><span class="ct">123 kanji</span></span>
+          <span class="seal"><span class="so md i0" lang="ja">雨</span><span class="nm">rain</span></span>
+          <span class="seal"><span class="so sm i1" lang="ja">日</span></span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 420px;gap:40px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line)">
+        <p class="t-h3">Progress</p>
+        <p class="t-sm" style="color:var(--ink-3)"><s>“0%” ring</s> · <s>“0% painted” scroll card</s> · <s>four-dash ink meter</s> · <s>gate bars</s> · <s>“known” counts</s> · <s>JLPT rainbow bars</s></p>
+        <div style="--tc:#34D399;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>Nature &amp; Elements</span><span style="color:var(--ink-3)">9% painted · 52 of 619 read</span></div>
+          <div class="bar"><i style="width:9%"></i></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 420px;gap:40px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line)">
+        <p class="t-h3">Accent colour</p>
+        <p class="t-sm" style="color:var(--ink-3)"><s>Mint #3BE0A6 buttons</s> · <s>JLPT rainbow (N5 green clashes with Nature, N1 red with Action)</s> · <s>two theme colours inside one kanji</s> · <s>glowing headings</s></p>
+        <div style="--tc:#60A5FA;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <a href="#" class="btn pri">Learn it · 4 steps</a>
+          <a href="#" class="btn">Save</a>
+          <span class="tag">N5</span>
+          <span class="kind"><span class="k">人と身体</span></span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 420px;gap:40px;align-items:center;padding:26px 0;border-bottom:1px solid var(--line)">
+        <p class="t-h3">Page skeleton</p>
+        <p class="t-sm" style="color:var(--ink-3)"><s>Seven different layouts</s>: centred hero + bento, full-bleed art + floating panel, two-column player, filter box, card grid, form tool, document</p>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="height:6px;border-radius:3px;background:var(--line-2)"></div>
+            <div style="display:grid;grid-template-columns:5fr 7fr;gap:6px"><div style="height:54px;border-radius:6px;border:1px solid var(--line-2)"></div><div style="display:flex;flex-direction:column;gap:5px"><div style="height:10px;width:70%;border-radius:3px;background:var(--line-2)"></div><div style="height:6px;border-radius:3px;background:var(--line)"></div><div style="height:6px;width:80%;border-radius:3px;background:var(--line)"></div></div></div>
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px"><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span><span style="height:14px;border-radius:3px;border:1px solid var(--line-2)"></span></div>
+            <span class="t-cap">Plate · Theme, Radical, Kanji</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="height:6px;border-radius:3px;background:var(--line-2)"></div>
+            <div style="height:10px;width:50%;border-radius:3px;background:var(--line-2)"></div>
+            <div style="display:grid;grid-template-columns:1fr 3fr;gap:6px"><div style="height:62px;border-radius:6px;border:1px solid var(--line-2)"></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px"><span style="border-radius:3px;border:1px solid var(--line-2)"></span><span style="border-radius:3px;border:1px solid var(--line-2)"></span><span style="border-radius:3px;border:1px solid var(--line-2)"></span><span style="border-radius:3px;border:1px solid var(--line-2)"></span><span style="border-radius:3px;border:1px solid var(--line-2)"></span></div></div>
+            <span class="t-cap">Tool · Browse, My list, Teach</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Foundations -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">基礎</span><h2>Foundations</h2><span class="aside">Values are the ones already in app/globals.css; only the mint accent and the JLPT colours go.</span></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
+      <div class="kk sk-night" style="min-height:0;border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px;border:1px solid rgba(237,234,226,.12)">
+        <p class="kind"><span class="jp" style="font-size:18px">夜</span><span class="t-lab">Night · default</span></p>
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;font-size:11px;color:var(--ink-3)">
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#06070A;border:1px solid var(--line-2)"></i>bg #06070A</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#0D0F12;border:1px solid var(--line-2)"></i>card #0D0F12</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#EDEAE2"></i>ink #EDEAE2</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#B4AFA4"></i>ink-2 #B4AFA4</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#8C877D"></i>ink-3 #8C877D</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;border:1px solid rgba(237,234,226,.28)"></i>line .12 / .28</span>
+        </div>
+        <p class="t-sm">Theme art in full colour. Accent = the theme's colour. Ink shades are mixed from it. Live strokes glow.</p>
+      </div>
+      <div class="kk sk-ink" style="min-height:0;border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:16px;border:1px solid rgba(27,25,21,.13)">
+        <p class="kind"><span class="jp" style="font-size:18px;color:#B5341E">墨</span><span class="t-lab">Ink · daylight and print</span></p>
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;font-size:11px;color:var(--ink-3)">
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#EEE9DF;border:1px solid var(--line-2)"></i>bg #EEE9DF</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#F7F3EA;border:1px solid var(--line-2)"></i>card #F7F3EA</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#1B1915"></i>ink #1B1915</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#4E4840"></i>ink-2 #4E4840</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#6D665C"></i>ink-3 #6D665C</span>
+          <span style="display:flex;flex-direction:column;gap:6px"><i style="height:40px;border-radius:8px;background:#B5341E"></i>seal #B5341E</span>
+        </div>
+        <p class="t-sm">Theme art as ink wash. Ink shades are black ink on paper; only 印 Mastered and the stroke being written are vermilion. Worksheets always print in 墨.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px">
+      <div class="card" style="padding:0">
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)"><span class="t-lab">Glyph</span><span class="g" lang="ja" style="font-size:56px;line-height:1">休 海 木</span><span class="t-cap">Shippori Mincho B1 800 · kanji, kana, seals</span></div>
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)"><span class="t-lab">Title</span><span class="t-h1">rest, day off</span><span class="t-cap">Cormorant Garamond 700 · 56 / 40 phone · page titles only</span></div>
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)"><span class="t-lab">Section</span><div class="sh"><span class="k">読み方</span><h2>Readings</h2></div><span class="t-cap">Japanese label in the accent + Garamond 600 · 30</span></div>
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)"><span class="t-lab">Body</span><span class="t-body" style="color:var(--ink)">Search by meaning, reading or the kanji itself.</span><span class="t-cap">Zen Kaku Gothic New 400 · 16 / 1.65 · 14 small</span></div>
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line)"><span class="t-lab">Label</span><span class="t-lab" style="color:var(--ink-2)">Memory story · 112 kanji</span><span class="t-cap">Zen Kaku 700 · 12 · +.12em caps</span></div>
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr) 220px;gap:20px;align-items:center;padding:16px 22px"><span class="t-lab">Story</span><span class="story">“Rest in the shade of a tree.”</span><span class="t-cap">Garamond italic 21 · memory stories only</span></div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:20px">
+        <p class="t-lab">Space, shape, grid</p>
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:4px;height:4px;background:var(--ink-2)"></i>4</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:8px;height:8px;background:var(--ink-2)"></i>8</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:12px;height:12px;background:var(--ink-2)"></i>12</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:16px;height:16px;background:var(--ink-2)"></i>16</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:24px;height:24px;background:var(--ink-2)"></i>24</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:32px;height:32px;background:var(--ink-2)"></i>32</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:48px;height:48px;background:var(--ink-2)"></i>48</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:64px;height:64px;background:var(--ink-2)"></i>64</span>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-end">
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:52px;height:52px;border:1px solid var(--ink-2);border-radius:12px"></i>12 tile</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:52px;height:52px;border:1px solid var(--ink-2);border-radius:16px"></i>14–16 card</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:72px;height:36px;border:1px solid var(--ink-2);border-radius:999px"></i>pill</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:52px;height:52px;border:1px solid var(--ink-2);border-radius:50%"></i>seal</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--ink-3)"><i style="width:44px;height:58px;border:1px solid var(--ink-2);border-radius:999px 999px 8px 8px"></i>gate</span>
+        </div>
+        <p class="t-sm">Container 1200, 40 side padding (16 on phone). Plates split 5 : 7, specimen left, reading right. No shadows; separation is a 1 px line.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">部品</span><h2>Components</h2><span class="aside">Switch 夜 / 墨 at the top to see both</span></div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <header class="hdr" style="border-bottom:1px solid var(--line)">
+        <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+        <nav class="nav" aria-label="Main"><a href="A-Home.dc.html" aria-current="page">Learn</a><a href="A-Browse.dc.html">Browse</a><a href="A-Mine.dc.html">My list</a><a href="A-Teach.dc.html">Teach</a></nav>
+        <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+        <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}">墨</button></div>
+        <a href="#" class="ib" aria-label="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></a>
+      </header>
+      <div style="--tc:#60A5FA;padding:0 32px">
+        <nav class="path" aria-label="Atlas path"><a href="A-Home.dc.html">Learn</a><span class="sep">›</span><a href="#"><span class="dot"></span>Body &amp; People</a><span class="sep">›</span><a href="#"><span class="so sm i2" lang="ja">亻</span>person</a><span class="sep">›</span><span class="here"><span class="g" lang="ja">休</span> rest</span><span class="pn"><a href="#">‹ <span class="g" lang="ja">体</span></a><a href="#"><span class="g" lang="ja">作</span> ›</a></span></nav>
+      </div>
+      <p class="t-cap" style="padding:0 32px 18px">Header: four destinations, the same on every page and on the phone tab bar. The atlas path under it always reads Learn › theme › radical › kanji, with neighbours on the right.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px">
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <p class="t-lab">Buttons</p>
+        <div class="acts"><a href="#" class="btn pri">Learn it · 4 steps</a><a href="#" class="btn">Save</a><a href="#" class="btn q">Print</a></div>
+        <div class="acts"><a href="#" class="btn sm pri">Study 12</a><a href="#" class="btn sm">Open radical</a></div>
+        <p class="t-sm">Primary is always ink, never a theme colour, and there's at most one per screen.</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <p class="t-lab">Tags and filter chips</p>
+        <div class="meta"><span class="tag">N5</span><span class="tag">6 strokes</span><span class="tag">Grade 1</span><span class="tag solid">Saved</span></div>
+        <div class="meta"><button type="button" class="chip" aria-pressed="true">All</button><button type="button" class="chip" aria-pressed="false">N5 <span class="n">80</span></button><button type="button" class="chip" aria-pressed="false" style="--tc:#34D399"><span class="d"></span>Nature</button></div>
+        <p class="t-sm">JLPT is a plain tag. A coloured dot appears only on a chip that names a theme.</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <p class="t-lab">Section header and tabs</p>
+        <div class="sh" style="--tc:#34D399"><span class="k">成り立ち</span><h2>Where it comes from</h2></div>
+        <div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="true"><span class="jp">形</span>Parts</button><button type="button" role="tab" aria-selected="false"><span class="jp">筆</span>Strokes</button><button type="button" role="tab" aria-selected="false"><span class="jp">古</span>Ancient</button></div>
+        <p class="t-sm">Every section opens with the same pair: a Japanese label in the accent, then an English title.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px">
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><p class="t-lab">Kanji tile · five shades</p><div class="ink-legend"><span>Not met</span><i class="i0"></i><i class="i1"></i><i class="i2"></i><i class="i3"></i><i class="i4"></i><span>Mastered</span></div></div>
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+          <a href="#" class="tile i0"><span class="g" lang="ja">沖</span><span class="m">open sea</span><span class="r">チュウ</span></a>
+          <a href="#" class="tile i1"><span class="g" lang="ja">池</span><span class="m">pond</span><span class="r">チ</span></a>
+          <a href="#" class="tile i2"><span class="g" lang="ja">海</span><span class="m">sea</span><span class="r">カイ</span></a>
+          <a href="#" class="tile i3"><span class="g" lang="ja">水</span><span class="m">water</span><span class="r">スイ</span></a>
+          <a href="#" class="tile i4"><span class="g" lang="ja">川</span><span class="m">stream</span><span class="r">セン</span></a>
+        </div>
+        <p class="t-sm">白 Not met, dashed and empty. 淡 Met. 中 Learning. 濃 Familiar. 印 Mastered, solid. Shades rise through the four steps or by hand, and a wrong answer never lowers one.</p>
+      </div>
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:18px">
+        <p class="t-lab">Radical seal · sizes and states</p>
+        <div style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap">
+          <span class="seal"><span class="so lg i3" lang="ja">木</span><span class="nm">plate · 96</span></span>
+          <button type="button" class="seal" aria-pressed="true"><span class="so i2" lang="ja">氵</span><span class="nm">selected</span></button>
+          <span class="seal"><span class="so i0" lang="ja">雨</span><span class="nm">not met</span></span>
+          <span class="seal"><span class="so md i1" lang="ja">日</span><span class="nm">44</span></span>
+          <span class="seal"><span class="so sm i4" lang="ja">山</span><span class="nm">28</span></span>
+        </div>
+        <p class="t-sm">A seal's fill is the average ink of its kanji. It uses the same five shades, so a radical and its kanji always match.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:24px">
+      <div class="card" style="display:flex;flex-direction:column;gap:18px">
+        <p class="t-lab">Theme gate</p>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <a href="#" class="gate" style="--tc:#34D399"><img src="/_blob/ce067a239e944fabd8b29ac759c55d3d" alt=""><span class="sc"></span><span class="tx"><span class="jpn" lang="ja">自然と元素</span><span class="nm">Nature</span><span class="bar"><i style="width:9%"></i></span></span></a>
+          <a href="#" class="gate" style="--tc:#60A5FA"><img src="/_blob/2f5312f053f1417e7a003470bcf58887" alt=""><span class="sc"></span><span class="tx"><span class="jpn" lang="ja">人と身体</span><span class="nm">Body</span><span class="bar"><i style="width:4%"></i></span></span></a>
+          <a href="#" class="gate" style="--tc:#FBBF24"><img src="/_blob/2992cf17f59fd24ef46969673e2da4d2" alt=""><span class="sc"></span><span class="tx"><span class="jpn" lang="ja">動物と野生</span><span class="nm">Animals</span><span class="bar"><i style="width:0%"></i></span></span></a>
+        </div>
+        <p class="t-sm">The arch is kept for themes only. Its art regains colour as you paint the theme.</p>
+      </div>
+      <div class="card" style="--tc:#60A5FA;display:flex;flex-direction:column;gap:16px">
+        <p class="t-lab">Parts, reading block, origin and memory story</p>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="part mean"><span class="o" lang="ja">亻</span>person<span class="r">meaning</span></span><span class="plus">+</span><span class="part form" style="--tc:#34D399"><span class="o" lang="ja">木</span>tree<span class="r">form</span></span></div>
+        <div class="rd" style="background:var(--bg)">
+          <div class="hd"><span class="kana" lang="ja">キュウ</span><span class="ty">kyū · on'yomi · in compounds</span></div>
+          <div class="wd"><a href="#"><span class="w" lang="ja"><b>休</b>日</span><span class="y" lang="ja">きゅうじつ</span>holiday</a><a href="#"><span class="w" lang="ja"><b>休</b>暇</span><span class="y" lang="ja">きゅうか</span>vacation</a></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <div class="card" style="background:var(--bg);display:flex;flex-direction:column;gap:8px;padding:16px 18px"><p class="t-lab">Origin · sourced</p><p style="font-size:15px">A man leaning against a tree, resting.</p><p class="src">Ideogrammic compound · <a href="#">Wiktionary</a>, CC BY-SA 4.0</p></div>
+          <div class="card" style="background:var(--bg);display:flex;flex-direction:column;gap:8px;padding:16px 18px"><p class="t-lab">Memory story · made up</p><p class="story" style="font-size:19px">“A person leans on a tree to take a break.”</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":3300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const themes = [
+      { name: "Nature", c: "#34D399" }, { name: "Body", c: "#60A5FA" }, { name: "Action", c: "#F87171" },
+      { name: "Home", c: "#D6CFC4" }, { name: "Animals", c: "#FBBF24" }, { name: "Tools", c: "#A5B4C8" },
+      { name: "Thought", c: "#C084FC" }, { name: "Plants", c: "#A3E635" }, { name: "States", c: "#F472B6" },
+      { name: "Time", c: "#A5B4FC" }
+    ];
+    return {
+      themes: skin === "ink" ? themes.map((t) => ({ name: t.name, c: "#B5341E" })) : themes,
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" })
+    };
+  }
+}
+</script>
+</body>
+</html>

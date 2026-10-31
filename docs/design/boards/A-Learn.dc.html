@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Learn 海 in four steps</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="--tc:#34D399;display:flex;flex-direction:column">
+
+  <!-- Layer bar: replaces the site header while learning -->
+  <header class="hdr" style="gap:20px">
+    <a href="A-Kanji.dc.html" class="ib" aria-label="Close and go back to 海" style="border-color:var(--line-2)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    <p style="display:flex;align-items:baseline;gap:10px;white-space:nowrap"><span class="g" lang="ja" style="font-size:22px">海</span><b>sea</b><span class="t-sm">· learn it in four steps</span></p>
+    <div class="tabs" role="tablist" aria-label="Steps" style="margin:0 auto">
+      <button type="button" role="tab" aria-selected="{{t0}}" onClick="{{go0}}"><span class="jp">会</span>Meet</button>
+      <button type="button" role="tab" aria-selected="{{t1}}" onClick="{{go1}}"><span class="jp">想</span>Recall</button>
+      <button type="button" role="tab" aria-selected="{{t2}}" onClick="{{go2}}"><span class="jp">描</span>Trace</button>
+      <button type="button" role="tab" aria-selected="{{t3}}" onClick="{{go3}}"><span class="jp">書</span>Write</button>
+    </div>
+    <span class="tag" style="white-space:nowrap"><i class="i1" style="width:12px;height:12px;border-radius:3px"></i>淡 Met<span aria-hidden="true">→</span><i class="i2" style="width:12px;height:12px;border-radius:3px"></i>中 after Trace</span>
+  </header>
+
+  <main style="flex:1;display:flex;flex-wrap:wrap;gap:56px;align-items:center;justify-content:center;padding:48px 40px">
+
+    <!-- Stage -->
+    <section aria-label="Stage" style="flex:0 1 520px;min-width:0">
+      <div style="position:relative;width:100%;aspect-ratio:1/1;border:1px solid var(--line);border-radius:20px;background:var(--card)">
+        <svg viewBox="0 0 109 109" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--line);stroke-width:.35;stroke-dasharray:1.2 1.2"><path d="M54.5 0V109M0 54.5H109M0 0L109 109M109 0L0 109"></path></svg>
+
+        <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
+          <svg viewBox="0 0 109 109" role="img" aria-label="海: 氵 water carries the meaning, 毎 carries the sound" class="strokes" style="position:absolute;inset:8%;width:84%;height:84%;stroke:var(--c);stroke-width:4">
+            <path d="M20.38,14.75c3.31,1.47,8.54,6.05,9.37,8.34"></path><path d="M14.75,39.5c3.79,1.15,9.8,4.72,10.75,6.5"></path><path d="M13.75,89.21C16,90,17.06,89.57,18,87.95c2.75-4.7,5.5-10.45,8-16.45"></path>
+            <g style="stroke-dasharray:3.2 2.4"><path d="M53,11c0.12,1.68-0.19,3.03-0.83,4.57C49.7,21.44,43.05,31.26,37.75,37"></path><path d="M51.13,24.03c0.94,0.29,3.67,0.41,4.6,0.29c7.65-0.94,18.52-3.07,26.02-4.84c1.51-0.36,3.5-0.36,4.29-0.21"></path><path d="M48.96,36.12C50,37,50.5,38.25,49.75,42.25C47.86,52.35,42.98,67.88,40,73c-1.75,3-0.5,4.43,1.5,4.5c14.75,0.5,31.22,2.68,44.24,10c2.04,1.15,3.97,2.39,5.76,3.75"></path><path d="M50.78,37.57c6.97-0.07,24.47-2.7,30.7-3.57c2.51-0.35,3.96,0.99,3.79,3.12C84,52.75,77.33,84.33,73.95,92.43c-2.95,7.07-6.12,0.35-7.12-0.77"></path><path d="M64.75,39.75c0.88,0.88,1.22,2.74,1,4c-1.5,8.5-5.5,25.75-8.25,33.75"></path><path d="M30.63,58.98c1.85,0.45,5.24,0.61,7.09,0.45c16.91-1.43,37.36-3.68,55.69-4.15c3.08-0.08,4.93,0.21,6.47,0.44"></path></g>
+          </svg>
+        </sc-if>
+
+        <sc-if value="{{isRecall}}" hint-placeholder-val="{{false}}">
+          <span class="g" lang="ja" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:300px;line-height:1">海</span>
+        </sc-if>
+
+        <sc-if value="{{isTrace}}" hint-placeholder-val="{{false}}">
+          <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes" style="position:absolute;inset:8%;width:84%;height:84%;stroke-width:4">
+            <g style="stroke:var(--ink)"><path d="M20.38,14.75c3.31,1.47,8.54,6.05,9.37,8.34"></path><path d="M14.75,39.5c3.79,1.15,9.8,4.72,10.75,6.5"></path><path d="M13.75,89.21C16,90,17.06,89.57,18,87.95c2.75-4.7,5.5-10.45,8-16.45"></path></g>
+            <g style="stroke:var(--line-2)"><path d="M51.13,24.03c0.94,0.29,3.67,0.41,4.6,0.29c7.65-0.94,18.52-3.07,26.02-4.84c1.51-0.36,3.5-0.36,4.29-0.21"></path><path d="M48.96,36.12C50,37,50.5,38.25,49.75,42.25C47.86,52.35,42.98,67.88,40,73c-1.75,3-0.5,4.43,1.5,4.5c14.75,0.5,31.22,2.68,44.24,10c2.04,1.15,3.97,2.39,5.76,3.75"></path><path d="M50.78,37.57c6.97-0.07,24.47-2.7,30.7-3.57c2.51-0.35,3.96,0.99,3.79,3.12C84,52.75,77.33,84.33,73.95,92.43c-2.95,7.07-6.12,0.35-7.12-0.77"></path><path d="M64.75,39.75c0.88,0.88,1.22,2.74,1,4c-1.5,8.5-5.5,25.75-8.25,33.75"></path><path d="M30.63,58.98c1.85,0.45,5.24,0.61,7.09,0.45c16.91-1.43,37.36-3.68,55.69-4.15c3.08-0.08,4.93,0.21,6.47,0.44"></path></g>
+            <circle cx="53" cy="11" r="2.2" style="fill:var(--c);stroke:none"></circle>
+          </svg>
+          <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes live" style="position:absolute;inset:8%;width:84%;height:84%;stroke:var(--c);stroke-width:4"><path pathLength="1" class="draw" d="M53,11c0.12,1.68-0.19,3.03-0.83,4.57C49.7,21.44,43.05,31.26,37.75,37"></path></svg>
+        </sc-if>
+
+        <sc-if value="{{isWrite}}" hint-placeholder-val="{{false}}">
+          <p class="t-cap" style="position:absolute;left:0;right:0;bottom:22px;text-align:center">Write with your finger, mouse or pen</p>
+        </sc-if>
+      </div>
+    </section>
+
+    <!-- Step card -->
+    <section aria-label="Step" style="flex:0 1 480px;min-width:0">
+      <div class="card" style="padding:28px;display:flex;flex-direction:column;gap:20px">
+        <p class="kind"><span class="k">{{stepJp}}</span><span class="t-lab">Step {{stepNo}} of 4 · {{stepName}}</span></p>
+
+        <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <h1 class="t-h1" style="font-size:44px">sea, ocean</h1>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+              <div class="rd" style="background:var(--bg);padding:14px 16px;gap:4px"><span class="kana" lang="ja" style="font-size:26px">カイ</span><span class="ty">on'yomi · <span lang="ja">海外</span> abroad</span></div>
+              <div class="rd" style="background:var(--bg);padding:14px 16px;gap:4px"><span class="kana" lang="ja" style="font-size:26px">うみ</span><span class="ty">kun'yomi · <span lang="ja">海</span> the sea</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="part mean"><span class="o" lang="ja">氵</span>water<span class="r">meaning</span></span><span class="plus" aria-hidden="true">+</span><span class="part snd"><span class="o" lang="ja">毎</span>カイ<span class="r">sound</span></span></div>
+            <p class="story" style="font-size:19px">“Water that is everywhere: the sea.”<span class="src" style="display:block;font-family:var(--ui);font-style:normal">Memory story</span></p>
+            <button type="button" class="btn pri lg" onClick="{{go1}}">I've met it · next</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isRecall}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <h1 class="t-h2">What does it mean?</h1>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+              <sc-for list="{{opts}}" as="o" hint-placeholder-count="4"><button type="button" class="btn lg" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.st}}">{{o.label}}</button></sc-for>
+            </div>
+            <p class="t-sm" aria-live="polite">{{fb}}</p>
+            <button type="button" class="btn pri lg" onClick="{{go2}}">Next: trace it</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isTrace}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <h1 class="t-h2">Trace each stroke</h1>
+            <p class="t-body">Start at the dot. Stroke 4 of 9 begins the sound part <span class="g" lang="ja">毎</span>.</p>
+            <div class="acts"><button type="button" class="btn">Show me</button><button type="button" class="btn q">Restart</button></div>
+            <button type="button" class="btn pri lg" onClick="{{go3}}">Next: write it</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isWrite}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <h1 class="t-h2">Write it from memory</h1>
+            <p class="t-body">Nine strokes. Get it right on two different days and <span class="g" lang="ja">海</span> turns 濃 Familiar.</p>
+            <div class="acts"><button type="button" class="btn">Show strokes</button><button type="button" class="btn q">Clear</button></div>
+            <button type="button" class="btn pri lg">Check</button>
+          </div>
+        </sc-if>
+        <p class="src">A wrong answer never lowers a shade. You can also set the shade yourself on the kanji page.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer style="min-height:64px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 32px;border-top:1px solid var(--line)">
+    <span class="t-lab">Words</span>
+    <span class="wd" style="display:flex;flex-wrap:wrap;gap:4px 24px">
+      <a href="#"><span class="w" lang="ja">日本<b>海</b></span><span class="y" lang="ja">にほんかい</span>Sea of Japan</a>
+      <a href="#"><span class="w" lang="ja"><b>海</b>岸</span><span class="y" lang="ja">かいがん</span>coast</a>
+      <a href="#"><span class="w" lang="ja"><b>海</b>辺</span><span class="y" lang="ja">うみべ</span>beach</a>
+    </span>
+    <span style="flex:1"></span>
+    <a href="A-Teach.dc.html" class="btn q sm">Print practice sheet</a>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const step = st.step === undefined ? 0 : st.step;
+    const ans = st.ans;
+    const J = ["会", "想", "描", "書"], N = ["Meet", "Recall", "Trace", "Write"];
+    const O = ["sea", "pond", "swim", "harbor"];
+    const opts = O.map((o, k) => {
+      const picked = ans === k;
+      const right = k === 0;
+      const st2 = picked ? (right ? "border-color:var(--c);background:color-mix(in oklab,var(--c) 14%,transparent)" : "border-color:var(--ink-3);border-style:dashed") : "";
+      return { label: o, on: picked ? "true" : "false", st: st2, pick: () => this.setState({ ans: k }) };
+    });
+    const fb = ans === undefined ? "Pick one. 池 pond, 泳 swim and 港 harbor share the water part." : ans === 0 ? "Right. The water part and the sound カイ point to the sea." : "Not quite: that one is " + ["", "池", "泳", "港"][ans] + ". 海 is the sea. Your shade stays where it is.";
+    const go = (k) => () => this.setState({ step: k });
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      isMeet: step === 0, isRecall: step === 1, isTrace: step === 2, isWrite: step === 3,
+      t0: step === 0 ? "true" : "false", t1: step === 1 ? "true" : "false", t2: step === 2 ? "true" : "false", t3: step === 3 ? "true" : "false",
+      go0: go(0), go1: go(1), go2: go(2), go3: go(3),
+      stepJp: J[step], stepNo: step + 1, stepName: N[step],
+      opts: opts, fb: fb
+    };
+  }
+}
+</script>
+</body>
+</html>

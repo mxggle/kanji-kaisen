@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nature &amp; Elements · theme page</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="--tc:#34D399">
+
+  <header class="hdr">
+    <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+    <nav class="nav" aria-label="Main"><a href="A-Home.dc.html" aria-current="page">Learn</a><a href="A-Browse.dc.html">Browse</a><a href="A-Mine.dc.html">My list</a><a href="A-Teach.dc.html">Teach</a></nav>
+    <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+    <a href="#" class="ib" aria-label="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></a>
+  </header>
+
+  <main class="wrap">
+    <nav class="path" aria-label="Atlas path">
+      <a href="A-Home.dc.html">Learn</a><span class="sep">›</span>
+      <span class="here" aria-current="page"><span class="dot"></span>Nature &amp; Elements</span>
+      <span class="pn"><a href="A-Home.dc.html">All ten themes</a></span>
+    </nav>
+
+    <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:stretch;padding-top:8px">
+      <!-- Specimen: the theme's art -->
+      <section aria-label="Theme art" style="flex:5 1 380px;min-width:0">
+        <div class="spec" style="height:100%;min-height:560px;border-radius:999px 999px 16px 16px">
+          <img class="art" src="/_blob/ce067a239e944fabd8b29ac759c55d3d" alt="Ink landscape of mountains, trees and water" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          <span aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(var(--shade),0) 50%,rgba(var(--shade),.92) 92%)"></span>
+          <div style="position:absolute;left:24px;right:24px;bottom:22px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:13px"><span>Your ink in Nature</span><span style="color:var(--ink-2)">9% painted</span></div>
+            <div class="bar"><i style="width:9%"></i></div>
+            <p class="t-cap">The art fills with colour as the theme's kanji darken.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reading -->
+      <section aria-label="Reading" style="flex:7 1 520px;min-width:0;display:flex;flex-direction:column;gap:22px">
+        <p class="kind"><span class="k">自然と元素</span><span class="t-lab">Theme · one of ten</span></p>
+        <h1 class="t-h1" style="font-size:72px">Nature &amp; Elements</h1>
+        <p class="t-body" style="font-size:18px;max-width:600px">Water, fire, earth, wood, mountain and sky. The first scribes drew what they saw, and those pictures still sit inside hundreds of kanji.</p>
+        <div class="meta"><span class="tag">36 radicals</span><span class="tag">619 kanji</span><span class="tag">20 at N5</span><span class="tag">52 familiar to you</span></div>
+
+        <div class="card" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span class="so md i2" lang="ja">{{sel.g}}</span>
+            <div style="display:flex;flex-direction:column">
+              <p class="t-h3">{{sel.name}}</p>
+              <p class="t-cap">Radical of {{sel.n}} kanji · most used first</p>
+            </div>
+            <a href="A-Radical.dc.html" class="btn sm" style="margin-left:auto">Open radical</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px">
+            <sc-for list="{{selTiles}}" as="t" hint-placeholder-count="10"><a href="A-Kanji.dc.html" class="{{t.cls}}"><span class="g" lang="ja" style="font-size:28px">{{t.g}}</span><span class="m">{{t.m}}</span><span class="r" lang="ja">{{t.r}}</span></a></sc-for>
+          </div>
+          <sc-if value="{{noTiles}}" hint-placeholder-val="{{false}}"><p class="t-sm">Open the radical to see all of its kanji.</p></sc-if>
+        </div>
+
+        <div class="acts">
+          <a href="A-Kanji.dc.html" class="btn pri lg">Continue with <span class="g" lang="ja">海</span></a>
+          <a href="A-Mine.dc.html" class="btn lg">Study this theme</a>
+          <span style="flex:1"></span>
+          <a href="A-Teach.dc.html" class="btn q">Print sheet</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Radicals -->
+    <section style="margin-top:96px;display:flex;flex-direction:column;gap:22px">
+      <div class="sh"><span class="k">部首</span><h2>36 radicals, most useful first</h2><span class="aside">Pick one to preview it above. The order is a suggestion; start anywhere.</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:24px 12px">
+        <sc-for list="{{rads}}" as="r" hint-placeholder-count="36">
+          <button type="button" class="seal" aria-pressed="{{r.on}}" onClick="{{r.pick}}"><span class="{{r.cls}}" lang="ja">{{r.g}}</span><span class="nm">{{r.name}}</span><span class="ct">{{r.n}} kanji</span></button>
+        </sc-for>
+      </div>
+      <p class="t-cap">Variant forms with no kanji of their own (<span lang="ja">日偏 火偏 石偏 木偏</span>) are folded into their main radical.</p>
+    </section>
+
+    <!-- By level -->
+    <section style="margin-top:80px;display:flex;flex-direction:column;gap:18px">
+      <div class="sh"><span class="k">全部</span><h2>All 619 kanji</h2><span class="aside">Opens Browse with this theme already filtered</span></div>
+      <div class="meta">
+        <a href="A-Browse.dc.html" class="chip">N5 <span class="n">20</span></a>
+        <a href="A-Browse.dc.html" class="chip">N4 <span class="n">31</span></a>
+        <a href="A-Browse.dc.html" class="chip">N3 <span class="n">88</span></a>
+        <a href="A-Browse.dc.html" class="chip">N2 <span class="n">121</span></a>
+        <a href="A-Browse.dc.html" class="chip">N1 <span class="n">359</span></a>
+        <a href="A-Browse.dc.html" class="chip">Not met yet</a>
+      </div>
+    </section>
+
+    <!-- Other themes -->
+    <section style="margin-top:96px;display:flex;flex-direction:column;gap:22px">
+      <div class="sh"><span class="k">他の主題</span><h2>The other nine themes</h2><span class="aside">No order, no levels</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:14px">
+        <sc-for list="{{others}}" as="o" hint-placeholder-count="9">
+          <a href="A-Theme.dc.html" class="gate" style="--tc:{{o.c}}"><img src="{{o.img}}" alt=""><span class="sc"></span><span class="tx"><span class="jpn" lang="ja">{{o.jp}}</span><span class="nm" style="font-size:18px">{{o.name}}</span><span class="bar"><i style="width:{{o.w}}"></i></span></span></a>
+        </sc-for>
+      </div>
+    </section>
+
+    <footer class="ftr" style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center">
+      <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:26px;height:26px;font-size:15px">解</span><span class="w" style="font-size:18px">Kanji Kaisen</span></a>
+      <a href="#">About &amp; credits</a><a href="#">Settings</a><a href="#">Send feedback</a><a href="#">GitHub</a>
+      <span style="margin-left:auto">Theme art: Kanji Kaisen</span>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":2150}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const sel = st.sel === undefined ? 0 : st.sel;
+    const R = [["氵","water",123,2],["木","tree",112,2],["日","sun",58,3],["土","earth",51,1],["阝","hill",32,0],["禾","grain",28,1],["山","mountain",20,2],["彳","step",19,0],["石","stone",19,0],["火","fire",16,1],["田","rice paddy",15,1],["礻","altar",14,0],["雨","rain",13,1],["灬","fire (dots)",13,0],["米","rice",10,0],["冫","ice",10,0],["穴","hole",9,0],["寸","inch",9,0],["月","moon",8,2],["厂","cliff",5,0],["水","water",4,3],["襾","cover",4,0],["示","altar",4,0],["氺","water (foot)",3,0],["寸","inch (right)",3,0],["角","horn",3,0],["風","wind",2,0],["川","river",2,4],["田","paddy (side)",2,0],["山","mountain (top)",2,0],["雨","rain",1,0],["穴","hole",1,0],["气","steam",1,0],["缶","earthen jar",1,0],["支","branch",1,0],["谷","valley",1,0]];
+    const P = {
+      0: [["決","decide","ケツ",0],["法","method","ホウ",1],["治","reign","ジ",0],["派","faction","ハ",0],["済","settle","サイ",0],["活","lively","カツ",1],["海","sea","カイ",2],["減","dwindle","ゲン",0],["演","performance","エン",0],["流","current","リュウ",1]],
+      1: [["本","book","ホン",4],["東","east","トウ",3],["業","business","ギョウ",1],["相","inter-","ソウ",1],["来","come","ライ",3],["機","loom","キ",1],["権","authority","ケン",0],["査","investigate","サ",0],["案","plan","アン",0],["村","village","ソン",2]],
+      2: [["日","day","ニチ",4],["時","time","ジ",3],["明","bright","メイ",3],["最","utmost","サイ",1],["書","write","ショ",3],["昨","yesterday","サク",1],["早","early","ソウ",2],["映","reflect","エイ",0],["景","scenery","ケイ",0],["旧","old times","キュウ",0]],
+      3: [["地","ground","チ",2],["場","location","ジョウ",1],["報","report","ホウ",0],["在","exist","ザイ",0],["増","increase","ゾウ",0],["基","fundamentals","キ",0],["土","soil","ド",3],["境","boundary","キョウ",0],["域","range","イキ",0],["型","mould","ケイ",0]],
+      6: [["山","mountain","サン",4],["島","island","トウ",1],["岡","mount","コウ",0],["崎","promontory","キ",0],["崩","crumble","ホウ",0],["岳","point","ガク",0],["岐","branch off","キ",0],["峡","gorge","キョウ",0],["峰","summit","ホウ",0],["嵐","storm","ラン",0]]
+    };
+    const T = [
+      ["Body", "人と身体", "#60A5FA", "/_blob/2f5312f053f1417e7a003470bcf58887", "4%"], ["Action", "動きと行い", "#F87171", "/_blob/f176bc2faa86f13e0d917e16f60d31ab", "2%"],
+      ["Home", "住まい", "#D6CFC4", "/_blob/d2004876bee2a4490a8a69edb3e1a562", "0%"], ["Animals", "動物と野生", "#FBBF24", "/_blob/2992cf17f59fd24ef46969673e2da4d2", "0%"],
+      ["Tools", "道具と武器", "#A5B4C8", "/_blob/39fcbdec1ba6765ba14e38a2c24eae7f", "0%"], ["Thought", "言葉と思考", "#C084FC", "/_blob/51694cd8a7b5eddfc15347dc09beb94a", "0%"],
+      ["Plants", "糸・草・食", "#A3E635", "/_blob/529d8c91d0306bc7d342be28725095f2", "1%"], ["States", "状態と性質", "#F472B6", "/_blob/22e9b772ab262ed1bb3983cd55ce0590", "0%"],
+      ["Time", "時と順序", "#A5B4FC", "/_blob/a36a2e5ee3525c845ddef0e823a95249", "6%"]
+    ];
+    const r = R[sel];
+    const list = P[sel] || [];
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      sel: { g: r[0], name: r[1], n: r[2] },
+      selTiles: list.map((k) => ({ g: k[0], m: k[1], r: k[2], cls: "tile i" + k[3] })),
+      noTiles: list.length === 0,
+      rads: R.map((x, k) => ({ g: x[0], name: x[1], n: x[2], cls: "so i" + x[3], on: k === sel ? "true" : "false", pick: () => this.setState({ sel: k }) })),
+      others: T.map((t) => ({ name: t[0], jp: t[1], c: skin === "ink" ? "#B5341E" : t[2], img: t[3], w: t[4] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone · Learn home</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="width:390px;height:844px;min-height:0;position:relative;overflow:hidden;display:flex;flex-direction:column">
+
+  <header class="mhdr">
+    <a href="A-M-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:28px;height:28px;font-size:16px">解</span><span class="w" style="font-size:19px">Kanji Kaisen</span></a>
+    <span style="flex:1"></span>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night" style="width:36px;height:30px">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink" style="width:36px;height:30px">墨</button></div>
+  </header>
+
+  <main style="flex:1;min-height:0;overflow:hidden;padding:24px 16px 96px;display:flex;flex-direction:column;gap:18px">
+    <p class="kind"><span class="k">漢字図鑑</span><span class="t-lab">A free kanji atlas</span></p>
+    <h1 class="t-h1" style="font-size:40px;line-height:1.02">Find a kanji. Learn it by its parts.</h1>
+    <label class="srch" style="margin:0;max-width:none;height:52px;padding:0 16px">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水" style="font-size:16px">
+    </label>
+
+    <div class="card" style="--tc:#34D399;padding:16px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <a href="A-M-Kanji.dc.html" class="tile i2" style="width:72px;flex:none"><span class="g" lang="ja" style="font-size:32px">海</span><span class="m">sea</span></a>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+          <p class="t-lab">Where you left off</p>
+          <p class="t-h3">Recall is next</p>
+          <p class="t-cap">Step 2 of 4 · Nature</p>
+        </div>
+      </div>
+      <a href="A-Learn.dc.html" class="btn pri" style="width:100%">Continue with <span class="g" lang="ja">海</span></a>
+    </div>
+
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <div class="sh"><span class="k">十の主題</span><h2 style="font-size:24px">Ten themes</h2><span class="aside" style="font-size:12px">start anywhere</span></div>
+      <div style="display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px">
+        <sc-for list="{{themes}}" as="t" hint-placeholder-count="10">
+          <a href="A-Theme.dc.html" class="gate" style="--tc:{{t.c}};width:118px;flex:none"><img src="{{t.img}}" alt=""><span class="sc"></span><span class="tx" style="left:10px;right:10px;bottom:10px"><span class="jpn" lang="ja" style="font-size:11px">{{t.jp}}</span><span class="nm" style="font-size:17px">{{t.name}}</span><span class="bar"><i style="width:{{t.w}}"></i></span></span></a>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="Main">
+    <a href="A-M-Home.dc.html" aria-current="page"><span class="gi" lang="ja" aria-hidden="true">学</span>Learn</a>
+    <a href="A-Browse.dc.html"><span class="gi" lang="ja" aria-hidden="true">探</span>Browse</a>
+    <a href="A-Mine.dc.html"><span class="gi" lang="ja" aria-hidden="true">墨</span>My list</a>
+    <a href="A-Teach.dc.html"><span class="gi" lang="ja" aria-hidden="true">教</span>Teach</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const T = [
+      ["Nature", "自然と元素", "#34D399", "/_blob/ce067a239e944fabd8b29ac759c55d3d", "9%"], ["Body", "人と身体", "#60A5FA", "/_blob/2f5312f053f1417e7a003470bcf58887", "4%"],
+      ["Action", "動きと行い", "#F87171", "/_blob/f176bc2faa86f13e0d917e16f60d31ab", "2%"], ["Home", "住まい", "#D6CFC4", "/_blob/d2004876bee2a4490a8a69edb3e1a562", "0%"],
+      ["Animals", "動物と野生", "#FBBF24", "/_blob/2992cf17f59fd24ef46969673e2da4d2", "0%"], ["Tools", "道具と武器", "#A5B4C8", "/_blob/39fcbdec1ba6765ba14e38a2c24eae7f", "0%"],
+      ["Thought", "言葉と思考", "#C084FC", "/_blob/51694cd8a7b5eddfc15347dc09beb94a", "0%"], ["Plants", "糸・草・食", "#A3E635", "/_blob/529d8c91d0306bc7d342be28725095f2", "1%"],
+      ["States", "状態と性質", "#F472B6", "/_blob/22e9b772ab262ed1bb3983cd55ce0590", "0%"], ["Time", "時と順序", "#A5B4FC", "/_blob/a36a2e5ee3525c845ddef0e823a95249", "6%"]
+    ];
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      themes: T.map((t) => ({ name: t[0], jp: t[1], c: t[2], img: t[3], w: t[4] }))
+    };
+  }
+}
+</script>
+</body>
+</html>
