@@ -48,7 +48,8 @@ export function ThemeGate({ category, chars, count, longName, source = "gate", h
             <Image src={getCategoryImage(category)} alt="" fill sizes={sizes} preload={preload} className="ink-art object-cover" />
             {/* The fade is solid enough behind the text for the small Japanese name to stay readable on busy art. */}
             <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_28%,rgba(var(--shade),.88)_62%,rgba(var(--shade),.97)_82%)]" />
-            <span className="absolute inset-x-3.5 bottom-3.5 flex flex-col gap-[5px]">
+            {/* The text sits on its own near-solid backing, so the names stay ≥ 4.5:1 on any art at any gate size. */}
+            <span className="absolute inset-x-0 bottom-0 flex flex-col gap-[5px] bg-[linear-gradient(180deg,rgba(var(--shade),0)_0%,rgba(var(--shade),.94)_30%)] px-3.5 pt-7 pb-3.5">
                 {known && (
                     <span lang="ja" className="font-jp text-xs text-c">
                         {THEME_JP[category]}

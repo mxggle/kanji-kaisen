@@ -45,7 +45,7 @@ export function PartChip({ char, role, label, note, href, size = "md", className
                 {char}
             </span>
             {label}
-            <span className="text-xs text-ink-3">
+            <span className="text-xs text-ink-2">
                 <span className="sr-only">(</span>
                 {note ?? role}
                 <span className="sr-only">)</span>

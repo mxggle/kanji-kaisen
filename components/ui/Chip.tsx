@@ -21,7 +21,7 @@ interface ChipProps {
 
 /** Chip classes, for toggles that can't be a <Chip> (e.g. a styled <label>). */
 export const CHIP_CLASS =
-    "inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-line-2 bg-transparent px-3.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg disabled:cursor-not-allowed disabled:opacity-50";
+    "group inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border border-line-2 bg-transparent px-3.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg disabled:cursor-not-allowed disabled:opacity-50";
 
 /** A filter or quick link. Server-safe; pass `onClick` only from a client component. */
 export function Chip({ children, pressed, onClick, href, count, theme, disabled, className, ...aria }: ChipProps) {
@@ -30,7 +30,7 @@ export function Chip({ children, pressed, onClick, href, count, theme, disabled,
         <>
             {theme && <span aria-hidden className="size-2 flex-none rounded-full bg-c" />}
             {children}
-            {count !== undefined && <span className="text-xs opacity-70">{count}</span>}
+            {count !== undefined && <span className="text-xs text-ink-3 group-aria-pressed:text-bg">{count}</span>}
         </>
     );
     if (href) {
