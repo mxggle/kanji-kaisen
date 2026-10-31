@@ -30,8 +30,28 @@ test("flags unknown deck values and ignores unknown modes", () => {
     assert.equal(parseJlpt("N0"), null);
 });
 
+test("parses a chars deck after the other params, validated and capped at 60", () => {
+    assert.deepEqual(parseStudyParams({ chars: "海泳" }), { request: { kind: "chars", chars: ["海", "泳"] }, invalid: false, mode: null });
+    assert.deepEqual(parseStudyParams({ chars: "海x海 泳!", mode: "quiz" }), { request: { kind: "chars", chars: ["海", "泳"] }, invalid: false, mode: "quiz" });
+    assert.deepEqual(parseStudyParams({ chars: "海", t: "  Lesson 7 " }).request, { kind: "chars", chars: ["海"], title: "Lesson 7" });
+    assert.deepEqual(parseStudyParams({ theme: "time-sequence", chars: "海" }).request, { kind: "theme", slug: "time-sequence" }, "existing params win");
+    assert.deepEqual(parseStudyParams({ jlpt: "N5", chars: "海" }).request, { kind: "jlpt", level: "N5" });
+    assert.equal(parseStudyParams({ chars: "abc" }).invalid, true, "no kanji at all is an invalid deck");
+    const many = Array.from({ length: 80 }, (_, i) => String.fromCodePoint(0x4e00 + i)).join("");
+    assert.equal(parseStudyParams({ chars: many }).request.chars.length, 60);
+    assert.equal(parseStudyParams({ chars: "海", t: "x".repeat(200) }).request.title.length, 80);
+});
+
 test("study paths round-trip through the parser", () => {
-    const requests = [{ kind: "list" }, { kind: "learning" }, { kind: "jlpt", level: "N2" }, { kind: "radical", key: "sanzui" }, { kind: "theme", slug: "time-sequence" }];
+    const requests = [
+        { kind: "list" },
+        { kind: "learning" },
+        { kind: "jlpt", level: "N2" },
+        { kind: "radical", key: "sanzui" },
+        { kind: "theme", slug: "time-sequence" },
+        { kind: "chars", chars: ["海", "泳"] },
+        { kind: "chars", chars: ["𠮟"], title: "Lesson 7 · words" },
+    ];
     for (const request of requests) {
         const path = studyPath(request, "flashcards");
         const params = Object.fromEntries(new URLSearchParams(path.split("?")[1]));

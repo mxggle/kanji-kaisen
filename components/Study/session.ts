@@ -5,6 +5,7 @@
 import type { JlptLevel } from "../../lib/atlas/types.ts";
 import type { QuizCandidate } from "../../lib/atlas/quiz.ts";
 import type { SearchIndexEntry } from "../../lib/atlas/search.ts";
+import { cleanTitle, extractKanji } from "../../lib/teach-set.ts";
 
 /** Cards per session. Larger decks are studied in consecutive chunks of this size. */
 export const SESSION_SIZE = 20;
@@ -16,7 +17,9 @@ export type DeckRequest =
     | { kind: "learning" }
     | { kind: "jlpt"; level: JlptLevel }
     | { kind: "radical"; key: string }
-    | { kind: "theme"; slug: string };
+    | { kind: "theme"; slug: string }
+    // A shared teacher set: exactly these kanji (validated on the server), with an optional title.
+    | { kind: "chars"; chars: string[]; title?: string };
 
 export type StudyParams = Record<string, string | string[] | undefined>;
 
@@ -40,13 +43,14 @@ export interface ParsedStudyParams {
     mode: StudyMode | null;
 }
 
-/** First matching param wins: deck, then jlpt, radical, theme. */
+/** First matching param wins: deck, then jlpt, radical, theme, chars. */
 export function parseStudyParams(params: StudyParams): ParsedStudyParams {
     const mode = parseMode(params.mode);
     const deck = first(params.deck).toLowerCase();
     const jlpt = first(params.jlpt);
     const radical = first(params.radical);
     const theme = first(params.theme);
+    const chars = first(params.chars);
 
     if (deck) {
         if (deck === "list" || deck === "learning") return { request: { kind: deck }, invalid: false, mode };
@@ -58,6 +62,13 @@ export function parseStudyParams(params: StudyParams): ParsedStudyParams {
     }
     if (radical) return { request: { kind: "radical", key: radical }, invalid: false, mode };
     if (theme) return { request: { kind: "theme", slug: theme.toLowerCase() }, invalid: false, mode };
+    if (chars) {
+        // Kanji only, unique, at most 60 (the teacher set contract); unknown ones are dropped by the page.
+        const kanji = extractKanji(chars);
+        if (kanji.length === 0) return { request: null, invalid: true, mode };
+        const title = cleanTitle(first(params.t));
+        return { request: { kind: "chars", chars: kanji, ...(title ? { title } : {}) }, invalid: false, mode };
+    }
     return { request: null, invalid: false, mode };
 }
 
@@ -68,7 +79,11 @@ export function studyPath(request: DeckRequest | null, mode?: StudyMode | null):
         if (request.kind === "list" || request.kind === "learning") params.set("deck", request.kind);
         else if (request.kind === "jlpt") params.set("jlpt", request.level);
         else if (request.kind === "radical") params.set("radical", request.key);
-        else params.set("theme", request.slug);
+        else if (request.kind === "theme") params.set("theme", request.slug);
+        else {
+            params.set("chars", request.chars.join(""));
+            if (request.title) params.set("t", request.title);
+        }
     }
     if (mode) params.set("mode", mode);
     const query = params.toString();

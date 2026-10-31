@@ -15,7 +15,7 @@ import { Checkbox, SessionSkeleton } from "./ui";
 import { useSearchIndex } from "./useSearchIndex";
 import { SESSION_SIZE, sessionRanges, shuffled, toQuizCandidate, type StudyMode } from "./session";
 
-export type DeckSource = "list" | "learning" | "jlpt" | "radical" | "theme";
+export type DeckSource = "list" | "learning" | "jlpt" | "radical" | "theme" | "chars";
 
 interface StudySessionProps {
     source: DeckSource;

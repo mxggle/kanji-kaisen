@@ -49,7 +49,7 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
                 {notFound && (
                     <div role="alert" className="mb-6 rounded-xl border border-line bg-card p-4 text-sm text-ink-2">
                         <p className="font-medium text-ink">Deck not found.</p>
-                        <p className="mt-1">That link doesn’t match a radical, theme or JLPT level. Pick a deck below instead.</p>
+                        <p className="mt-1">That link doesn’t match a radical, theme, JLPT level or kanji set. Pick a deck below instead.</p>
                     </div>
                 )}
                 <DeckPicker picker={picker} mode={initialMode} />
