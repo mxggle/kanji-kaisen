@@ -6,7 +6,7 @@ import { getAllKanji, getAllRadicals } from "@/lib/atlas";
 
 export const metadata: Metadata = {
     title: "About & credits",
-    description: "What Kanji Kaisen is, how it explains kanji through radicals, and the open data it is built on: KanjiVG, Kanji alive, KANJIDIC2, JMdict, Unihan, Wiktionary and Wikimedia Commons.",
+    description: "What Kanji Kaisen is, how it explains kanji through radicals, and the open data it is built on: KanjiVG, Kanji alive, KANJIDIC2, JMdict, Unihan, Wiktionary, Wikimedia Commons and Academia Sinica 小學堂.",
     alternates: { canonical: "/about" },
 };
 
@@ -85,6 +85,14 @@ const SOURCES: Source[] = [
         usedFor: "Oracle bone, bronze and seal forms in the journeys. Only public-domain files and CC0 tracings from Academia Sinica are used; files sourced from Richard Sears are excluded.",
         license: "Public domain / CC0 (per file)",
         licenseHref: "/about/ancient-forms",
+    },
+    {
+        name: "Academia Sinica 小學堂 字形演變",
+        href: "https://xiaoxue.iis.sinica.edu.tw/yanbian",
+        author: "Academia Sinica (Institute of History and Philology, Institute of Information Science, ASCDC)",
+        usedFor: "Oracle bone, bronze and seal forms for journey stages that Commons can't fill. Glyphs are used as served: cropped, made transparent and recoloured, never redrawn. Each one is listed on the ancient form credits page.",
+        license: "CC0 1.0 (glyph images and glyph data)",
+        licenseHref: "https://xiaoxue.iis.sinica.edu.tw/License/License",
     },
 ];
 
