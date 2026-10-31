@@ -34,6 +34,10 @@ interface BuildPlayerProps {
     build: BuildView;
     /** Heading content (e.g. 成り立ち How 海 was built). */
     title?: ReactNode;
+    /** Play hands over to this after "Together" (the ancient forms) instead of showing "Today". */
+    handOver?: () => void;
+    /** Label of the hand-over, shown as the last stage button ("Through time"). */
+    handOverLabel?: string;
     className?: string;
 }
 
@@ -43,7 +47,7 @@ interface BuildPlayerProps {
  * stroke. Captions state the structure only (sourced etymology lives in its
  * own block). Fires `build_played` on Play.
  */
-export function BuildPlayer({ build, title, className }: BuildPlayerProps) {
+export function BuildPlayer({ build, title, handOver, handOverLabel, className }: BuildPlayerProps) {
     const [stage, setStage] = useState<Stage>("together");
     const [run, setRun] = useState(0);
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -68,6 +72,10 @@ export function BuildPlayer({ build, title, className }: BuildPlayerProps) {
         timers.current.push(setTimeout(() => setStage("together"), STAGE_MS));
         timers.current.push(
             setTimeout(() => {
+                if (handOver) {
+                    handOver();
+                    return;
+                }
                 setStage("today");
                 setRun((r) => r + 1);
             }, STAGE_MS * 2),
@@ -156,6 +164,18 @@ export function BuildPlayer({ build, title, className }: BuildPlayerProps) {
                         {k + 1} · {s.label}
                     </button>
                 ))}
+                {handOver && handOverLabel && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            clear();
+                            handOver();
+                        }}
+                        className="flex h-11 flex-1 items-center justify-center gap-2 border-t-2 border-line px-1.5 text-[13px] text-ink-3 transition-colors hover:text-ink"
+                    >
+                        {STAGES.length + 1} · {handOverLabel}
+                    </button>
+                )}
             </div>
         </div>
     );

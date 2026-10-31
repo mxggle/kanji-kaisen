@@ -33,10 +33,13 @@ import { extractStrokes, partOffsets, rangeIndexes, strokeOwners, type Stroke } 
 import { compareParts } from "@/components/Kanji/compare";
 import { zhFacts, type ZhFacts } from "@/components/Kanji/zh";
 import { isAccentRole, partsCaption, ROLE_LABELS, uniqueParts } from "@/components/Kanji/parts";
+import { etymologyView, journeyCaptions } from "@/components/Kanji/story";
+import { getAncientForms, getEtymology } from "@/lib/story";
 import type {
     AlsoBuiltOn,
     BuildView,
     EtymologyView,
+    JourneyView,
     KanjiLite,
     LookAlikeView,
     MemoryStoryView,
@@ -51,9 +54,11 @@ import type { LearnData } from "@/components/Learn/types";
 // server bundle; the ignore comments keep Turbopack from globbing them.
 const KANJIVG_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "public", "kanjivg", "kanji");
 
+const kanjivgPath = (char: string) => path.join(/* turbopackIgnore: true */ KANJIVG_DIR, kanjivgFileName(char));
+
 function readStrokes(char: string): Stroke[] {
     try {
-        const raw = fs.readFileSync(/* turbopackIgnore: true */ path.join(KANJIVG_DIR, kanjivgFileName(char)), "utf8");
+        const raw = fs.readFileSync(/* turbopackIgnore: true */ kanjivgPath(char), "utf8");
         return extractStrokes(raw);
     } catch {
         return [];
@@ -224,7 +229,8 @@ function sameOn(kanji: AtlasKanji): SameOnView[] {
         .filter((g) => g.kanji.length > 0)
         .map((g) => {
             const romaji = readingToRomaji(g.reading);
-            return { reading: g.reading, romaji, kanji: g.kanji.map(lite), total: g.total, href: searchPath(romaji) };
+            const kanji = g.kanji.map((k) => ({ ...lite(k), reading: plainReading(g.reading) }));
+            return { reading: g.reading, romaji, kanji, total: g.total, href: searchPath(romaji) };
         });
 }
 
@@ -272,8 +278,10 @@ export interface KanjiPageData {
     strokes: StrokeData;
     build: BuildView | null;
     memory: MemoryStoryView | null;
-    /** Sourced glyph origin; null until the story layer provides one. */
+    /** Sourced glyph origin (Wiktionary), null when there is none. */
     etymology: EtymologyView | null;
+    /** Sourced ancient forms (Wikimedia Commons), null when none passed the filter. */
+    journey: JourneyView | null;
     alsoBuiltOn: AlsoBuiltOn[];
     soundFamily: SoundFamilyView | null;
     headedFamily: SoundFamilyView | null;
@@ -315,6 +323,23 @@ function buildKanjiPageData(char: string): KanjiPageData | null {
             : null;
 
     const memory = memoryStory(kanji, radical);
+    const etymology = etymologyView(getEtymology(kanji.char));
+    const ancient = getAncientForms(kanji.char);
+    const journey: JourneyView | null =
+        ancient && ancient.stages.length
+            ? {
+                  stages: ancient.stages,
+                  etymon: ancient.etymon,
+                  captions: journeyCaptions(
+                      kanji.char,
+                      ancient.etymon,
+                      ancient.stages,
+                      ancient.files,
+                      etymology?.text ?? null,
+                      parts.length >= 2 ? partsCaption(uniqueParts(parts)) : null,
+                  ),
+              }
+            : null;
     const layout = layoutReadings(kanji.wordsByReading);
     const { next } = getNeighbors(kanji.char);
     const kokujiOrZh = kanji.zh;
@@ -355,7 +380,8 @@ function buildKanjiPageData(char: string): KanjiPageData | null {
         strokes: { strokes, owners },
         build,
         memory,
-        etymology: null,
+        etymology,
+        journey,
         alsoBuiltOn: alsoBuiltOn(kanji, parts),
         soundFamily: soundFamily(kanji),
         headedFamily: headedFamily(kanji),

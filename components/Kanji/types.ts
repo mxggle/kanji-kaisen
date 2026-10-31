@@ -4,8 +4,10 @@
 import type { ComponentRole } from "@/lib/atlas/types";
 import type { Point, Stroke } from "./strokes";
 import type { PartDiff } from "./compare";
+import type { AncientJourneyStage, JourneyStageId } from "@/lib/story/journey";
 
 export type { Stroke } from "./strokes";
+export type { EtymologyView, EtymologyPart } from "./story";
 
 export interface PartView {
     char: string;
@@ -86,17 +88,6 @@ export interface LookAlikeView extends KanjiLite {
     diff: PartDiff;
 }
 
-export interface EtymologyView {
-    /** "Phono-semantic compound" etc. */
-    formation: string | null;
-    /** At most two plain sentences. */
-    text: string;
-    /** Source page and its revision. */
-    url: string;
-    page: string;
-    revid: number;
-}
-
 export interface MemoryStoryView {
     text: string;
     /** The kanji-specific line came from the radical's example list. */
@@ -108,4 +99,12 @@ export interface StrokeData {
     strokes: Stroke[];
     /** Owner part of each stroke, null for loose strokes or no parts. */
     owners: (number | null)[];
+}
+
+/** Sourced ancient forms for the journey (JourneyPlayer props). */
+export interface JourneyView {
+    stages: AncientJourneyStage[];
+    captions: Partial<Record<JourneyStageId, string>>;
+    /** The code point the forms hang on (學 for 学). */
+    etymon: string;
 }

@@ -11,7 +11,7 @@ import { TrackEvent } from "@/components/Atlas/TrackEvent";
 import { kanjiTitle, layoutReadings } from "@/components/Kanji/readings";
 import { ActionRow, KanjiHero } from "@/components/Kanji/KanjiHero";
 import { ReadingBlocks } from "@/components/Kanji/ReadingBlocks";
-import { BuildPlayer } from "@/components/Kanji/BuildPlayer";
+import { KanjiStory } from "@/components/Kanji/KanjiStory";
 import { StrokePlayer } from "@/components/Kanji/StrokePlayer";
 import { Etymology, MemoryStory } from "@/components/Kanji/StoryBlocks";
 import { AlsoBuiltOnBlocks, SameOnBlocks, SoundFamily } from "@/components/Kanji/KanjiLinks";
@@ -71,13 +71,14 @@ export default async function KanjiPage({ params }: PageProps) {
     const data = getKanjiPageData((await params).char);
     if (!data) notFound();
 
-    const { kanji, build } = data;
+    const { kanji, build, journey } = data;
     const layout = layoutReadings(kanji.wordsByReading);
     const { prev, next } = getNeighbors(kanji.char);
     const strokeSvg = getStrokeDiagramSvg(kanji.char);
     const paths = data.strokes.strokes.map((s) => s.d);
-    // With no parts to build from, the stroke animation takes the stage.
-    const strokeOnStage = !build && paths.length > 0;
+    // With no parts to build from and no ancient forms, the stroke animation takes the stage.
+    const hasStory = Boolean(build || journey);
+    const strokeOnStage = !hasStory && paths.length > 0;
     const hasLinks = data.alsoBuiltOn.length > 0 || data.soundFamily || data.headedFamily || data.sameOn.length > 0 || data.lookAlikes.length > 0;
     const firstReading = layout.main[0];
 
@@ -109,11 +110,14 @@ export default async function KanjiPage({ params }: PageProps) {
                     <ActionRow char={kanji.char} />
                 </div>
 
-                {(build || strokeOnStage) && (
+                {(hasStory || strokeOnStage) && (
                     <section aria-labelledby="stage-title" className="lg:col-start-1 lg:row-span-3 lg:row-start-1">
-                        {build ? (
-                            <BuildPlayer
+                        {hasStory ? (
+                            <KanjiStory
+                                char={kanji.char}
                                 build={build}
+                                journey={journey}
+                                todayStrokes={paths}
                                 title={
                                     <h2 id="stage-title" className="flex flex-wrap items-baseline gap-x-3">
                                         <span lang="ja" className="font-jp text-lg text-[var(--c)]">
@@ -141,7 +145,7 @@ export default async function KanjiPage({ params }: PageProps) {
             {/* Etymology (sourced) and Memory story (mnemonic) stay apart. */}
             {(data.etymology || data.memory) && (
                 <div className="mt-12 grid gap-4 md:grid-cols-2">
-                    <Etymology etymology={data.etymology} char={kanji.char} />
+                    <Etymology etymology={data.etymology} className={data.memory ? "" : "md:col-span-2 md:max-w-3xl"} />
                     {data.memory && <MemoryStory story={data.memory} className={data.etymology ? "" : "md:col-span-2 md:max-w-3xl"} />}
                 </div>
             )}

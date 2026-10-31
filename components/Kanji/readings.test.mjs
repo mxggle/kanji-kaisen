@@ -105,6 +105,26 @@ test("titleReadings lead with a kun reading that has words", () => {
         ],
     };
     assert.deepEqual(titleReadings(sei), ["いかす", "セイ", "ショウ"]);
+    const gei = {
+        onyomi: ["ゲイ"],
+        kunyomi: ["う.える"],
+        wordsByReading: [
+            { reading: "ゲイ", kind: "on", words: [w("芸術", "げいじゅつ")] },
+            { reading: "う.える", kind: "kun", words: [] },
+        ],
+    };
+    assert.deepEqual(titleReadings(gei), ["ゲイ"]);
+    const nabe = {
+        onyomi: ["カ"],
+        kunyomi: ["なべ"],
+        wordsByReading: [
+            { reading: "カ", kind: "on", words: [] },
+            { reading: "なべ", kind: "kun", words: [w("鍋", "なべ")] },
+        ],
+    };
+    assert.deepEqual(titleReadings(nabe), ["なべ", "カ"]);
+    const bare = { onyomi: ["カ"], kunyomi: ["なべ"], wordsByReading: [] };
+    assert.deepEqual(titleReadings(bare), ["なべ", "カ"]);
 });
 
 test("kanjiTitle leads with readings", () => {

@@ -130,7 +130,13 @@ export function KanjiZh({ char, facts }: { char: string; facts: ZhFacts }) {
                 </dl>
             )}
 
-            {facts.pinyin.length > 0 && (
+            {facts.pinyin.length > 0 && facts.kokuji && (
+                <p>
+                    Unihan lists the reading <span className="text-ink">{facts.pinyin.join(", ")}</span> for it.
+                </p>
+            )}
+
+            {facts.pinyin.length > 0 && !facts.kokuji && (
                 <p>
                     <span className="text-ink-3">Pinyin </span>
                     <span className="text-lg text-ink">{facts.pinyin.join(", ")}</span>{" "}

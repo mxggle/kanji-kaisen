@@ -131,16 +131,18 @@ type ReadingSource = Pick<AtlasKanji, "onyomi" | "kunyomi" | "wordsByReading">;
 
 /**
  * Up to three plain readings for titles, kun first: the first kun reading that
- * has words, then up to two on readings that have words (fallback: the first
- * of each). 海 -> うみ, カイ.
+ * has words, then up to two on readings that have words. A rare kun reading
+ * without words is left out (芸 -> ゲイ, not うえる); on readings fall back to
+ * the first one (鍋 -> なべ, カ), and kun too when no reading has words.
  */
 export function titleReadings(kanji: ReadingSource): string[] {
     const withWords = new Set(kanji.wordsByReading.filter((g) => g.words.length > 0).map((g) => g.reading));
-    const pick = (list: readonly string[], count: number) => {
+    const anyWords = kanji.onyomi.some((r) => withWords.has(r)) || kanji.kunyomi.some((r) => withWords.has(r));
+    const pick = (list: readonly string[], count: number, fallback: boolean) => {
         const preferred = list.filter((r) => withWords.has(r));
-        return (preferred.length ? preferred : list).slice(0, count);
+        return (preferred.length ? preferred : fallback ? list : []).slice(0, count);
     };
-    const out = [...pick(kanji.kunyomi, 1), ...pick(kanji.onyomi, 2)].map(plainReading).filter(Boolean);
+    const out = [...pick(kanji.kunyomi, 1, !anyWords), ...pick(kanji.onyomi, 2, true)].map(plainReading).filter(Boolean);
     return [...new Set(out)].slice(0, 3);
 }
 
