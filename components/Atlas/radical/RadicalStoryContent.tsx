@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { Sparkles, MapPin, BookOpen, PenTool, ArrowRight } from "lucide-react";
+import { Sparkles, MapPin, PenTool, ArrowRight } from "lucide-react";
 import { kanjiPath } from "@/lib/atlas/paths";
+import { usableExamples } from "@/components/Journey/radical";
+
+export { usableExamples };
 
 export interface RadicalExample {
     char: string;
@@ -25,21 +28,11 @@ interface RadicalStoryContentProps {
     headingAs?: "h2" | "h3";
 }
 
-export function usableExamples(examples: RadicalExample[] = []): RadicalExample[] {
-    return examples.filter(
-        (ex) =>
-            ex.char &&
-            ex.char !== "?" &&
-            ex.char !== "undefined" &&
-            ex.meaning &&
-            ex.meaning !== "example" &&
-            ex.meaning !== "undefined",
-    );
-}
-
 /**
- * The body of a radical story (origin, mnemonic, position, meaning, examples).
- * Hook-free: rendered inline on /radical/[key] and inside RadicalStoryModal.
+ * The body of a radical story (memory story, position, meaning, examples).
+ * Hook-free: rendered inside RadicalStoryModal (classic practice). The
+ * story's `origin` text is unsourced, so it sits under "Memory story" with
+ * the mnemonic; sourced origins live on /radical/[key].
  */
 export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: RadicalStoryContentProps) {
     const [colorClass, borderClass] = themeClass.split(" ");
@@ -48,23 +41,15 @@ export function RadicalStoryContent({ story, themeClass, headingAs: H = "h3" }: 
 
     return (
         <div className="space-y-8">
-            {story.origin && (
-                <section>
-                    <div className="flex items-center gap-2 mb-3">
-                        <BookOpen size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-ink">Origin</H>
-                    </div>
-                    <p className="text-ink-2 leading-relaxed">{story.origin}</p>
-                </section>
-            )}
-
-            {story.story && (
+            {(story.story || story.origin) && (
                 <section className={`p-5 rounded-2xl border bg-gradient-to-br from-ink/5 to-transparent ${borderClass}`}>
-                    <div className="flex items-center gap-2 mb-3">
-                        <Sparkles size={18} className={colorClass} aria-hidden />
-                        <H className="text-lg font-semibold text-ink">The Story</H>
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
+                        <Sparkles size={18} className={`${colorClass} self-center`} aria-hidden />
+                        <H className="text-lg font-semibold text-ink">Memory story</H>
+                        <span className="text-xs text-ink-3">A mnemonic, not a history</span>
                     </div>
-                    <p className="text-ink leading-relaxed text-lg italic">&ldquo;{story.story}&rdquo;</p>
+                    {story.story && <p className="text-ink leading-relaxed text-lg italic">&ldquo;{story.story}&rdquo;</p>}
+                    {story.origin && <p className={`text-ink-2 leading-relaxed text-sm${story.story ? " mt-3" : ""}`}>{story.origin}</p>}
                 </section>
             )}
 
