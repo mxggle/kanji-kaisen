@@ -1,63 +1,187 @@
 @import "tailwindcss";
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-  
-  /* Heatmap Gradient Colors */
-  --heat-min: #1e1b4b; /* Deep Indigo */
-  --heat-max: #D81B60; /* Pink */
-  
-  /* JLPT Level Colors (Borders) */
-  --n1: #ef4444; /* Red */
-  --n2: #f472b6; /* Pink */
-  --n3: #3b82f6; /* Blue */
-  --n4: #eab308; /* Yellow */
-  --n5: #22c55e; /* Green */
-  
-  --accent: #2effff; /* Cyan */
+/*
+ * Skins. <html data-skin="night|ink"> is set before paint by the inline script
+ * in app/layout.tsx (localStorage "kanji-skin", default night). Any subtree can
+ * force a skin with its own data-skin attribute. Values come from the Today
+ * board. Contrast on --bg: --ink-2 is 9.22:1 (夜) and 7.47:1 (墨); --ink-3 is
+ * 5.64:1 and 4.68:1; --accent is 11.89:1 and 5.00:1.
+ *
+ * Skin-dependent effects read "switch" variables instead of nesting selectors,
+ * so a forced subtree (e.g. classic practice in 夜 inside a 墨 page) still gets
+ * the right ones by plain inheritance:
+ *   --skin-c    initial in 夜 (use the theme colour), vermilion in 墨
+ *   --glow-off  initial in 夜 (glows on), none in 墨
+ *   --art-*     filters and blend modes for theme art
+ */
+:root,
+[data-skin="night"] {
+  color-scheme: dark;
+  --bg: #06070A;
+  --card: #0D0F12;
+  --ink: #EDEAE2;
+  --ink-2: #B4AFA4;
+  --ink-3: #8C877D;
+  --line: rgba(237, 234, 226, .12);
+  --line-2: rgba(237, 234, 226, .28);
+  --onacc: #06070A;
+  --shade: 6, 7, 10;
+  /* Generic accent where no theme applies (links, focus, primary buttons). */
+  --accent: #3BE0A6;
+  /* Feedback colours. */
+  --ok: #34D399;
+  --bad: #F87171;
+  --tip: #FBBF24;
+  /* JLPT levels. */
+  --n1: #ef4444;
+  --n2: #f472b6;
+  --n3: #3b82f6;
+  --n4: #eab308;
+  --n5: #22c55e;
+
+  --skin-c: initial;
+  --glow-off: initial;
+  --art-filter: none;
+  --art-blend: normal;
+  --art-overlay: overlay;
+  --scroll-base: grayscale(1) brightness(.55);
+}
+
+[data-skin="ink"] {
+  color-scheme: light;
+  --bg: #EEE9DF;
+  --card: #F7F3EA;
+  --ink: #1B1915;
+  --ink-2: #4E4840;
+  --ink-3: #6D665C;
+  --line: rgba(27, 25, 21, .13);
+  --line-2: rgba(27, 25, 21, .3);
+  --onacc: #F7F3EA;
+  --shade: 238, 233, 223;
+  --accent: #B5341E;
+  --ok: #166534;
+  --bad: #B91C1C;
+  --tip: #854D0E;
+  /* Darker JLPT colours so they stay readable on paper (all ≥ 4.5:1 on --bg). */
+  --n1: #b91c1c;
+  --n2: #be185d;
+  --n3: #1d4ed8;
+  --n4: #854d0e;
+  --n5: #166534;
+
+  --skin-c: #B5341E;
+  --glow-off: none;
+  --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
+  --art-blend: multiply;
+  --art-overlay: multiply;
+  --scroll-base: grayscale(1) contrast(1.45) brightness(1.18) opacity(.35);
+}
+
+/*
+ * Theme accent: set --tc (the theme's hex) on a theme container. --c is the
+ * theme colour in 夜 and vermilion in 墨. It is declared on every element so it
+ * resolves against the nearest --tc.
+ */
+*,
+::before,
+::after {
+  --c: var(--skin-c, var(--tc, var(--accent)));
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-heat-min: var(--heat-min);
-  --color-heat-max: var(--heat-max);
-  
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-onacc: var(--onacc);
+  --color-shade: rgb(var(--shade));
+  --color-accent: var(--accent);
+  --color-c: var(--c);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-tip: var(--tip);
+
   --color-n1: var(--n1);
   --color-n2: var(--n2);
   --color-n3: var(--n3);
   --color-n4: var(--n4);
   --color-n5: var(--n5);
-  
-  --color-accent: var(--accent);
+
+  --font-sans: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+}
+
+/* Fonts (variables come from next/font in app/layout.tsx). */
+@utility font-jp {
+  font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+@utility font-disp {
+  font-family: var(--font-disp), Georgia, serif;
+}
+@utility font-ui {
+  font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+}
+
+/* Legacy name used by components that predate the skins. */
+.font-japanese {
+  font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+/* Glows exist only in 夜. */
+@utility glow {
+  text-shadow: var(--glow-off, 0 0 28px var(--c), 0 2px 0 rgb(0 0 0 / .6));
+}
+@utility halo {
+  box-shadow: var(--glow-off, 0 0 30px -4px var(--c));
+}
+
+/* Theme art: full colour in 夜, ink wash on paper in 墨. */
+@utility ink-art {
+  filter: var(--art-filter);
+  mix-blend-mode: var(--art-blend);
+}
+/* A wrapper that lays faint art over a card: overlay in 夜, multiply in 墨. */
+@utility art-blend {
+  mix-blend-mode: var(--art-overlay);
+}
+/* The unpainted (grey) layer of a theme scroll. */
+@utility scroll-base {
+  filter: var(--scroll-base);
+  mix-blend-mode: var(--art-blend);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
   overflow-y: scroll; /* Prevent layout shift */
+  transition: background-color .4s, color .4s;
 }
 
-.font-japanese {
-  font-family: var(--font-jp), sans-serif;
+::selection {
+  background: color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
-/* Custom scrollbar to match the dark theme */
+:focus-visible {
+  outline-color: var(--accent);
+}
+
+/* Scrollbar in skin colours. */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a0a; 
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #333; 
+  background: var(--line-2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: var(--ink-3);
 }
 
 /* Keep the learning modal scrollable without showing its scrollbar. */
@@ -70,4 +194,58 @@ body {
   display: none;
   width: 0;
   height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print: always 墨 on white paper, without the site chrome. */
+@media print {
+  :root,
+  [data-skin] {
+    color-scheme: light;
+    --bg: #FFFFFF;
+    --card: #FFFFFF;
+    --ink: #1B1915;
+    --ink-2: #4E4840;
+    --ink-3: #6D665C;
+    --line: rgba(27, 25, 21, .13);
+    --line-2: rgba(27, 25, 21, .3);
+    --onacc: #F7F3EA;
+    --shade: 255, 255, 255;
+    --accent: #B5341E;
+    --ok: #166534;
+    --bad: #B91C1C;
+    --tip: #854D0E;
+    --n1: #b91c1c;
+    --n2: #be185d;
+    --n3: #1d4ed8;
+    --n4: #854d0e;
+    --n5: #166534;
+    --skin-c: #B5341E;
+    --glow-off: none;
+    --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
+    --art-blend: multiply;
+    --art-overlay: multiply;
+    --scroll-base: grayscale(1) contrast(1.45) brightness(1.18) opacity(.35);
+  }
+
+  html,
+  body {
+    background: #FFFFFF !important;
+    color: #1B1915;
+  }
+
+  [data-chrome],
+  nav {
+    display: none !important;
+  }
 }

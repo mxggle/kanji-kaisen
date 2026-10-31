@@ -1,6 +1,8 @@
 // Visual identity of the 10 radical themes (colors, icon, decorative glyphs).
 // Shared by the classic practice cards and the atlas pages. Client-safe.
 
+import type { CSSProperties } from "react";
+import { getThemeColor } from "@/lib/atlas/categories";
 import {
     type LucideIcon,
     TreeDeciduous, Users, Footprints, Home, Bird,
@@ -147,3 +149,18 @@ export function getThemeClass(category: string | null | undefined): string {
     const t = getThemeStyle(category);
     return `${t.title} ${t.border} ${t.tint}`;
 }
+
+/**
+ * Inline style that sets --tc to the theme's 夜 colour (THEME_COLORS). Inside
+ * it, `text-c`, `bg-c/10`, `border-c/40` and var(--c) follow the theme in 夜
+ * and turn vermilion in 墨.
+ */
+export function themeVars(category: string | null | undefined): CSSProperties {
+    return { "--tc": getThemeColor(category) } as CSSProperties;
+}
+
+/**
+ * Skin-aware "text border bg" triple for the story content components. Needs
+ * themeVars() on an ancestor. Those components derive the solid `bg-c` from it.
+ */
+export const TOKEN_THEME_CLASS = "text-c border-c/40 bg-c/10";

@@ -1,21 +1,38 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_JP } from "next/font/google"; // Using Google Fonts
+import { Cormorant_Garamond, Shippori_Mincho_B1, Zen_Kaku_Gothic_New } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AuthSyncBootstrap } from "@/components/Auth/AuthSyncBootstrap";
+import { DEFAULT_SKIN, SKIN_SCRIPT } from "@/components/Skin/skin";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
-const inter = Inter({
-  variable: "--font-sans",
+// Japanese display (kanji, kana). Google serves CJK fonts in unicode-range
+// slices, so nothing is preloaded: the browser fetches only the slices a page uses.
+const mincho = Shippori_Mincho_B1({
+  variable: "--font-jp",
+  weight: ["600", "800"],
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
-const notoSansJP = Noto_Sans_JP({
-  variable: "--font-jp",
+// Latin display (headings, the logo). Variable weight 500–700 plus italic.
+const cormorant = Cormorant_Garamond({
+  variable: "--font-disp",
+  style: ["normal", "italic"],
   subsets: ["latin"],
-  weight: ["400", "700"],
+  display: "swap",
+});
+
+// UI text (Latin and Japanese).
+const gothic = Zen_Kaku_Gothic_New({
+  variable: "--font-ui",
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -43,10 +60,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${notoSansJP.variable} font-sans antialiased flex flex-col min-h-screen`}
-      >
+    // data-skin is rewritten before paint by SKIN_SCRIPT, hence suppressHydrationWarning.
+    <html
+      lang="en"
+      data-skin={DEFAULT_SKIN}
+      className={`${mincho.variable} ${cormorant.variable} ${gothic.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SKIN_SCRIPT }} />
+      </head>
+      <body className="font-ui antialiased flex flex-col min-h-screen">
         <AuthSyncBootstrap />
         <Header />
         <main className="flex-1">
