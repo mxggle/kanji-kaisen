@@ -28,9 +28,9 @@ export function StrokeGlyph({ strokes, drawn = strokes.length, highlight = null,
 
     return (
         <div role="img" aria-label={label} className={cn("relative", className)}>
-            {/* Guide: the whole kanji, faint. */}
-            <svg viewBox={KANJIVG_VIEWBOX} className="absolute inset-0 w-full h-full" aria-hidden>
-                <g {...common} className={plain || marked ? "stroke-ink" : "stroke-line-2"}>
+            {/* Guide: the whole kanji, faint. Group opacity keeps crossings from looking darker. */}
+            <svg viewBox={KANJIVG_VIEWBOX} className={cn("absolute inset-0 w-full h-full", !plain && !marked && "opacity-[.16]")} aria-hidden>
+                <g {...common} className="stroke-ink">
                     {strokes.map((d, i) => (
                         <path key={i} d={d} className={marked && !marked.has(i) ? "stroke-ink-3" : undefined} />
                     ))}

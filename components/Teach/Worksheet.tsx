@@ -37,13 +37,15 @@ export function Worksheet({ title, chars, entries, strokes, words, showWords, an
     const shown = limit ? chars.slice(0, limit) : chars;
     const wordList = shown.flatMap((c) => (words[c] ?? []).map((w) => ({ ...w, char: c })));
     const preview = limit !== undefined;
+    // The builder preview sits inside /teach, which has its own h1.
+    const Title = preview ? "p" : "h1";
 
     return (
         <div className="text-ink font-ui">
             <header className="flex flex-wrap items-end justify-between gap-x-[6mm] gap-y-[2mm] pb-[2.5mm] border-b-[1.5px] border-ink">
                 <div className="min-w-0">
                     <p className="text-[8pt] text-ink-3">Kanji Kaisen · worksheet</p>
-                    <h1 className="font-disp text-[20pt] font-bold leading-tight break-words">{title || "Kanji practice"}</h1>
+                    <Title className="font-disp text-[20pt] font-bold leading-tight break-words">{title || "Kanji practice"}</Title>
                 </div>
                 <p className="text-[9.5pt] text-ink-2 whitespace-nowrap">
                     Name <span className="inline-block w-[38mm] border-b border-ink-3" aria-hidden /> &nbsp;Date{" "}

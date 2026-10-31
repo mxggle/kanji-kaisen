@@ -233,7 +233,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                             {radical && <RadicalLine radical={radical} />}
                             {total !== null && total > 0 && (
                                 <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]">
-                                    Stroke {state.drawn} of {total}
+                                    {state.drawn === 0 ? `${total} strokes · Space draws the first` : `Stroke ${state.drawn} of ${total}`}
                                 </p>
                             )}
                         </div>
@@ -342,7 +342,7 @@ function RadicalLine({ radical }: { radical: TeachRadical }) {
     return (
         <p className="text-ink-2 text-[clamp(1.1rem,1.9vw,2.2rem)]">
             Radical{" "}
-            <span lang="ja" className="font-jp font-extrabold text-c glow">
+            <span lang="ja" className="font-jp font-extrabold text-c glow text-[1.3em] leading-none">
                 {radical.char}
             </span>{" "}
             {radical.meaning}
