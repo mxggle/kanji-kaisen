@@ -19,7 +19,7 @@ import { fileURLToPath } from 'url';
 import { parseKanjiVG, topLevelParts, allElements, phoneticOf, formatStrokeRanges } from '../lib/core/kanjivg-parse.ts';
 import { isCompatibilityIdeograph } from '../lib/core/zh.ts';
 import { alignKanji, formatFurigana, isKana } from '../lib/ja/align.ts';
-import { parseAliveExample } from './lib/kanji-alive.mjs';
+import { aliveLookupKeys, parseAliveExample } from './lib/kanji-alive.mjs';
 import { writeLayer } from './lib/write-layer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,7 +98,8 @@ function trimUnihan(char) {
     return out;
 }
 
-const unihanChars = new Set(kanjiSet);
+// The popular forms of jōyō's official 𠮟 剝 塡 頰 keep their kJoyoKanji pointer (search aliases).
+const unihanChars = new Set([...kanjiSet, ...[...unihanRaw].filter(([, e]) => e.kJoyoKanji?.startsWith('U+')).map(([c]) => c)]);
 for (const char of kanjiSet) {
     const e = trimUnihan(char);
     if (!e) continue;
@@ -120,8 +121,8 @@ for (const char of [...unihanChars].sort(byCodePoint)) {
     if (!inSet.has(char)) {
         delete e.t;
         delete e.jo;
-        delete e.joyo;
         delete e.jinmei;
+        if (e.joyo === 1) delete e.joyo;
     }
     unihanOut[char] = e;
 }
@@ -130,7 +131,7 @@ fs.copyFileSync(cached('unicode-license.txt'), path.join(root, 'lib/core/UNICODE
 writeLayer('lib/core/unihan.json', {
     source: `Unihan database, Unicode ${unihanVersion}, https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip`,
     license: 'Unicode License v3 (see lib/core/UNICODE-LICENSE.txt)',
-    note: 'Trimmed by scripts/build-data-layers.mjs. Keys: m kMandarin, s kSimplifiedVariant, t kTraditionalVariant, jo kJapaneseOldVariant (compatibility ideographs removed), z kZVariant, sv kSemanticVariant (source tags dropped), tgh in kTGH (PRC 通用规范汉字表), tw kIRG_TSource in CNS 11643 plane 1 or 2, joyo kJoyoKanji (1 or the official form), jinmei kJinmeiyoKanji. Characters outside the atlas set are variant forms and keep only m, s, z, sv, tgh, tw.',
+    note: 'Trimmed by scripts/build-data-layers.mjs. Keys: m kMandarin, s kSimplifiedVariant, t kTraditionalVariant, jo kJapaneseOldVariant (compatibility ideographs removed), z kZVariant, sv kSemanticVariant (source tags dropped), tgh in kTGH (PRC 通用规范汉字表), tw kIRG_TSource in CNS 11643 plane 1 or 2, joyo kJoyoKanji (1 or the official form), jinmei kJinmeiyoKanji. Characters outside the atlas set are variant forms and keep only m, s, z, sv, tgh, tw (and joyo when it points at an official form).',
 }, 'chars', unihanOut);
 
 // ---------------------------------------------------------------------------
@@ -357,7 +358,12 @@ const stats = { kanji: 0, withMin: 0, secondary: 0, fallback: 0, words: 0, short
 for (const char of kanjiSet) {
     const alive = aliveByChar.get(char) ?? [];
     // Alive words need furigana in the table so the atlas can align them.
-    alive.forEach((e) => e.reading && addWord(e.word, e.reading));
+    for (const e of alive) {
+        const keys = aliveLookupKeys(e.word, e.reading);
+        const withFurigana = keys.find(([w, r]) => furigana.has(wordKey(w, r)));
+        if (withFurigana) addWord(...withFurigana);
+        else if (keys.length) addWord(...keys[0]);
+    }
     stats.kanji++;
     const aliveWords = new Set(alive.map((e) => e.word));
     const readings = readingsOf(char);
@@ -375,7 +381,9 @@ for (const char of kanjiSet) {
             picks.push(w);
         };
         const covered = new Set(
-            alive.map((e) => (e.special ? null : alignKanji(e.word, e.reading, char, readingsOf, furigana.get(wordKey(e.word, e.reading)))?.reading)).filter(Boolean),
+            alive.flatMap((e) => (e.special ? [] : aliveLookupKeys(e.word, e.reading)))
+                .map(([w, r]) => alignKanji(w, r, char, readingsOf, furigana.get(wordKey(w, r)))?.reading)
+                .filter(Boolean),
         );
         // Words usually written in kana (𠮟る) go after the others.
         const kanaLast = (a, b) => (a.usuallyKana ? 1 : 0) - (b.usuallyKana ? 1 : 0) || rank(a, b);

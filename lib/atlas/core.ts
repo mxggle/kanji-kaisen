@@ -6,10 +6,13 @@ import type {
     AtlasCategorySummary,
     AtlasData,
     AtlasKanji,
+    AtlasKanjiRecord,
     AtlasRadical,
     AtlasRadicalSummary,
     JlptLevel,
     Neighbors,
+    PhoneticSeriesInfo,
+    SameOnInfo,
     StoriesData,
 } from "./types.ts";
 import { CATEGORIES, getCategoryFromSlug, getCategoryImage, getCategorySlug } from "./categories.ts";
@@ -47,9 +50,43 @@ function neighborsIn<T>(list: T[], index: number): Neighbors<T> {
     return { prev: list[index - 1] ?? null, next: list[index + 1] ?? null };
 }
 
+/** Turns the stored word indexes of `wordsByReading` back into example objects. */
+function hydrate(record: AtlasKanjiRecord): AtlasKanji {
+    return {
+        ...record,
+        wordsByReading: record.wordsByReading.map((group) => ({
+            ...group,
+            words: group.words.map((i) => record.examples[i]),
+        })),
+    };
+}
+
 export function createAtlas(data: AtlasData, stories: StoriesData) {
-    const allKanji = [...data.kanji].sort(byJlptThenFrequency);
+    const allKanji = data.kanji.map(hydrate).sort(byJlptThenFrequency);
     const kanjiByChar = new Map(allKanji.map((k) => [k.char, k]));
+    const resolve = (chars: Iterable<string>): AtlasKanji[] => {
+        const out: AtlasKanji[] = [];
+        for (const char of chars) {
+            const kanji = kanjiByChar.get(char);
+            if (kanji) out.push(kanji);
+        }
+        return out;
+    };
+
+    // Sound component -> the kanji that use it (their stored series), and
+    // component -> kanji built on it, for "Also built on X".
+    const seriesByPhonetic = new Map<string, { reading: string | null; series: string[] }>();
+    const kanjiByComponent = new Map<string, AtlasKanji[]>();
+    for (const k of allKanji) {
+        if (k.phonetic && !seriesByPhonetic.has(k.phonetic.char)) {
+            seriesByPhonetic.set(k.phonetic.char, { reading: k.phonetic.reading, series: k.phonetic.series });
+        }
+        for (const char of new Set(k.components.map((c) => c.char))) {
+            const list = kanjiByComponent.get(char) ?? [];
+            list.push(k);
+            kanjiByComponent.set(char, list);
+        }
+    }
     const radicals = [...data.radicals].sort(byCategoryThenSize);
     const radicalByKey = new Map(radicals.map((r) => [r.key, r]));
 
@@ -159,6 +196,43 @@ export function createAtlas(data: AtlasData, stories: StoriesData) {
         };
     }
 
+    /** The phonetic series `char` belongs to through its sound component (海 -> 毎: 毎 海 梅 悔 …). */
+    function getPhoneticSeries(char: string): PhoneticSeriesInfo | null {
+        const phonetic = getKanji(char)?.phonetic;
+        if (!phonetic) return null;
+        return { phonetic: phonetic.char, reading: phonetic.reading, kanji: resolve(phonetic.series) };
+    }
+
+    /** The series `char` heads as a sound component (毎 -> 毎 海 梅 悔 …), whether or not it has one itself. */
+    function getSoundFamily(char: string): PhoneticSeriesInfo | null {
+        const key = decodeParam(char);
+        const family = seriesByPhonetic.get(key);
+        if (!family) return null;
+        return { phonetic: key, reading: family.reading, kanji: resolve(family.series) };
+    }
+
+    /** For each on'yomi of `char`, other kanji read the same way (capped at 12, `total` uncapped). */
+    function getSameOn(char: string): SameOnInfo[] {
+        return (getKanji(char)?.sameOn ?? []).map((g) => ({ reading: g.reading, kanji: resolve(g.chars), total: g.total }));
+    }
+
+    /** Up to 6 look-alikes, best first (未 -> 末 …, 待 -> 持 …). */
+    function getLookAlikes(char: string): AtlasKanji[] {
+        return resolve(getKanji(char)?.lookAlikes ?? []);
+    }
+
+    /** Kanji with `component` among their top-level components, in atlas order (for "Also built on X"). */
+    function getKanjiWithComponent(component: string, options: { exclude?: string; limit?: number } = {}): AtlasKanji[] {
+        const list = (kanjiByComponent.get(decodeParam(component)) ?? []).filter((k) => k.char !== options.exclude);
+        return options.limit === undefined ? list : list.slice(0, options.limit);
+    }
+
+    /** Resolves a list of characters (a teacher's set, a pasted text) to atlas kanji: unknown and repeated ones are dropped. */
+    function getKanjiList(chars: string | Iterable<string>): AtlasKanji[] {
+        const unique = new Set(typeof chars === "string" ? Array.from(chars) : chars);
+        return resolve(unique);
+    }
+
     /** Deterministic daily pick from N5–N3, keyed by the UTC date. */
     function getKanjiOfTheDay(date: Date = new Date()): AtlasKanji {
         const pool = [...getKanjiByJlpt("N5"), ...getKanjiByJlpt("N4"), ...getKanjiByJlpt("N3")];
@@ -182,6 +256,12 @@ export function createAtlas(data: AtlasData, stories: StoriesData) {
         getCategories,
         getCategory,
         getKanjiOfTheDay,
+        getPhoneticSeries,
+        getSoundFamily,
+        getSameOn,
+        getLookAlikes,
+        getKanjiWithComponent,
+        getKanjiList,
     };
 }
 

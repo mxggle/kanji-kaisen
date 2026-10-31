@@ -70,19 +70,44 @@ export function readingOkurigana(reading: string): string {
     return dot === -1 ? "" : kataToHira(core.slice(dot + 1));
 }
 
+const U_TO_I: Record<string, string> = { う: "い", く: "き", ぐ: "ぎ", す: "し", つ: "ち", ぬ: "に", ぶ: "び", む: "み", る: "り" };
+const E_OR_I_ROW = new Set([..."えけげせぜてでねへべぺめれいきぎしじちぢにひびぴみり"]);
+
+/**
+ * Stems a kun'yomi with okurigana takes when the kanji also carries the verb's
+ * stem in a compound: 立場 たち(ば) from た.つ, 建物 たて(もの) from た.てる,
+ * 届 とどけ from とど.ける.
+ */
+function inflectedStems(stem: string, okurigana: string): string[] {
+    if (!okurigana) return [];
+    const chars = [...okurigana];
+    const last = chars[chars.length - 1];
+    const head = chars.slice(0, -1).join("");
+    const out: string[] = [];
+    // Ichidan verbs (-eru/-iru) drop る; godan verbs turn the final u-row kana into i-row.
+    if (last === "る" && chars.length >= 2 && E_OR_I_ROW.has(chars[chars.length - 2])) out.push(stem + head);
+    if (U_TO_I[last]) out.push(stem + head + U_TO_I[last]);
+    return out;
+}
+
 /**
  * Surface forms a reading can take inside a word, with a cost: 0 for the
- * plain stem, 1 for rendaku (か -> が) or gemination (がく -> がっ), 2 for both.
+ * plain stem, 1 for rendaku (か -> が), gemination (がく -> がっ) or a verb
+ * stem (た.つ -> たち), more when they combine.
  */
 export function readingForms(reading: string): { form: string; cost: number }[] {
     const base = readingStem(reading);
     if (!base) return [];
-    const chars = [...base];
-    const starts = [{ form: base, cost: 0 }];
-    for (const voiced of VOICED[chars[0]] ?? []) starts.push({ form: voiced + chars.slice(1).join(""), cost: 1 });
-    const forms = [...starts];
-    if (chars.length >= 2 && GEMINATING.has(chars[chars.length - 1])) {
-        for (const { form, cost } of starts) forms.push({ form: [...form].slice(0, -1).join("") + "っ", cost: cost + 1 });
+    const bases = [{ form: base, cost: 0 }, ...inflectedStems(base, readingOkurigana(reading)).map((form) => ({ form, cost: 1 }))];
+    const forms: { form: string; cost: number }[] = [];
+    for (const b of bases) {
+        const chars = [...b.form];
+        const starts = [b];
+        for (const voiced of VOICED[chars[0]] ?? []) starts.push({ form: voiced + chars.slice(1).join(""), cost: b.cost + 1 });
+        forms.push(...starts);
+        if (chars.length >= 2 && GEMINATING.has(chars[chars.length - 1])) {
+            for (const { form, cost } of starts) forms.push({ form: [...form].slice(0, -1).join("") + "っ", cost: cost + 1 });
+        }
     }
     return forms;
 }
@@ -204,16 +229,39 @@ export function alignKanji(
         return matchReading(segment.rt, readings, kanaAfter(furigana, index));
     }
 
-    const parts = segmentReading(word, reading, readingsOf);
-    if (!parts) return null;
     const chars = [...word];
     const index = chars.indexOf(kanji);
+    if (index === -1) return null;
+    const parts = segmentReading(word, reading, readingsOf);
+    if (!parts) return null;
     let following = "";
     for (const char of chars.slice(index + 1)) {
         if (!isKana(char)) break;
         following += char;
     }
     return matchReading(parts[index], readings, following);
+}
+
+const NON_JAPANESE_RE = /[0-9０-９A-Za-zＡ-Ｚａ-ｚ~〜]/;
+
+/**
+ * Last resort for words with digits or Latin letters (10代 じゅうだい, ３ページ目),
+ * which cannot be segmented: a kanji at the end of the word must end the
+ * reading with one of its forms, a kanji at the start must begin it.
+ */
+export function alignByEdge(word: string, reading: string, kanji: string, readings: KanjiReadings): ReadingMatch | null {
+    if (!NON_JAPANESE_RE.test(word)) return null;
+    const chars = [...word];
+    const target = kataToHira(reading);
+    const atEnd = chars[chars.length - 1] === kanji;
+    const atStart = chars[0] === kanji;
+    if (!atEnd && !atStart) return null;
+    for (const [reading_, kind] of [...readings.on.map((r) => [r, "on"] as const), ...readings.kun.map((r) => [r, "kun"] as const)]) {
+        for (const { form } of readingForms(reading_)) {
+            if ((atEnd && target.endsWith(form)) || (atStart && target.startsWith(form))) return { reading: reading_, kind };
+        }
+    }
+    return null;
 }
 
 /** Parses the compact furigana stored in lib/ja/words.jmdict.json: ["日:に", "本:ほん", "です"]. */

@@ -25,6 +25,12 @@ export const {
     getCategories,
     getCategory,
     getKanjiOfTheDay,
+    getPhoneticSeries,
+    getSoundFamily,
+    getSameOn,
+    getLookAlikes,
+    getKanjiWithComponent,
+    getKanjiList,
 } = atlas;
 
 export { JLPT_LEVELS, decodeParam } from "./core";

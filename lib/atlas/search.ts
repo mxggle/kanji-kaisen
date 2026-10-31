@@ -21,6 +21,8 @@ export interface SearchIndexEntry {
     s: number;
     /** Frequency rank (1 = most common), null when unknown. */
     f: number | null;
+    /** Other forms people type for this kanji: 叱 for jōyō's official 𠮟 (also 剥 剝, 填 塡, 頬 頰). */
+    a?: string;
 }
 
 export type SearchMatchKind = "kanji" | "meaning" | "reading";
@@ -130,11 +132,12 @@ export function searchKanji(index: readonly SearchIndexEntry[], query: string, o
     // 1. Kanji characters typed directly, in query order.
     if (KANJI_RE.test(q)) {
         const byChar = new Map(index.map((e) => [e.c, e]));
+        for (const e of index) for (const alt of Array.from(e.a ?? "")) if (!byChar.has(alt)) byChar.set(alt, e);
         const chars = q.match(KANJI_GLOBAL_RE) ?? [];
         chars.forEach((char, i) => {
             const entry = byChar.get(char);
-            if (!entry || seen.has(char)) return;
-            seen.add(char);
+            if (!entry || seen.has(entry.c)) return;
+            seen.add(entry.c);
             results.push({ entry, score: SCORE.kanji + chars.length - i, match: "kanji" });
         });
     }
