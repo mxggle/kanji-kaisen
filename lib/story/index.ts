@@ -22,14 +22,23 @@ export const { getAncientForms, getRadicalAncientForms, getEtymology, getRadical
 // the server bundle; the ignore comments keep Turbopack from globbing them.
 const KANJIVG_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "public", "kanjivg", "kanji");
 
+// CJK Radicals Supplement chars the atlas shows, mapped to the unified
+// ideographs KanjiVG files them under (Unicode EquivalentUnifiedIdeograph.txt).
+const UNIFIED_EQUIVALENT: Record<string, string> = { "⺖": "忄", "⺮": "𥫗" };
+
 /** KanjiVG stroke paths of `char` in order, for JourneyPlayer's `todayStrokes`; [] if none. */
 export function getTodayStrokes(char: string): string[] {
-    try {
-        const raw = fs.readFileSync(/* turbopackIgnore: true */ path.join(KANJIVG_DIR, kanjivgFileName(char)), "utf8");
-        return extractStrokePaths(raw);
-    } catch {
-        return [];
+    for (const c of [char, UNIFIED_EQUIVALENT[char]]) {
+        if (!c) continue;
+        try {
+            const raw = fs.readFileSync(/* turbopackIgnore: true */ path.join(KANJIVG_DIR, kanjivgFileName(c)), "utf8");
+            const strokes = extractStrokePaths(raw);
+            if (strokes.length) return strokes;
+        } catch {
+            // no file for this code point
+        }
     }
+    return [];
 }
 
 export type { AncientForms } from "./core.ts";

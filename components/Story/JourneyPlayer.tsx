@@ -120,7 +120,9 @@ export function JourneyPlayer({
             return;
         }
         if (analytics) trackEvent("journey_played", { radical: char, stages: tabs.length });
-        goTo(0);
+        // From an ancient stage (paused or picked), carry on from there;
+        // from today, start again at the oldest form.
+        if (active === last) goTo(0);
         setPlaying(ancientCount > 0);
     };
 
