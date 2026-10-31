@@ -31,7 +31,7 @@ export function getTodayStrokes(char: string): string[] {
     for (const c of [char, UNIFIED_EQUIVALENT[char]]) {
         if (!c) continue;
         try {
-            const raw = fs.readFileSync(/* turbopackIgnore: true */ path.join(KANJIVG_DIR, kanjivgFileName(c)), "utf8");
+            const raw = fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ KANJIVG_DIR, kanjivgFileName(c)), "utf8");
             const strokes = extractStrokePaths(raw);
             if (strokes.length) return strokes;
         } catch {

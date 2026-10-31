@@ -71,9 +71,8 @@ export function KanjiHero({ kanji, headline, meanings, parts }: KanjiHeroProps) 
 }
 
 /**
- * Learn it · 4 steps, [share card], Save, Print practice sheet, Present.
- * SHARE CARD SLOT: the main session wires the 2E <ShareCardButton> in through
- * the `shareCard` prop (the page passes nothing until then).
+ * Learn it · 4 steps, the share card button (passed in by the page, which has
+ * the server-side card props), Save, Print practice sheet, Present.
  */
 export function ActionRow({ char, shareCard }: { char: string; shareCard?: React.ReactNode }) {
     const k = encodeURIComponent(char);
@@ -82,7 +81,6 @@ export function ActionRow({ char, shareCard }: { char: string; shareCard?: React
         <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-2.5">
                 <LearnButton char={char} className="min-w-[200px] flex-1 sm:flex-none" />
-                {/* SHARE CARD SLOT (2E): <ShareCardButton … /> goes here. */}
                 {shareCard}
                 <StudyControls char={char} variant="button" />
             </div>

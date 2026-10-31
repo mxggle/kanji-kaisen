@@ -18,6 +18,8 @@ import { AlsoBuiltOnBlocks, SameOnBlocks, SoundFamily } from "@/components/Kanji
 import { LookAlikeCompare } from "@/components/Kanji/LookAlikeCompare";
 import { KanjiZh } from "@/components/Kanji/KanjiZh";
 import { LearnLauncher } from "@/components/Learn/LearnLauncher";
+import { ShareCardButton } from "@/components/ShareCard/ShareCardButton";
+import { getShareCardProps } from "@/components/ShareCard/getShareCardProps";
 import { getKanjiPageData } from "./data";
 
 // Every kanji is prerendered; unknown chars 404. Percent-encoded URLs map to
@@ -107,7 +109,7 @@ export default async function KanjiPage({ params }: PageProps) {
                 </div>
 
                 <div className="lg:col-start-2">
-                    <ActionRow char={kanji.char} />
+                    <ActionRow char={kanji.char} shareCard={<ShareCardButton {...getShareCardProps(kanji)} />} />
                 </div>
 
                 {(hasStory || strokeOnStage) && (
