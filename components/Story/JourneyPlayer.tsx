@@ -1,23 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { Pause, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
-import { journeyTabs, type AncientJourneyStage, type JourneyStageId } from "@/lib/story/journey";
+import { defaultCaption, journeyTabs, type AncientJourneyStage, type JourneyStageId, type JourneyTab } from "@/lib/story/journey";
+import { Button } from "@/components/ui/Button";
+import { KindLabel } from "@/components/ui/SectionHeader";
+import { creditGroups, journeyLede, listSeparator, stageEra, STAGE_LABELS, TODAY_REF, TODAY_WHEN } from "@/components/Journey/player";
 
 export type { AncientJourneyStage, JourneyStageId };
 
 export interface JourneyPlayerProps {
     char: string;
-    // Ancient stages with a self-hosted, sourced SVG (from getAncientForms).
-    // Only these render; missing stages are skipped.
+    // Ancient stages with a self-hosted, sourced file (from getAncientForms).
+    // Only these render; missing stages are skipped. Never redrawn.
     stages: AncientJourneyStage[];
     // KanjiVG path `d` attributes in stroke order (from getTodayStrokes).
     todayStrokes: string[];
-    // Sourced captions per stage; generic script notes otherwise.
+    // Sourced captions per stage. Plate: shown under the stage when given;
+    // both variants read them out with the stage.
     captions?: Partial<Record<JourneyStageId, string>>;
-    // Accent colour; defaults to the inherited theme accent `--c`.
+    // Catalogue reference per stage ("甲600 (商)", from the file's `ref`), shown in the plate's stage caption.
+    refs?: Partial<Record<JourneyStageId, string>>;
+    // A theme colour (hex) for --tc; defaults to the inherited theme.
     accent?: string;
-    // Left side of the control row, e.g. a heading.
+    // Plate: left side of the control row; defaults to "字の旅 · 3,000 years in four forms".
     title?: ReactNode;
     // Shown when there are no ancient stages; null hides it.
     emptyNote?: string | null;
@@ -26,87 +34,171 @@ export interface JourneyPlayerProps {
     // Sent as `radical` with `journey_played`; defaults to `char`. Radical pages
     // pass their key so side forms (kihen) aren't counted as the base (ki).
     analyticsId?: string;
+    // plate: the radical page's specimen (stage, Play, stage tabs, credit).
+    // tab: the kanji specimen's Ancient tab (every stage in a 2×2 grid, credit).
+    variant?: "plate" | "tab";
     className?: string;
 }
 
-const STEP_MS = 1500;
+const STEP_MS = 1400;
 const DEFAULT_EMPTY_NOTE = "No ancient form with a clear public-domain source has been found for this character yet.";
 
-// Scoped styles; colours come only from skin tokens (with fallbacks so the
-// player works before the skins land). Glow applies in 夜 only.
+// The stroke being drawn (dash offset 1 -> 0 over a unit pathLength).
 const CSS = `
-.kkj{--kkj-c:var(--c,#34D399);display:flex;flex-direction:column;gap:16px;color:var(--ink,#EDEAE2);min-width:0}
-.kkj-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.kkj-play{height:40px;padding:0 18px;display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--ink,#EDEAE2);border:1px solid var(--line-2,rgba(237,234,226,.28));border-radius:20px;font:inherit;font-size:14px;cursor:pointer;transition:background-color .2s,color .2s}
-.kkj-play:hover{background:var(--ink,#EDEAE2);color:var(--bg,#06070A)}
-.kkj :focus-visible{outline:2px solid var(--ink,#EDEAE2);outline-offset:3px}
-.kkj-stagebox{position:relative;width:100%;max-width:var(--kkj-size,520px);aspect-ratio:1/1;margin:0 auto}
-.kkj-ring{position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--kkj-c) 22%,transparent)}
-.kkj-ring2{position:absolute;inset:5%;border-radius:50%;border:1px dashed var(--line,rgba(237,234,226,.12))}
-.kkj-layer{position:absolute;inset:0;opacity:0;transform:scale(.92);transition:opacity .7s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
-.kkj-layer.kkj-on{opacity:1;transform:none}
-.kkj-glyph{position:absolute;inset:13%}
-.kkj-glow{filter:drop-shadow(0 0 4px var(--kkj-c)) drop-shadow(0 0 16px color-mix(in srgb,var(--kkj-c) 55%,transparent))}
-[data-skin="ink"] .kkj-glow{filter:none}
-.kkj-mask{position:absolute;inset:0;background:var(--kkj-c);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
-.kkj-today{position:absolute;inset:9%;width:82%;height:82%;overflow:visible;fill:none;stroke:var(--kkj-c);stroke-width:4.4;stroke-linecap:round;stroke-linejoin:round}
-.kkj-stroke{stroke-dasharray:1;stroke-dashoffset:1}
-.kkj-on .kkj-stroke{animation:kkj-draw .55s ease-out forwards}
+.kkj-draw{stroke-dasharray:1;stroke-dashoffset:1;animation:kkj-draw .45s ease-out .08s forwards}
 @keyframes kkj-draw{to{stroke-dashoffset:0}}
-.kkj-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(52vw,300px);line-height:1;color:var(--kkj-c)}
-.kkj-caption{margin:0;min-height:2.7em;font-style:italic;font-size:20px;line-height:1.35;color:var(--ink,#EDEAE2)}
-.kkj-credit{margin:0;font-size:12px;line-height:1.4;color:var(--ink-3,#8C877D)}
-.kkj-credit a{color:inherit;text-decoration:underline;text-underline-offset:2px}
-.kkj-credit a:hover{color:var(--ink,#EDEAE2)}
-.kkj-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
-.kkj-tabs::-webkit-scrollbar{display:none}
-.kkj-tab{flex:1 0 auto;min-width:64px;min-height:44px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;background:transparent;color:var(--ink-3,#8C877D);border:0;border-top:2px solid var(--line,rgba(237,234,226,.12));font:inherit;cursor:pointer;text-align:center}
-.kkj-tab b{font-size:20px;font-weight:800;line-height:1}
-.kkj-tab:hover{color:var(--ink,#EDEAE2)}
-.kkj-tab[aria-selected="true"]{color:var(--ink,#EDEAE2);border-top-color:var(--kkj-c)}
-.kkj-tab[aria-selected="true"] b{color:var(--kkj-c)}
-.kkj-en{font-size:13px}
-.kkj-when{font-size:11px;color:var(--ink-3,#8C877D)}
-@media (max-width:480px){.kkj-when{display:none}.kkj-caption{font-size:18px}}
-@media (prefers-reduced-motion:reduce){.kkj-layer{transition:none}.kkj-on .kkj-stroke{animation:none;stroke-dashoffset:0}.kkj-play{transition:none}}
 `;
 
+const STROKE_SVG = "fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:4.4]";
+
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** A sourced ancient form, drawn in the current text colour through its file as a mask. */
+function AncientMask({ src, className }: { src: string; className?: string }) {
+    const style: CSSProperties = {
+        WebkitMaskImage: `url("${src}")`,
+        maskImage: `url("${src}")`,
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+    };
+    return <span aria-hidden className={cn("block bg-current", className)} style={style} />;
+}
+
 /**
- * Plays a character's journey: its sourced ancient forms (oracle bone, bronze,
- * seal; only those with data) and today's form drawn stroke by stroke from
- * KanjiVG. Tabs pick a stage; Play steps through them.
+ * Today's form from KanjiVG. `step` is the stroke being drawn (it alone sits
+ * in the `live` layer, rule 5); strokes after it wait in grey. null: all drawn.
+ */
+function TodayStrokes({ strokes, step, onStrokeEnd }: { strokes: string[]; step: number | null; onStrokeEnd: () => void }) {
+    return (
+        <>
+            <svg viewBox="0 0 109 109" aria-hidden focusable="false" className={cn("absolute inset-[9%] size-[82%]", STROKE_SVG)}>
+                {strokes.map((d, i) => (
+                    <path key={i} d={d} className={step === null || i < step ? "stroke-c" : "stroke-line-2"} />
+                ))}
+            </svg>
+            {step !== null && strokes[step] && (
+                <svg viewBox="0 0 109 109" aria-hidden focusable="false" className={cn("live absolute inset-[9%] size-[82%]", STROKE_SVG)}>
+                    <path key={step} d={strokes[step]} pathLength={1} className="kkj-draw stroke-c" onAnimationEnd={onStrokeEnd} />
+                </svg>
+            )}
+        </>
+    );
+}
+
+/** "Oracle bone, bronze and small seal: Academia Sinica 小學堂, CC0. Today’s form: KanjiVG, CC BY-SA 3.0." */
+function Credit({ tabs, className }: { tabs: JourneyTab[]; className?: string }) {
+    const groups = creditGroups(tabs);
+    return (
+        <p className={cn("text-xs leading-normal text-ink-3", className)}>
+            {groups.map((group, g) => (
+                <Fragment key={group.source}>
+                    {g > 0 && " "}
+                    {group.stages.map((stage, i) => (
+                        <Fragment key={stage.id}>
+                            {listSeparator(i, group.stages.length)}
+                            {stage.href ? (
+                                <a href={stage.href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 transition-colors hover:text-ink">
+                                    {stage.label}
+                                </a>
+                            ) : (
+                                stage.label
+                            )}
+                        </Fragment>
+                    ))}
+                    : {group.source}.
+                </Fragment>
+            ))}
+        </p>
+    );
+}
+
+function stageLabel(char: string, tab: JourneyTab): string {
+    const where = tab.id === "today" ? "as written today" : `in ${STAGE_LABELS[tab.id].full.toLowerCase()} script`;
+    return `${char} ${where}: ${tab.caption}`;
+}
+
+/** The kanji page's Ancient tab: every stage at once, oldest first, then the credit. */
+function JourneyGrid({ char, tabs, todayStrokes, emptyNote, className, style }: { char: string; tabs: JourneyTab[]; todayStrokes: string[]; emptyNote: string | null; className?: string; style?: CSSProperties }) {
+    const ancientCount = tabs.length - 1;
+    return (
+        <div className={cn("flex min-w-0 flex-col gap-3.5 text-ink", className)} style={style}>
+            <ul className="grid grid-cols-2 gap-3">
+                {tabs.map((tab) => (
+                    <li key={tab.id} className="min-w-0">
+                        <figure className="flex flex-col gap-2 rounded-xl bg-bg p-3.5">
+                            <div role="img" aria-label={stageLabel(char, tab)} className="relative aspect-square w-full">
+                                {tab.src ? (
+                                    <AncientMask src={tab.src} className="absolute inset-[6%] text-ink" />
+                                ) : todayStrokes.length ? (
+                                    <svg viewBox="0 0 109 109" aria-hidden focusable="false" className={cn("absolute inset-[9%] size-[82%] stroke-ink", STROKE_SVG)}>
+                                        {todayStrokes.map((d, i) => (
+                                            <path key={i} d={d} />
+                                        ))}
+                                    </svg>
+                                ) : (
+                                    <span lang="ja" aria-hidden className="absolute inset-0 flex items-center justify-center font-jp text-[min(28vw,120px)] font-extrabold leading-none">
+                                        {char}
+                                    </span>
+                                )}
+                            </div>
+                            <figcaption className="truncate text-xs text-ink-3">
+                                <b className="font-medium text-ink-2">{STAGE_LABELS[tab.id].full}</b>
+                                {tab.id !== "today" && <> · {stageEra(tab.when)}</>}
+                            </figcaption>
+                        </figure>
+                    </li>
+                ))}
+            </ul>
+            <Credit tabs={tabs} />
+            {ancientCount === 0 && emptyNote ? <p className="text-xs leading-normal text-ink-3">{emptyNote}</p> : null}
+        </div>
+    );
+}
+
+/**
+ * A character's journey: its sourced ancient forms (oracle bone, bronze,
+ * small seal; only those with data, never redrawn) and today's form drawn
+ * stroke by stroke from KanjiVG. The plate has one stage at a time, stage tabs
+ * and Play; the tab variant shows every stage at once.
  */
 export function JourneyPlayer({
     char,
     stages,
     todayStrokes,
     captions,
+    refs,
     accent,
     title,
     emptyNote = DEFAULT_EMPTY_NOTE,
     analytics = true,
     analyticsId,
+    variant = "plate",
     className,
 }: JourneyPlayerProps) {
     const tabs = useMemo(() => journeyTabs(char, stages, captions), [char, stages, captions]);
     const last = tabs.length - 1;
-    const [index, setIndex] = useState(last);
+    const [index, setIndex] = useState(0);
     const [playing, setPlaying] = useState(false);
-    // Bumped to replay the stroke animation when today is already showing.
-    const [drawKey, setDrawKey] = useState(0);
+    // The today stroke being drawn, or null when every stroke shows.
+    const [drawStep, setDrawStep] = useState<number | null>(null);
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const uid = useId();
 
     const active = Math.min(index, last);
     const current = tabs[active];
     const ancientCount = tabs.length - 1;
+    const rootStyle = accent ? ({ "--tc": accent } as CSSProperties) : undefined;
 
     const goTo = useCallback(
         (i: number) => {
             setIndex(i);
-            if (i === last) setDrawKey((k) => k + 1);
+            setDrawStep(i === last && todayStrokes.length > 0 && !reducedMotion() ? 0 : null);
         },
-        [last],
+        [last, todayStrokes.length],
     );
 
     useEffect(() => {
@@ -118,6 +210,10 @@ export function JourneyPlayer({
         return () => clearTimeout(timer);
     }, [playing, active, last, goTo]);
 
+    if (variant === "tab") {
+        return <JourneyGrid char={char} tabs={tabs} todayStrokes={todayStrokes} emptyNote={emptyNote} className={className} style={rootStyle} />;
+    }
+
     const play = () => {
         if (playing) {
             setPlaying(false);
@@ -125,20 +221,20 @@ export function JourneyPlayer({
         }
         if (analytics) trackEvent("journey_played", { radical: analyticsId ?? char, stages: tabs.length });
         // From an ancient stage (paused or picked), carry on from there;
-        // from today, start again at the oldest form.
-        if (active === last) goTo(0);
+        // from today, start again at the oldest form (or redraw today alone).
+        if (active === last) goTo(ancientCount > 0 ? 0 : last);
         setPlaying(ancientCount > 0);
     };
 
     const pick = (i: number) => {
         setPlaying(false);
-        goTo(i);
+        if (i !== active || i === last) goTo(i);
     };
 
     const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
         const next =
-            e.key === "ArrowRight" ? (i + 1) % tabs.length
-            : e.key === "ArrowLeft" ? (i - 1 + tabs.length) % tabs.length
+            e.key === "ArrowRight" || e.key === "ArrowDown" ? (i + 1) % tabs.length
+            : e.key === "ArrowLeft" || e.key === "ArrowUp" ? (i - 1 + tabs.length) % tabs.length
             : e.key === "Home" ? 0
             : e.key === "End" ? last
             : null;
@@ -148,99 +244,112 @@ export function JourneyPlayer({
         tabRefs.current[next]?.focus();
     };
 
-    const delayStep = todayStrokes.length ? Math.min(0.5, 4.5 / todayStrokes.length) : 0;
-    const playLabel = playing ? "Pause" : ancientCount ? "Play the journey" : "Replay the strokes";
-    const rootStyle = accent ? ({ "--kkj-c": accent } as CSSProperties) : undefined;
+    const onStrokeEnd = () => setDrawStep((s) => (s === null || s + 1 >= todayStrokes.length ? null : s + 1));
+
+    const label = STAGE_LABELS[current.id];
+    const when = current.id === "today" ? TODAY_WHEN : current.when;
+    const ref = current.id === "today" ? TODAY_REF : refs?.[current.id];
+    const shownCaption = captions?.[current.id];
 
     return (
-        <div className={className ? `kkj ${className}` : "kkj"} style={rootStyle}>
+        <div className={cn("flex min-w-0 flex-col gap-4 rounded-2xl border border-line bg-card p-3 text-ink sm:p-5", className)} style={rootStyle}>
             <style href="kk-journey-player" precedence="medium">
                 {CSS}
             </style>
-            <div className="kkj-top">
-                <div>{title}</div>
-                <button type="button" className="kkj-play" onClick={play} aria-pressed={playing}>
-                    <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span> {playLabel}
-                </button>
+            <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">{title ?? <KindLabel jp="字の旅">{journeyLede(tabs.map((t) => t.id))}</KindLabel>}</div>
+                <Button size="sm" onClick={play} aria-pressed={playing} className="kkj-play">
+                    {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
+                    {playing ? "Pause" : "Play"}
+                    <span className="sr-only">{ancientCount ? " the journey" : " the strokes"}</span>
+                </Button>
             </div>
 
-            <div role="tabpanel" id={`${uid}-panel`} aria-labelledby={`${uid}-tab-${current.id}`}>
-                <div
-                    className="kkj-stagebox"
-                    role="img"
-                    aria-label={`${char} as ${current.id === "today" ? "written today" : `${current.en.toLowerCase()} script`}: ${current.caption}`}
-                >
-                    <span className="kkj-ring" aria-hidden="true" />
-                    <span className="kkj-ring2" aria-hidden="true" />
-                    {tabs.map((tab, i) => (
-                        <div key={tab.id} className={i === active ? "kkj-layer kkj-on" : "kkj-layer"} aria-hidden="true">
-                            {tab.src ? (
-                                <div className="kkj-glyph kkj-glow">
-                                    <span
-                                        className="kkj-mask"
-                                        style={{ WebkitMaskImage: `url("${tab.src}")`, maskImage: `url("${tab.src}")` }}
-                                    />
-                                </div>
-                            ) : todayStrokes.length ? (
-                                <svg key={drawKey} className="kkj-today kkj-glow" viewBox="0 0 109 109" focusable="false">
-                                    {todayStrokes.map((d, s) => (
-                                        <path
-                                            key={s}
-                                            className="kkj-stroke"
-                                            d={d}
-                                            pathLength={1}
-                                            style={{ animationDelay: `${(0.1 + s * delayStep).toFixed(2)}s` }}
-                                        />
-                                    ))}
-                                </svg>
-                            ) : (
-                                <span className="kkj-fallback kkj-glow font-jp" lang="ja">
-                                    {char}
-                                </span>
-                            )}
-                        </div>
-                    ))}
+            <div
+                role={ancientCount ? "tabpanel" : undefined}
+                id={`${uid}-panel`}
+                aria-labelledby={ancientCount ? `${uid}-tab-${current.id}` : undefined}
+            >
+                <div className="relative overflow-hidden rounded-xl bg-bg max-sm:h-[230px] sm:max-[959px]:h-[340px] min-[960px]:aspect-square">
+                    <div role="img" aria-label={stageLabel(char, current)} className="absolute inset-0">
+                        {tabs.map((tab, i) => (
+                            <div
+                                key={tab.id}
+                                aria-hidden
+                                className={cn(
+                                    "absolute inset-x-0 top-0 bottom-9 transition-[opacity,transform] duration-700 ease-out",
+                                    i === active ? "opacity-100" : "scale-[.94] opacity-0",
+                                )}
+                            >
+                                {tab.src ? (
+                                    <AncientMask src={tab.src} className="absolute inset-[12%] text-ink" />
+                                ) : todayStrokes.length ? (
+                                    <TodayStrokes strokes={todayStrokes} step={i === active ? drawStep : null} onStrokeEnd={onStrokeEnd} />
+                                ) : (
+                                    <span lang="ja" className="absolute inset-0 flex items-center justify-center font-jp text-[min(44vw,240px)] font-extrabold leading-none text-c">
+                                        {char}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <p aria-live="polite" className="absolute inset-x-3 bottom-2.5 flex items-baseline justify-between gap-3 text-xs text-ink-3 sm:inset-x-4 sm:bottom-3">
+                        <span className="min-w-0 truncate">
+                            <b className="font-medium text-ink">{label.full}</b> · <span className="sm:hidden">{current.id === "today" ? when : stageEra(when)}</span>
+                            <span className="max-sm:hidden">{when}</span>
+                        </span>
+                        {ref && (
+                            <span lang={current.id === "today" ? undefined : "zh-Hant"} className="max-w-[45%] shrink-0 truncate max-sm:hidden">
+                                {ref}
+                            </span>
+                        )}
+                    </p>
                 </div>
-                <p className="kkj-caption font-disp" aria-live="polite">
-                    {current.caption}
-                </p>
-                <p className="kkj-credit">
-                    {current.credit.href ? (
-                        <a href={current.credit.href} target="_blank" rel="noopener noreferrer">
-                            {current.credit.text}
-                        </a>
-                    ) : (
-                        current.credit.text
-                    )}
-                </p>
-                {ancientCount === 0 && emptyNote ? <p className="kkj-credit">{emptyNote}</p> : null}
+                {shownCaption && current.caption !== defaultCaption(current.id, char) && (
+                    <p className="mt-3 text-sm leading-relaxed text-ink-2">{shownCaption}</p>
+                )}
             </div>
 
-            <div className="kkj-tabs" role="tablist" aria-label={`Stages of ${char}`}>
-                {tabs.map((tab, i) => (
-                    <button
-                        key={tab.id}
-                        ref={(el) => {
-                            tabRefs.current[i] = el;
-                        }}
-                        type="button"
-                        role="tab"
-                        id={`${uid}-tab-${tab.id}`}
-                        aria-selected={i === active}
-                        aria-controls={`${uid}-panel`}
-                        tabIndex={i === active ? 0 : -1}
-                        className="kkj-tab"
-                        onClick={() => pick(i)}
-                        onKeyDown={(e) => onTabKey(e, i)}
-                    >
-                        <b className="font-jp" lang="ja">
-                            {tab.jp}
-                        </b>
-                        <span className="kkj-en">{tab.en}</span>
-                        <span className="kkj-when">{tab.when}</span>
-                    </button>
-                ))}
-            </div>
+            {ancientCount > 0 && (
+                <div role="tablist" aria-label={`Stages of ${char}`} className="grid gap-1.5 sm:gap-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+                    {tabs.map((tab, i) => {
+                        const selected = i === active;
+                        return (
+                            <button
+                                key={tab.id}
+                                ref={(el) => {
+                                    tabRefs.current[i] = el;
+                                }}
+                                type="button"
+                                role="tab"
+                                id={`${uid}-tab-${tab.id}`}
+                                aria-selected={selected}
+                                aria-controls={`${uid}-panel`}
+                                tabIndex={selected ? 0 : -1}
+                                onClick={() => pick(i)}
+                                onKeyDown={(e) => onTabKey(e, i)}
+                                className={cn(
+                                    "flex min-h-14 min-w-0 cursor-pointer flex-col items-center gap-1 rounded-[10px] border px-1 py-2 text-[11px] font-medium transition-colors sm:gap-1.5 sm:rounded-xl sm:py-2.5 sm:text-xs",
+                                    selected ? "border-c bg-bg text-ink" : "border-line text-ink-3 hover:border-line-2 hover:text-ink",
+                                )}
+                            >
+                                {tab.src ? (
+                                    <AncientMask src={tab.src} className="size-[30px] sm:size-11" />
+                                ) : (
+                                    <span lang="ja" aria-hidden className="flex h-[30px] items-center font-jp text-2xl font-extrabold leading-none sm:h-11 sm:text-4xl">
+                                        {char}
+                                    </span>
+                                )}
+                                <span className="max-w-full truncate sm:hidden">{STAGE_LABELS[tab.id].short}</span>
+                                <span className="max-w-full truncate max-sm:hidden">{STAGE_LABELS[tab.id].full}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
+            <Credit tabs={tabs} />
+            {ancientCount === 0 && emptyNote ? <p className="text-xs leading-normal text-ink-3">{emptyNote}</p> : null}
         </div>
     );
 }

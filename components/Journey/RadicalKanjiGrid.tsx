@@ -1,85 +1,60 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo } from "react";
-import { GraduationCap } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { kanjiPath } from "@/lib/atlas/paths";
-import { SHADE_NAMES } from "@/lib/ink";
-import { nextKanji, nextLabel, type NextKanji } from "@/components/Theme/order";
-import { cellClass, FOCUS_RING, InkLegend } from "@/components/Theme/parts";
-import { shadeReader, useChars, useInkEntries } from "@/components/Theme/useInk";
+import { useMemo, useState, type ReactNode } from "react";
+import type { JlptLevel } from "@/lib/atlas/types";
+import { Chip } from "@/components/ui/Chip";
+import { InkLegend } from "@/components/ui/InkLegend";
 
-interface RadicalKanjiGridProps {
-    /** The radical's kanji, most common first, concatenated. */
-    chars: string;
-    /** First meaning of each kanji, same order. */
-    meanings: string[];
-    /** "/study?radical=ki". */
-    studyHref: string;
+const LEVELS: readonly JlptLevel[] = ["N5", "N4", "N3", "N2", "N1"];
+
+export interface FilterTile {
+    char: string;
+    jlpt: JlptLevel;
+    /** The server-rendered <KanjiTile>; the page's <InkPaint> fills it. */
+    tile: ReactNode;
 }
 
 /**
- * Every kanji of a radical as links, darkened by the learner's ink once the
- * store hydrates (all "not met" on the server), with "Start with X" pointing
- * at the next kanji to learn.
+ * Every kanji of a radical with JLPT filter chips. The tiles are rendered on
+ * the server and only hidden here, so their ink stays painted.
  */
-export function RadicalKanjiGrid({ chars, meanings, studyHref }: RadicalKanjiGridProps) {
-    const list = useChars(chars);
-    const entries = useInkEntries();
-    const shadeOf = useMemo(() => (entries ? shadeReader(entries) : null), [entries]);
-    const next: NextKanji | null = shadeOf ? nextKanji(list, shadeOf) : list[0] ? { char: list[0], mode: "start" } : null;
+export function RadicalKanjiGrid({ tiles }: { tiles: FilterTile[] }) {
+    const [level, setLevel] = useState<JlptLevel | null>(null);
+    const counts = useMemo(() => {
+        const out = new Map<JlptLevel, number>();
+        for (const t of tiles) out.set(t.jlpt, (out.get(t.jlpt) ?? 0) + 1);
+        return out;
+    }, [tiles]);
+    const levels = LEVELS.filter((l) => counts.has(l));
+    const shown = level ? (counts.get(level) ?? 0) : tiles.length;
 
     return (
-        <>
-            <div className="mb-5 flex flex-wrap items-center gap-2.5">
-                {next && (
-                    <Link
-                        href={`${kanjiPath(next.char)}#learn`}
-                        className={cn(
-                            "inline-flex h-11 items-center gap-2 rounded-full bg-c px-5 text-sm font-bold text-onacc transition-colors hover:bg-ink hover:text-bg",
-                            FOCUS_RING,
-                        )}
-                    >
-                        {nextLabel(next)} <span aria-hidden>→</span>
-                    </Link>
+        <div className="flex flex-col gap-5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                {levels.length > 1 && (
+                    <div role="group" aria-label="Filter by JLPT level" className="flex flex-wrap gap-2">
+                        <Chip pressed={level === null} onClick={() => setLevel(null)} count={tiles.length}>
+                            All
+                        </Chip>
+                        {levels.map((l) => (
+                            <Chip key={l} pressed={level === l} onClick={() => setLevel(level === l ? null : l)} count={counts.get(l)}>
+                                {l}
+                            </Chip>
+                        ))}
+                    </div>
                 )}
-                <Link
-                    href={studyHref}
-                    className={cn(
-                        "inline-flex h-11 items-center gap-2 rounded-full border border-line-2 px-4 text-sm font-medium transition-colors hover:border-ink-2",
-                        FOCUS_RING,
-                    )}
-                >
-                    <GraduationCap size={17} aria-hidden /> Study these
-                </Link>
-                <span className="ml-auto inline-flex items-center gap-2 text-[13px] text-ink-3">
-                    <InkLegend /> darker = better known
-                </span>
+                <InkLegend className="ml-auto" />
             </div>
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5 sm:grid-cols-[repeat(auto-fill,minmax(76px,1fr))]">
-                {list.map((char, i) => {
-                    const shade = shadeOf ? shadeOf(char) : 0;
-                    const meaning = meanings[i] ?? "";
-                    return (
-                        <li key={char}>
-                            <Link
-                                href={kanjiPath(char)}
-                                prefetch={false}
-                                title={meaning}
-                                aria-label={`${char}${meaning ? `, ${meaning}` : ""}${shadeOf ? `, ${SHADE_NAMES[shade]}` : ""}`}
-                                className={cellClass(
-                                    shade,
-                                    cn("flex flex-col items-center rounded-lg px-1 pt-2 pb-1.5", FOCUS_RING, "focus-visible:outline-offset-2"),
-                                )}
-                            >
-                                <span lang="ja" aria-hidden className="font-jp text-2xl font-extrabold leading-none">{char}</span>
-                                <span aria-hidden className="mt-1 w-full truncate text-center text-[11px] opacity-90">{meaning}</span>
-                            </Link>
-                        </li>
-                    );
-                })}
+            <p aria-live="polite" className="sr-only">
+                {level ? `${shown} ${level} kanji` : `All ${shown} kanji`}
+            </p>
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(88px,1fr))] sm:gap-2.5">
+                {tiles.map((t) => (
+                    <li key={t.char} hidden={level !== null && t.jlpt !== level} className="min-w-0">
+                        {t.tile}
+                    </li>
+                ))}
             </ul>
-        </>
+        </div>
     );
 }
