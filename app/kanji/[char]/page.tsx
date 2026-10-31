@@ -1,29 +1,28 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
-import { ArrowRight } from "lucide-react";
-import { getAllKanji, getKanji, getKanjiByRadical, getNeighbors, getRadical } from "@/lib/atlas";
-import type { AtlasKanji } from "@/lib/atlas/types";
+import { getAllKanji, getNeighbors } from "@/lib/atlas";
 import { getStrokeDiagramSvg } from "@/lib/atlas/kanjivg";
-import { browsePath, categoryPath, kanjiPath, radicalPath } from "@/lib/atlas/paths";
-import { readingToRomaji, plainReading } from "@/lib/atlas/readings";
-import { Breadcrumbs, PageShell, Section } from "@/components/Atlas/PageShell";
-import { JlptBadge, StatBadge } from "@/components/Atlas/JlptBadge";
-import { KanjiTileGrid } from "@/components/Atlas/KanjiTile";
-import { RadicalChip } from "@/components/Atlas/RadicalChip";
+import { browsePath, kanjiPath } from "@/lib/atlas/paths";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { Breadcrumbs, PageShell } from "@/components/Atlas/PageShell";
 import { PrevNextNav } from "@/components/Atlas/PrevNextNav";
-import { ReadingList } from "@/components/Atlas/kanji/ReadingList";
-import { ExampleList } from "@/components/Atlas/kanji/ExampleList";
-import { StrokeOrderPanel } from "@/components/Atlas/kanji/StrokeOrderPanel";
-import { firstSentences, truncate } from "@/components/Atlas/kanji/summary";
-import { StudyControls } from "@/components/Atlas/kanji/StudyControls";
 import { TrackEvent } from "@/components/Atlas/TrackEvent";
+import { kanjiTitle, layoutReadings } from "@/components/Kanji/readings";
+import { ActionRow, KanjiHero } from "@/components/Kanji/KanjiHero";
+import { ReadingBlocks } from "@/components/Kanji/ReadingBlocks";
+import { KanjiStory } from "@/components/Kanji/KanjiStory";
+import { StrokePlayer } from "@/components/Kanji/StrokePlayer";
+import { Etymology, MemoryStory } from "@/components/Kanji/StoryBlocks";
+import { AlsoBuiltOnBlocks, SameOnBlocks, SoundFamily } from "@/components/Kanji/KanjiLinks";
+import { LookAlikeCompare } from "@/components/Kanji/LookAlikeCompare";
+import { KanjiZh } from "@/components/Kanji/KanjiZh";
+import { LearnLauncher } from "@/components/Learn/LearnLauncher";
+import { getKanjiPageData } from "./data";
 
 // Every kanji is prerendered; unknown chars 404. Percent-encoded URLs map to
 // the same prerendered pages (Next normalizes the encoding).
 export const dynamicParams = false;
-
-const SAME_RADICAL_LIMIT = 24;
 
 interface PageProps {
     params: Promise<{ char: string }>;
@@ -33,154 +32,195 @@ export function generateStaticParams() {
     return getAllKanji().map((k) => ({ char: k.char }));
 }
 
-const readingSummary = (readings: string[]) =>
-    readings.slice(0, 3).map((r) => `${plainReading(r)} (${readingToRomaji(r).replace(/-/g, "")})`).join(", ");
-
-function describe(kanji: AtlasKanji): string {
-    const parts = [`${kanji.char} means ${kanji.meanings.slice(0, 3).join(", ")}.`];
-    if (kanji.onyomi.length) parts.push(`On'yomi: ${readingSummary(kanji.onyomi)}.`);
-    if (kanji.kunyomi.length) parts.push(`Kun'yomi: ${readingSummary(kanji.kunyomi)}.`);
-    parts.push(`JLPT ${kanji.jlpt}, ${kanji.strokeCount} strokes, with stroke order and example words.`);
-    return truncate(parts.join(" "), 160);
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const kanji = getKanji((await params).char);
-    if (!kanji) return {};
-    const title = `${kanji.char} – ${kanji.meanings.slice(0, 2).join(", ")}: stroke order, readings & examples`;
-    const description = describe(kanji);
-    const url = kanjiPath(kanji.char);
+    const data = getKanjiPageData((await params).char);
+    if (!data) return {};
+    const title = kanjiTitle(data.kanji);
+    const url = kanjiPath(data.kanji.char);
     return {
         title,
-        description,
+        description: data.description,
         alternates: { canonical: url },
-        openGraph: { title, description, url, type: "article", siteName: "Kanji Kaisen" },
+        openGraph: { title, description: data.description, url, type: "article", siteName: SITE_NAME },
     };
 }
 
-export default async function KanjiPage({ params }: PageProps) {
-    const kanji = getKanji((await params).char);
-    if (!kanji) notFound();
+function jsonLd(data: NonNullable<ReturnType<typeof getKanjiPageData>>): string {
+    const { kanji } = data;
+    const ld = {
+        "@context": "https://schema.org",
+        "@type": "DefinedTerm",
+        name: kanji.char,
+        alternateName: [...kanji.onyomi, ...kanji.kunyomi].map((r) => r.replace(/[.\-]/g, "")).filter(Boolean),
+        description: data.meanings.slice(0, 4).join(", "),
+        inLanguage: "ja",
+        url: `${SITE_URL}${kanjiPath(kanji.char)}`,
+        inDefinedTermSet: {
+            "@type": "DefinedTermSet",
+            name: `${SITE_NAME} kanji atlas`,
+            url: `${SITE_URL}${browsePath()}`,
+        },
+    };
+    // Keep "</script>" and friends out of the inline script.
+    return JSON.stringify(ld).replace(/</g, "\\u003c");
+}
 
-    const radical = kanji.radical ? getRadical(kanji.radical.key) : null;
-    const sameRadical = kanji.radical ? getKanjiByRadical(kanji.radical.key).filter((k) => k.char !== kanji.char) : [];
+const sectionTitle = "font-disp text-[28px] font-bold leading-tight text-ink";
+
+export default async function KanjiPage({ params }: PageProps) {
+    const data = getKanjiPageData((await params).char);
+    if (!data) notFound();
+
+    const { kanji, build, journey } = data;
+    const layout = layoutReadings(kanji.wordsByReading);
     const { prev, next } = getNeighbors(kanji.char);
     const strokeSvg = getStrokeDiagramSvg(kanji.char);
-    const storySummary = radical ? firstSentences(radical.story || radical.origin, 2) : "";
+    const paths = data.strokes.strokes.map((s) => s.d);
+    // With no parts to build from and no ancient forms, the stroke animation takes the stage.
+    const hasStory = Boolean(build || journey);
+    const strokeOnStage = !hasStory && paths.length > 0;
+    const hasLinks = data.alsoBuiltOn.length > 0 || data.soundFamily || data.headedFamily || data.sameOn.length > 0 || data.lookAlikes.length > 0;
+    const firstReading = layout.main[0];
 
     return (
-        <PageShell>
+        <PageShell className="max-w-6xl" style={{ "--tc": data.themeColor } as CSSProperties}>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(data) }} />
+            <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
+            <LearnLauncher data={data.learn} />
+
             <Breadcrumbs
                 items={[
                     { href: "/", label: "Home" },
-                    { href: browsePath(), label: "Browse" },
                     { href: browsePath({ jlpt: kanji.jlpt }), label: `JLPT ${kanji.jlpt}` },
-                    { label: kanji.char },
+                    { label: `${kanji.char} ${data.headline}` },
                 ]}
             />
 
-            {/* Hero */}
-            <header className="flex flex-col sm:flex-row gap-6 sm:items-center">
-                <div className="aspect-square w-40 sm:w-48 shrink-0 self-center flex items-center justify-center bg-card rounded-3xl border border-line text-8xl sm:text-9xl font-bold font-japanese" aria-hidden>
-                    {kanji.char}
+            {/* Hero: on phones glyph, meaning and readings come first; on desktop the build (or stroke order) sits on the left. */}
+            <div className="grid gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)]">
+                <div className="lg:col-start-2">
+                    <KanjiHero kanji={kanji} headline={data.headline} meanings={data.meanings} parts={data.parts} />
                 </div>
-                <div className="min-w-0 space-y-4">
-                    <h1 className="text-3xl sm:text-4xl font-bold break-words">
-                        <span className="sr-only">{kanji.char}: </span>
-                        {kanji.meanings.slice(0, 4).join(", ")}
-                    </h1>
-                    {kanji.meanings.length > 4 && (
-                        <p className="text-ink-2">Also: {kanji.meanings.slice(4).join(", ")}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                        <JlptBadge level={kanji.jlpt} />
-                        {kanji.grade !== null && <StatBadge>Grade {kanji.grade}</StatBadge>}
-                        <StatBadge>{kanji.strokeCount} strokes</StatBadge>
-                        {kanji.frequency !== null && (
-                            <StatBadge>
-                                <span title="Rank among the 2,500 most used kanji in newspapers">Frequency #{kanji.frequency}</span>
-                            </StatBadge>
+
+                <div className="lg:col-start-2">
+                    <ReadingBlocks char={kanji.char} layout={layout} id="readings" />
+                </div>
+
+                <div className="lg:col-start-2">
+                    <ActionRow char={kanji.char} />
+                </div>
+
+                {(hasStory || strokeOnStage) && (
+                    <section aria-labelledby="stage-title" className="lg:col-start-1 lg:row-span-3 lg:row-start-1">
+                        {hasStory ? (
+                            <KanjiStory
+                                char={kanji.char}
+                                build={build}
+                                journey={journey}
+                                todayStrokes={paths}
+                                title={
+                                    <h2 id="stage-title" className="flex flex-wrap items-baseline gap-x-3">
+                                        <span lang="ja" className="font-jp text-lg text-[var(--c)]">
+                                            成り立ち
+                                        </span>
+                                        <span className="font-disp text-[22px] italic text-ink-2">How {kanji.char} was built</span>
+                                    </h2>
+                                }
+                            />
+                        ) : (
+                            <>
+                                <h2 id="stage-title" className="mb-4 flex flex-wrap items-baseline gap-x-3">
+                                    <span lang="ja" className="font-jp text-lg text-[var(--c)]">
+                                        筆順
+                                    </span>
+                                    <span className="font-disp text-[22px] italic text-ink-2">How to write {kanji.char}</span>
+                                </h2>
+                                <StrokePlayer char={kanji.char} paths={paths} className="lg:[&>div:first-child]:max-w-[420px]" />
+                            </>
+                        )}
+                    </section>
+                )}
+            </div>
+
+            {/* Etymology (sourced) and Memory story (mnemonic) stay apart. */}
+            {(data.etymology || data.memory) && (
+                <div className="mt-12 grid gap-4 md:grid-cols-2">
+                    <Etymology etymology={data.etymology} className={data.memory ? "" : "md:col-span-2 md:max-w-3xl"} />
+                    {data.memory && <MemoryStory story={data.memory} className={data.etymology ? "" : "md:col-span-2 md:max-w-3xl"} />}
+                </div>
+            )}
+
+            {/* Stroke order: glowing animation (unless it is already on stage), the static numbered diagram, Try writing. */}
+            <section id="stroke-order" aria-labelledby="stroke-title" className="mt-12">
+                <h2 id="stroke-title" className={sectionTitle}>
+                    Stroke order
+                </h2>
+                {paths.length ? (
+                    <div className="mt-5 grid items-start gap-8 md:grid-cols-2">
+                        {!strokeOnStage && <StrokePlayer char={kanji.char} paths={paths} />}
+                        {strokeSvg && (
+                            <figure className={strokeOnStage ? "md:col-span-2 flex flex-col items-center gap-2 md:flex-row md:items-start md:gap-8" : "flex flex-col items-center gap-2"}>
+                                <div
+                                    className="aspect-square w-full max-w-[300px] rounded-xl border border-line bg-card p-2 text-ink [&>svg]:h-full [&>svg]:w-full"
+                                    dangerouslySetInnerHTML={{ __html: strokeSvg }}
+                                />
+                                <figcaption className="text-center text-xs text-ink-3 md:max-w-[300px]">
+                                    Numbers show the stroke order. Diagram:{" "}
+                                    <a href="https://kanjivg.tagaini.net" className="underline underline-offset-2 hover:text-ink" rel="noopener">
+                                        KanjiVG
+                                    </a>{" "}
+                                    (CC BY-SA 3.0)
+                                </figcaption>
+                            </figure>
                         )}
                     </div>
-                    <StudyControls char={kanji.char} />
-                    <TrackEvent name="kanji_viewed" properties={{ kanji: kanji.char, jlpt: kanji.jlpt, radical: kanji.radical?.key ?? null }} />
-                </div>
-            </header>
-
-            <Section title="Readings">
-                <div className="grid sm:grid-cols-2 gap-6">
-                    <ReadingList label="On'yomi" hint="Chinese-derived" readings={kanji.onyomi} />
-                    <ReadingList label="Kun'yomi" hint="native Japanese" readings={kanji.kunyomi} />
-                </div>
-                {kanji.kunyomi.some((r) => r.includes(".")) && (
-                    <p className="mt-3 text-xs text-ink-3">Faded kana are okurigana, written in hiragana after the kanji.</p>
-                )}
-            </Section>
-
-            <Section title="Stroke order" id="stroke-order">
-                {strokeSvg ? (
-                    <div className="grid md:grid-cols-2 gap-6 items-start">
-                        <figure className="flex flex-col items-center gap-2">
-                            <div
-                                className="w-full max-w-[300px] aspect-square p-2 rounded-xl bg-card border border-line text-ink [&>svg]:w-full [&>svg]:h-full"
-                                dangerouslySetInnerHTML={{ __html: strokeSvg }}
-                            />
-                            <figcaption className="text-xs text-ink-3 text-center">
-                                Numbers show stroke order. Diagram:{" "}
-                                <a href="https://kanjivg.tagaini.net" className="underline hover:text-[var(--accent)]" rel="noopener">KanjiVG</a>{" "}
-                                (CC BY-SA 3.0)
-                            </figcaption>
-                        </figure>
-                        <StrokeOrderPanel char={kanji.char} />
-                    </div>
                 ) : (
-                    <p className="text-ink-3 text-sm">No stroke order data is available for this kanji yet.</p>
+                    <p className="mt-3 text-sm text-ink-3">No stroke order data is available for this kanji yet.</p>
                 )}
-            </Section>
+            </section>
 
-            <Section title="Example words">
-                {kanji.examples.length > 0 ? (
-                    <ExampleList examples={kanji.examples} />
-                ) : (
-                    <p className="text-ink-3 text-sm">No example words for this kanji yet.</p>
-                )}
-            </Section>
+            {hasLinks && (
+                <section aria-labelledby="links-title" className="mt-12 flex flex-col gap-8">
+                    <h2 id="links-title" className={sectionTitle}>
+                        Kanji connected to {kanji.char}
+                    </h2>
 
-            <Section title="Composition">
-                {radical ? (
-                    <div className="p-4 sm:p-5 rounded-xl bg-card border border-line space-y-3">
-                        <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-sm text-ink-3">Radical</span>
-                            <RadicalChip radical={{ key: radical.key, char: radical.char, name: radical.name, meaning: radical.meaning }} />
+                    {data.alsoBuiltOn.length > 0 && <AlsoBuiltOnBlocks groups={data.alsoBuiltOn} />}
+
+                    {(data.soundFamily || data.headedFamily) && (
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-sm font-bold text-ink">Same sound part</h3>
+                            {data.soundFamily && <SoundFamily char={kanji.char} family={data.soundFamily} />}
+                            {data.headedFamily && <SoundFamily char={kanji.char} family={data.headedFamily} heads />}
                         </div>
-                        {storySummary && <p className="text-ink leading-relaxed">{storySummary}</p>}
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                            {radical.hasStory && (
-                                <Link href={radicalPath(radical.key)} className="inline-flex items-center gap-1 text-[var(--accent)] hover:underline">
-                                    Read the full story <ArrowRight size={14} aria-hidden />
-                                </Link>
-                            )}
-                            {kanji.category && (
-                                <Link href={categoryPath(kanji.category)} className="inline-flex items-center gap-1 text-ink-2 hover:text-[var(--accent)]">
-                                    Theme: {kanji.category} <ArrowRight size={14} aria-hidden />
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-ink-3 text-sm">No radical is assigned to this character.</p>
-                )}
-            </Section>
-
-            {radical && sameRadical.length > 0 && (
-                <Section title={`Other kanji with ${radical.char}`}>
-                    <KanjiTileGrid items={sameRadical.slice(0, SAME_RADICAL_LIMIT)} />
-                    {sameRadical.length > SAME_RADICAL_LIMIT && (
-                        <Link href={radicalPath(radical.key)} className="mt-4 inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:underline">
-                            See all {sameRadical.length + 1} kanji with {radical.char} <ArrowRight size={14} aria-hidden />
-                        </Link>
                     )}
-                </Section>
+
+                    {data.sameOn.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-sm font-bold text-ink">Same on&apos;yomi</h3>
+                            <SameOnBlocks groups={data.sameOn} />
+                        </div>
+                    )}
+
+                    {data.lookAlikes.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-sm font-bold text-ink">Look-alikes</h3>
+                            <LookAlikeCompare
+                                char={kanji.char}
+                                meaning={data.meanings[0] ?? ""}
+                                reading={firstReading ? firstReading.reading.replace(/[.\-]/g, "") : ""}
+                                paths={paths}
+                                items={data.lookAlikes}
+                            />
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {data.zh && (
+                <div className="mt-12 max-w-3xl">
+                    <KanjiZh char={kanji.char} facts={data.zh} />
+                </div>
             )}
 
             <PrevNextNav
