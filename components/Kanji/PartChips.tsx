@@ -4,16 +4,23 @@ import { cn } from "@/lib/utils";
 import type { PartView } from "./types";
 import styles from "./kanji.module.css";
 
-/** Inline style + classes that colour an element by its part (theme colour in 夜, vermilion or ink in 墨). */
+/**
+ * Inline style + classes that colour an element by its part (theme colour in 夜, vermilion or ink in 墨).
+ * @deprecated One Atlas: parts take the page's --c and show their role by line (components/ui/PartChip); kept for the #learn layer.
+ */
 export function partStyle(part: Pick<PartView, "themeColor">): CSSProperties {
     return { "--tc": part.themeColor } as CSSProperties;
 }
 
+/** @deprecated One Atlas: see partStyle. */
 export function partClass(part: Pick<PartView, "alt">): string {
     return cn(styles.part, part.alt && styles.alt);
 }
 
-/** One chip: "氵 water · meaning". Links to the radical or the part's own kanji page. */
+/**
+ * One chip: "氵 water · meaning". Links to the radical or the part's own kanji page.
+ * @deprecated One Atlas: components/ui/PartChip (role by line, colour from the page's theme).
+ */
 export function PartChip({ part, size = "md" }: { part: PartView; size?: "sm" | "md" }) {
     const body = (
         <>
@@ -49,7 +56,10 @@ export function PartChip({ part, size = "md" }: { part: PartView; size?: "sm" | 
     );
 }
 
-/** Part chips joined with "+", as in "氵 water · meaning + 毎 · sound". */
+/**
+ * Part chips joined with "+", as in "氵 water · meaning + 毎 · sound".
+ * @deprecated One Atlas: components/ui/PartChip with PartPlus, as in components/Kanji/KanjiHero.
+ */
 export function PartChips({ parts, size = "md", className }: { parts: PartView[]; size?: "sm" | "md"; className?: string }) {
     if (!parts.length) return null;
     return (

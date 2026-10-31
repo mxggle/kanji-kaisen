@@ -2,9 +2,21 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { extractStrokes, partOffsets, pathPoints, rangeIndexes, strokeOwners, strokeTypeName } from "./strokes.ts";
+import { extractStrokeNumbers, extractStrokes, partOffsets, pathPoints, rangeIndexes, strokeOwners, strokeTypeName } from "./strokes.ts";
 
 const raw = fs.readFileSync(path.join(process.cwd(), "public", "kanjivg", "kanji", "06d77.svg"), "utf8");
+
+test("extractStrokeNumbers reads KanjiVG's number positions in stroke order", () => {
+    const numbers = extractStrokeNumbers(raw);
+    assert.equal(numbers.length, 9);
+    assert.ok(numbers.every((p) => p.x >= 0 && p.x <= 109 && p.y >= 0 && p.y <= 109));
+    const svg = '<g><text transform="matrix(1 0 0 1 50.50 49.50)">2</text><text transform="matrix(1 0 0 1 25.50 15.50)">1</text></g>';
+    assert.deepEqual(extractStrokeNumbers(svg), [
+        { x: 25.5, y: 15.5 },
+        { x: 50.5, y: 49.5 },
+    ]);
+    assert.deepEqual(extractStrokeNumbers("<svg></svg>"), []);
+});
 
 test("extractStrokes reads 海's nine strokes in order with their types", () => {
     const strokes = extractStrokes(raw);

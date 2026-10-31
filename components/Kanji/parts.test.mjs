@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isAccentRole, partPhrase, partsCaption, uniqueParts } from "./parts.ts";
+import { buildCaptionText, buildClauses, isAccentRole, joinChars, partLine, partNote, partPhrase, partsCaption, uniqueParts } from "./parts.ts";
 
 test("partsCaption reads like the plan: 氵 water (meaning) + 毎 (sound)", () => {
     assert.equal(
@@ -29,4 +29,36 @@ test("isAccentRole marks meaning-bearing parts", () => {
     assert.equal(isAccentRole("both"), true);
     assert.equal(isAccentRole("sound"), false);
     assert.equal(isAccentRole("form"), false);
+});
+
+test("buildClauses says what each part does, by role", () => {
+    const rest = [
+        { char: "亻", role: "meaning", gloss: "person" },
+        { char: "木", role: "form", gloss: "tree" },
+    ];
+    assert.equal(buildCaptionText(rest), "亻 carries the meaning · 木 is drawn in");
+    const sea = [
+        { char: "氵", role: "meaning", gloss: "water" },
+        { char: "毎", role: "sound", gloss: null },
+    ];
+    assert.deepEqual(buildClauses(sea).map((c) => c.line), ["meaning", "sound"]);
+    assert.equal(buildCaptionText(sea), "氵 carries the meaning · 毎 gives the sound");
+});
+
+test("buildClauses groups parts that share a role and merges repeats", () => {
+    const parts = [
+        { char: "口", role: "form", gloss: "mouth" },
+        { char: "木", role: "form", gloss: "tree" },
+        { char: "口", role: "form", gloss: "mouth" },
+        { char: "癶", role: "both", gloss: "legs" },
+    ];
+    assert.equal(buildCaptionText(parts), "癶 carries meaning and sound · 口 and 木 are drawn in");
+    assert.equal(joinChars(["一", "口", "木"]), "一, 口 and 木");
+});
+
+test("partLine and partNote follow rule 2", () => {
+    assert.equal(partLine("both"), "meaning");
+    assert.equal(partLine("sound"), "sound");
+    assert.equal(partNote("both"), "meaning · sound");
+    assert.equal(partNote("form"), "form");
 });

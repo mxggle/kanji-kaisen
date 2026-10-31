@@ -1,148 +1,113 @@
-"use client";
-
-import { useId, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { kanjiPath } from "@/lib/atlas/paths";
+import { Chip } from "@/components/ui/Chip";
 import type { LookAlikeView } from "./types";
-import styles from "./kanji.module.css";
 
+/** A glyph drawn from its strokes, the parts only it has in the accent. */
 function Glyph({ char, paths, highlight }: { char: string; paths: string[]; highlight: number[] }) {
     if (!paths.length) {
         return (
-            <span lang="ja" className="flex h-full w-full items-center justify-center font-jp text-7xl font-extrabold text-ink">
+            <span lang="ja" aria-hidden className="font-jp text-[88px] font-extrabold leading-none">
                 {char}
             </span>
         );
     }
     const lit = new Set(highlight);
     return (
-        <svg viewBox="0 0 109 109" aria-hidden className={styles.glyph} strokeWidth={4.6}>
-            <g className={styles.part}>
-                {paths.map((d, i) => (lit.has(i) ? null : <path key={i} d={d} className={styles.done} />))}
-            </g>
-            <g className={cn(styles.part, styles.glow)}>
-                {paths.map((d, i) => (lit.has(i) ? <path key={i} d={d} className={styles.lit} /> : null))}
-            </g>
+        <svg viewBox="0 0 109 109" aria-hidden className="size-24 overflow-visible fill-none [stroke-linecap:round] [stroke-linejoin:round] sm:size-[104px]" strokeWidth={5}>
+            {paths.map((d, i) => (
+                <path key={i} d={d} className={lit.has(i) ? "stroke-c" : "stroke-ink"} />
+            ))}
         </svg>
+    );
+}
+
+interface Side {
+    char: string;
+    meaning: string;
+    paths: string[];
+    highlight: number[];
+    /** Parts only this side has. */
+    own: string[];
+    href?: string;
+}
+
+function SideView({ side }: { side: Side }) {
+    const body = (
+        <>
+            <Glyph char={side.char} paths={side.paths} highlight={side.highlight} />
+            <span className="text-center text-sm text-ink-2">
+                <span className="sr-only" lang="ja">
+                    {side.char}{" "}
+                </span>
+                <b className="font-bold text-ink">{side.meaning}</b>
+                {side.own.length > 0 && (
+                    <>
+                        {" · "}
+                        <span lang="ja" className="font-jp">
+                            {side.own.join(" + ")}
+                        </span>
+                    </>
+                )}
+            </span>
+        </>
+    );
+    const cls = "flex min-w-0 flex-col items-center gap-1.5";
+    return side.href ? (
+        <Link href={side.href} className={cn(cls, "rounded-xl transition-colors hover:text-ink [&:hover_b]:underline")}>
+            {body}
+        </Link>
+    ) : (
+        <div className={cls}>{body}</div>
     );
 }
 
 interface LookAlikeCompareProps {
     char: string;
     meaning: string;
-    reading: string;
     paths: string[];
     items: LookAlikeView[];
+    className?: string;
 }
 
-/** Side-by-side compare with each look-alike; the parts that differ glow. */
-export function LookAlikeCompare({ char, meaning, reading, paths, items }: LookAlikeCompareProps) {
-    const [selected, setSelected] = useState(0);
-    const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-    const id = useId();
-    const other = items[selected];
-    if (!other) return null;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-        const last = items.length - 1;
-        let next: number | null = null;
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = selected === last ? 0 : selected + 1;
-        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = selected === 0 ? last : selected - 1;
-        else if (e.key === "Home") next = 0;
-        else if (e.key === "End") next = last;
-        if (next === null) return;
-        e.preventDefault();
-        setSelected(next);
-        tabs.current[next]?.focus();
-    };
-
-    const side = (c: string, m: string, r: string, p: string[], highlight: number[], href: string | null) => (
-        <figure className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <div className="aspect-square w-full max-w-[180px] rounded-xl border border-line bg-card p-3">
-                <Glyph char={c} paths={p} highlight={highlight} />
-            </div>
-            <figcaption className="text-center text-sm">
-                {href ? (
-                    <Link href={href} className="inline-flex items-center gap-1 text-ink hover:text-[var(--c)]">
-                        <span lang="ja" className="font-jp text-lg font-bold">
-                            {c}
-                        </span>{" "}
-                        {m} <ArrowRight size={13} aria-hidden />
-                    </Link>
-                ) : (
-                    <span className="text-ink">
-                        <span lang="ja" className="font-jp text-lg font-bold">
-                            {c}
-                        </span>{" "}
-                        {m}
-                    </span>
-                )}
-                {r && (
-                    <span lang="ja" className="block text-ink-3">
-                        {r}
-                    </span>
-                )}
-            </figcaption>
-        </figure>
-    );
-
+/**
+ * "Easy to confuse": this kanji beside its closest look-alike, the strokes of
+ * the parts that differ in the accent, and the other look-alikes as chips.
+ */
+export function LookAlikeCompare({ char, meaning, paths, items, className }: LookAlikeCompareProps) {
+    const [first, ...rest] = items;
+    if (!first) return null;
     return (
-        <div className="flex flex-col gap-4">
-            <div role="tablist" aria-label={`Look-alikes of ${char}`} className="flex flex-wrap gap-2" onKeyDown={onKeyDown}>
-                {items.map((item, i) => (
-                    <button
-                        key={item.char}
-                        ref={(el) => {
-                            tabs.current[i] = el;
-                        }}
-                        type="button"
-                        role="tab"
-                        id={`${id}-tab-${i}`}
-                        aria-selected={i === selected}
-                        aria-controls={`${id}-panel`}
-                        tabIndex={i === selected ? 0 : -1}
-                        onClick={() => setSelected(i)}
-                        className={cn(
-                            "inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors",
-                            i === selected ? "border-[var(--c)] text-ink" : "border-line text-ink-2 hover:text-ink",
-                        )}
-                    >
-                        <span lang="ja" className="font-jp text-xl font-extrabold leading-none">
-                            {item.char}
-                        </span>
-                        <span>{item.meaning}</span>
-                    </button>
-                ))}
+        <div className={cn("flex flex-col gap-3.5", className)}>
+            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                <h3 className="text-[17px] font-bold leading-snug">Easy to confuse</h3>
+                <span className="text-sm text-ink-3">The difference, side by side</span>
             </div>
-
-            <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${selected}`} className="flex flex-col gap-3">
-                <div className="flex items-start gap-3 sm:gap-6">
-                    {side(char, meaning, reading, paths, other.diff.highlightA, null)}
-                    <span aria-hidden className="self-center pb-10 font-disp text-2xl italic text-ink-3">
-                        vs
-                    </span>
-                    {side(other.char, other.meaning, other.reading, other.paths, other.diff.highlightB, kanjiPath(other.char))}
-                </div>
-                <p className="text-center font-disp text-lg italic text-ink">{other.diff.caption}</p>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(480px,100%),1fr))] items-start gap-6">
+                <figure className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 rounded-2xl border border-line bg-card px-[22px] py-5">
+                    <SideView side={{ char, meaning, paths, highlight: first.diff.highlightA, own: first.diff.onlyA }} />
+                    <span className="text-xs text-ink-3">vs</span>
+                    <SideView
+                        side={{ char: first.char, meaning: first.meaning, paths: first.paths, highlight: first.diff.highlightB, own: first.diff.onlyB, href: kanjiPath(first.char) }}
+                    />
+                    <figcaption className="col-span-full text-center text-sm text-ink-2">{first.diff.caption}</figcaption>
+                </figure>
+                {rest.length > 0 && (
+                    <ul aria-label={`More look-alikes of ${char}`} className="flex flex-wrap gap-2">
+                        {rest.map((item) => (
+                            <li key={item.char}>
+                                <Chip href={kanjiPath(item.char)}>
+                                    <span lang="ja" className="font-jp font-extrabold text-ink">
+                                        {item.char}
+                                    </span>
+                                    {item.meaning}
+                                </Chip>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
-
-            {/* Every look-alike as a plain link, so all of them are in the page's HTML. */}
-            <p className="text-sm text-ink-3">
-                Open:{" "}
-                {items.map((item, i) => (
-                    <span key={item.char}>
-                        {i > 0 && " · "}
-                        <Link href={kanjiPath(item.char)} className="text-ink-2 hover:text-[var(--c)]">
-                            <span lang="ja" className="font-jp">
-                                {item.char}
-                            </span>{" "}
-                            {item.meaning}
-                        </Link>
-                    </span>
-                ))}
-            </p>
         </div>
     );
 }

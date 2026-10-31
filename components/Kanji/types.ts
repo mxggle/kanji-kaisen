@@ -44,6 +44,8 @@ export interface KanjiLite {
     meaning: string;
     /** A plain reading to show under the glyph (first on'yomi, else kun'yomi). */
     reading: string;
+    /** The kanji's theme, so its tile takes its own colour. */
+    category?: string | null;
 }
 
 export interface AlsoBuiltOn {
@@ -52,6 +54,21 @@ export interface AlsoBuiltOn {
     total: number;
     /** "All N kanji with 氵" link target, when one exists. */
     moreHref: string | null;
+    /** The part's radical, when it is one: its theme and kanji (most common first) for the seal. */
+    radical?: { key: string; category: string | null; chars: string } | null;
+}
+
+/** A step of the atlas path above the plate. */
+export interface PathView {
+    theme: { name: string; short: string; href: string } | null;
+    radical: { key: string; char: string; label: string; href: string; category: string | null; chars: string } | null;
+}
+
+/** The kanji before or after this one in its radical, most common first. */
+export interface SiblingView {
+    char: string;
+    meaning: string;
+    href: string;
 }
 
 export interface FamilyMember extends KanjiLite {
@@ -92,13 +109,16 @@ export interface MemoryStoryView {
     text: string;
     /** The kanji-specific line came from the radical's example list. */
     specific: boolean;
-    radical: { key: string; char: string; name: string; href: string };
+    /** `label` is the radical's short meaning ("person"). */
+    radical: { key: string; char: string; name: string; href: string; label?: string };
 }
 
 export interface StrokeData {
     strokes: Stroke[];
     /** Owner part of each stroke, null for loose strokes or no parts. */
     owners: (number | null)[];
+    /** KanjiVG's position for each stroke's number, in its 109 box. */
+    numbers?: Point[];
 }
 
 /** Sourced ancient forms for the journey (JourneyPlayer props). */

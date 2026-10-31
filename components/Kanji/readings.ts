@@ -154,6 +154,32 @@ export function kanjiTitle(kanji: ReadingSource & Pick<AtlasKanji, "char" | "mea
     return `${head} – ${meaningHeadline(kanji.meanings)}: ${tail}`;
 }
 
+const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
+
+/** "Three readings, and the words that use each"; "々 has no reading of its own". */
+export function readingsHeading(char: string, layout: ReadingLayout): string {
+    const count = (n: number) => COUNT_WORDS[n] ?? String(n);
+    if (layout.main.length === 0) return `${char} has no reading of its own`;
+    const withWords = layout.main.filter((b) => b.words.length > 0).length;
+    if (withWords === 0) return `${count(layout.main.length)} reading${layout.main.length === 1 ? "" : "s"}`;
+    return withWords === 1 ? "One reading, and the words that use it" : `${count(withWords)} readings, and the words that use each`;
+}
+
+/** Credit for the words shown: "Words: Kanji alive, CC BY 4.0 · JMdict, EDRDG, CC BY-SA 4.0". */
+export function wordsCredit(words: readonly Pick<WordView, "source">[]): string | null {
+    const sources = new Set(words.map((w) => w.source));
+    const credits = [];
+    if (sources.has("kanjialive")) credits.push("Kanji alive, CC BY 4.0");
+    if (sources.has("jmdict")) credits.push("JMdict, EDRDG, CC BY-SA 4.0");
+    return credits.length ? `Words: ${credits.join(" · ")}` : null;
+}
+
+/** A grade as a tag: "Grade 1", "Secondary school", "Name kanji". */
+export function gradeTag(grade: number | null): string | null {
+    const label = gradeLabel(grade);
+    return label ? label[0].toUpperCase() + label.slice(1) : null;
+}
+
 /** KANJIDIC2 grade as words: 1–6 school grades, 8 secondary school, 9–10 name kanji. */
 export function gradeLabel(grade: number | null): string | null {
     if (grade === null) return null;

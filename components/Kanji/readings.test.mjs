@@ -3,16 +3,36 @@ import assert from "node:assert/strict";
 import {
     displayMeanings,
     gradeLabel,
+    gradeTag,
     kanjiTitle,
     layoutReadings,
     meaningHeadline,
     partGloss,
+    readingsHeading,
     shortGloss,
     titleReadings,
+    wordsCredit,
     wordSegments,
 } from "./readings.ts";
 
 const w = (word, reading, meaning = "m", extra = {}) => ({ word, reading, meaning, ...extra });
+
+test("readingsHeading counts the readings that have words", () => {
+    const block = (words) => ({ reading: "x", kind: "on", stem: "x", okurigana: "", prefix: false, suffix: false, romaji: "x", words });
+    const word = w("休日", "きゅうじつ");
+    assert.equal(readingsHeading("休", { main: [block([word]), block([word]), block([word])], more: [], special: [] }), "Three readings, and the words that use each");
+    assert.equal(readingsHeading("休", { main: [block([word])], more: [], special: [] }), "One reading, and the words that use it");
+    assert.equal(readingsHeading("々", { main: [], more: [], special: [] }), "々 has no reading of its own");
+    assert.equal(readingsHeading("鍋", { main: [block([]), block([])], more: [], special: [] }), "Two readings");
+});
+
+test("wordsCredit names each source once; gradeTag capitalises", () => {
+    assert.equal(wordsCredit([{ source: "kanjialive" }, { source: "kanjialive" }]), "Words: Kanji alive, CC BY 4.0");
+    assert.equal(wordsCredit([{ source: "jmdict" }, { source: "kanjialive" }]), "Words: Kanji alive, CC BY 4.0 · JMdict, EDRDG, CC BY-SA 4.0");
+    assert.equal(wordsCredit([]), null);
+    assert.equal(gradeTag(1), "Grade 1");
+    assert.equal(gradeTag(null), null);
+});
 
 test("displayMeanings drops KANJIDIC notes", () => {
     assert.deepEqual(displayMeanings(["work", "(kokuji)"]), ["work"]);

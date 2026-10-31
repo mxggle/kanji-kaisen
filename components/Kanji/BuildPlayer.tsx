@@ -1,181 +1,110 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
-import { partPhrase } from "./parts";
+import { Button } from "@/components/ui/Button";
+import { buildCaptionText, buildClauses, partLine, type PartLine } from "./parts";
 import type { BuildView } from "./types";
 import styles from "./kanji.module.css";
 
-type Stage = "parts" | "together" | "today";
+// Rule 2 on the strokes: meaning solid in the accent, sound dashed in the
+// accent, form-only in ink-2. Loose strokes (no part claims them) stay ink-2.
+const LINE: Record<PartLine, { className: string; dash?: string }> = {
+    meaning: { className: "stroke-c" },
+    sound: { className: "stroke-c [stroke-linecap:butt]", dash: "7 3.5" },
+    form: { className: "stroke-ink-2" },
+};
 
-const STAGES: { id: Stage; label: string }[] = [
-    { id: "parts", label: "Parts" },
-    { id: "together", label: "Together" },
-    { id: "today", label: "Today" },
-];
+const APPEAR_MS = 380;
+const HOLD_MS = 650;
 
-const STAGE_MS = 1900;
-const STROKE_MS = 300;
-
-const COUNT = ["", "One", "Two", "Three", "Four", "Five", "Six"];
-
-function captionFor(stage: Stage, build: BuildView): string {
-    if (stage === "parts") {
-        const n = build.parts.length;
-        return `${COUNT[n] ?? n} parts: ${build.parts.map(partPhrase).join(", ")}.`;
-    }
-    if (stage === "together") return build.caption;
-    return `Today's ${build.char}, in ${build.paths.length} strokes.`;
-}
-
-interface BuildPlayerProps {
-    build: BuildView;
-    /** Heading content (e.g. 成り立ち How 海 was built). */
-    title?: ReactNode;
-    /** Play hands over to this after "Together" (the ancient forms) instead of showing "Today". */
-    handOver?: () => void;
-    /** Label of the hand-over, shown as the last stage button ("Through time"). */
-    handOverLabel?: string;
-    className?: string;
-}
+type Phase = "rest" | "apart";
 
 /**
- * "How it was built" from KanjiVG parts alone: each part's strokes in its
- * theme colour, pulled apart, then assembled, then today's form drawn stroke by
- * stroke. Captions state the structure only (sourced etymology lives in its
- * own block). Fires `build_played` on Play.
+ * "How it was built": the KanjiVG parts drawn by role. Replay pulls the parts
+ * apart, shows them one by one and slides them together. Captions state the
+ * structure only; sourced etymology has its own card. Fires `build_played`.
  */
-export function BuildPlayer({ build, title, handOver, handOverLabel, className }: BuildPlayerProps) {
-    const [stage, setStage] = useState<Stage>("together");
+export function BuildPlayer({ build, className }: { build: BuildView; className?: string }) {
+    const [phase, setPhase] = useState<Phase>("rest");
     const [run, setRun] = useState(0);
-    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const clear = () => {
-        timers.current.forEach(clearTimeout);
-        timers.current = [];
-    };
-    useEffect(() => clear, []);
-
-    const pick = (next: Stage) => {
-        clear();
-        setStage(next);
-        setRun((r) => r + 1);
-    };
+    useEffect(() => () => {
+        if (timer.current) clearTimeout(timer.current);
+    }, []);
 
     const play = () => {
-        clear();
+        if (timer.current) clearTimeout(timer.current);
         trackEvent("build_played", { kanji: build.char });
-        setStage("parts");
+        setPhase("apart");
         setRun((r) => r + 1);
-        timers.current.push(setTimeout(() => setStage("together"), STAGE_MS));
-        timers.current.push(
-            setTimeout(() => {
-                if (handOver) {
-                    handOver();
-                    return;
-                }
-                setStage("today");
-                setRun((r) => r + 1);
-            }, STAGE_MS * 2),
-        );
+        timer.current = setTimeout(() => setPhase("rest"), APPEAR_MS * build.parts.length + HOLD_MS);
     };
 
-    const caption = captionFor(stage, build);
-    const today = stage === "today";
+    const apart = phase === "apart";
+    const clauses = buildClauses(build.parts);
 
     return (
-        <div className={cn("flex flex-col gap-4", className)}>
-            <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">{title}</div>
-                <button
-                    type="button"
-                    onClick={play}
-                    className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line-2 px-4 text-sm text-ink transition-colors hover:bg-ink hover:text-bg"
+        <div className={cn("flex flex-col gap-3.5", className)}>
+            <div role="img" aria-label={`${build.char}: ${buildCaptionText(build.parts)}`} className="relative aspect-square w-full rounded-xl bg-bg">
+                <svg
+                    key={run}
+                    viewBox="0 0 109 109"
+                    aria-hidden
+                    className="absolute inset-[6%] size-[88%] overflow-visible fill-none [stroke-linecap:round] [stroke-linejoin:round]"
+                    strokeWidth={4.2}
                 >
-                    <Play size={14} aria-hidden /> Play
-                </button>
-            </div>
-
-            <div role="img" aria-label={`${build.char}: ${caption}`} className="relative mx-auto aspect-square w-full max-w-[420px] p-[9%]">
-                <svg viewBox="0 0 109 109" aria-hidden className={styles.glyph} strokeWidth={4.4} key={today ? run : "static"}>
                     {build.parts.map((part, p) => {
+                        const line = LINE[partLine(part.role)];
                         const offset = build.offsets[p] ?? { x: 0, y: 0 };
-                        const apart = stage === "parts";
                         return (
                             <g
                                 key={p}
-                                className={cn(styles.part, part.alt && styles.alt, styles.move, styles.glow)}
+                                className={cn(!apart && styles.move, apart && styles.appear)}
                                 style={
                                     {
-                                        "--tc": part.themeColor,
                                         transform: apart ? `translate(${offset.x}px, ${offset.y}px) scale(.88)` : "none",
+                                        "--delay": `${p * APPEAR_MS}ms`,
                                     } as CSSProperties
                                 }
                             >
                                 {part.strokes.map((i) =>
                                     build.owners[i] === p && build.paths[i] ? (
-                                        <path
-                                            key={i}
-                                            d={build.paths[i]}
-                                            pathLength={1}
-                                            className={cn(styles.lit, today && styles.draw)}
-                                            style={today ? ({ "--delay": `${i * STROKE_MS}ms` } as CSSProperties) : undefined}
-                                        />
+                                        <path key={i} d={build.paths[i]} className={line.className} strokeDasharray={line.dash} />
                                     ) : null,
                                 )}
                             </g>
                         );
                     })}
-                    {/* Strokes no part claims (KanjiVG leaves a few loose). */}
-                    <g className={cn(styles.move)} style={{ opacity: stage === "parts" ? 0.35 : 1 }}>
-                        {build.paths.map((d, i) =>
-                            build.owners[i] === null ? (
-                                <path
-                                    key={i}
-                                    d={d}
-                                    pathLength={1}
-                                    className={cn(styles.loose, today && styles.draw)}
-                                    style={today ? ({ "--delay": `${i * STROKE_MS}ms` } as CSSProperties) : undefined}
-                                />
-                            ) : null,
-                        )}
+                    <g className={cn(!apart && styles.move)} style={{ opacity: apart ? 0.35 : 1 }}>
+                        {build.paths.map((d, i) => (build.owners[i] === null ? <path key={i} d={d} className="stroke-ink-2" /> : null))}
                     </g>
                 </svg>
             </div>
-
-            <p aria-live="polite" className="min-h-[2.7em] font-disp text-xl italic leading-snug text-ink sm:text-[22px]">
-                {caption}
-            </p>
-
-            <div role="group" aria-label="Build stages" className="flex gap-1.5">
-                {STAGES.map((s, k) => (
-                    <button
-                        key={s.id}
-                        type="button"
-                        aria-pressed={stage === s.id}
-                        onClick={() => pick(s.id)}
-                        className={cn(
-                            "flex h-11 flex-1 items-center justify-center gap-2 border-t-2 px-1.5 text-[13px] transition-colors",
-                            stage === s.id ? "border-[var(--c)] text-ink" : "border-line text-ink-3 hover:text-ink",
-                        )}
-                    >
-                        {k + 1} · {s.label}
-                    </button>
-                ))}
-                {handOver && handOverLabel && (
-                    <button
-                        type="button"
-                        onClick={() => {
-                            clear();
-                            handOver();
-                        }}
-                        className="flex h-11 flex-1 items-center justify-center gap-2 border-t-2 border-line px-1.5 text-[13px] text-ink-3 transition-colors hover:text-ink"
-                    >
-                        {STAGES.length + 1} · {handOverLabel}
-                    </button>
-                )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-ink-2">
+                    {clauses.map((clause, i) => (
+                        <Fragment key={clause.line + i}>
+                            {i > 0 && " · "}
+                            {clause.chars.map((char, k) => (
+                                <Fragment key={char}>
+                                    {k > 0 && (k === clause.chars.length - 1 ? " and " : ", ")}
+                                    <span lang="ja" className={cn("font-jp font-extrabold", clause.line === "meaning" ? "text-c" : "text-ink")}>
+                                        {char}
+                                    </span>
+                                </Fragment>
+                            ))}{" "}
+                            {clause.text}
+                        </Fragment>
+                    ))}
+                </p>
+                <Button size="sm" onClick={play}>
+                    <Play aria-hidden />
+                    How it was built
+                </Button>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { kanjiPath } from "@/lib/atlas/paths";
 import Link from "next/link";
-import type { ZhFacts } from "./zh";
+import { zhSummary, type ZhFacts } from "./zh";
 import { ZhNote } from "./ZhNote";
 
 const Hans = ({ children }: { children: ReactNode }) => (
@@ -72,7 +72,7 @@ function FalseFriendNote({ char, f }: { char: string; f: ZhFacts }) {
     if (!ff) return null;
     if (ff.kind === "different-char") {
         return (
-            <p className="rounded-lg border border-dashed border-line-2 px-3 py-2">
+            <p className="rounded-xl border border-line px-3.5 py-2.5">
                 <span className="font-bold text-ink">False friend.</span> Chinese also has a character{" "}
                 <Hans>{char}</Hans>
                 {ff.pinyin.length > 0 && <> ({ff.pinyin.join(", ")})</>}, but it is a different word. The Chinese for this kanji is{" "}
@@ -88,12 +88,12 @@ function FalseFriendNote({ char, f }: { char: string; f: ZhFacts }) {
         );
     }
     return (
-        <p className="rounded-lg border border-dashed border-line-2 px-3 py-2">
+        <p className="rounded-xl border border-line px-3.5 py-2.5">
             <span className="font-bold text-ink">False friend.</span> In simplified Chinese, <Hans>{char}</Hans> also stands for{" "}
             {ff.chars.map((o, i) => (
                 <span key={o.char}>
                     {i > 0 && (i === ff.chars.length - 1 ? " and " : ", ")}
-                    <Link href={kanjiPath(o.char)} prefetch={false} lang="zh-Hant" className="font-bold text-ink hover:text-[var(--c)]">
+                    <Link href={kanjiPath(o.char)} prefetch={false} lang="zh-Hant" className="font-bold text-ink hover:text-c">
                         {o.char}
                     </Link>
                     {o.meaning && <> ({o.meaning})</>}
@@ -104,11 +104,11 @@ function FalseFriendNote({ char, f }: { char: string; f: ZhFacts }) {
     );
 }
 
-/** The collapsed "In Chinese" probe: forms, pinyin, false friends, credit and the fake door. */
-export function KanjiZh({ char, facts }: { char: string; facts: ZhFacts }) {
+/** The collapsed "In Chinese" row: forms, pinyin, false friends, credit and the fake door. */
+export function KanjiZh({ char, facts, className }: { char: string; facts: ZhFacts; className?: string }) {
     const showForms = facts.relation !== "kokuji" && facts.relation !== "unknown" && (facts.simplified || facts.traditional);
     return (
-        <ZhNote char={char} relation={facts.relation}>
+        <ZhNote char={char} relation={facts.relation} summary={zhSummary(facts)} className={className}>
             <p>{relationSentence(char, facts)}</p>
 
             {showForms && (

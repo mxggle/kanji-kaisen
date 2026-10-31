@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
+import { Button } from "@/components/ui/Button";
 
 const INTEREST_KEY = "kanji-zh-interest";
 
@@ -15,11 +16,11 @@ function readInterest(): boolean {
 }
 
 /**
- * The collapsed "In Chinese" note. Its content is server-rendered (children);
+ * The collapsed "In Chinese" row. Its content is server-rendered (children);
  * this wrapper fires `zh_note_opened` on the first open and runs the
  * "Want a Chinese edition?" fake door (`zh_edition_interest`).
  */
-export function ZhNote({ char, relation, children }: { char: string; relation: string; children: ReactNode }) {
+export function ZhNote({ char, relation, summary, children, className }: { char: string; relation: string; summary: string; children: ReactNode; className?: string }) {
     const opened = useRef(false);
     const [asked, setAsked] = useState(false);
 
@@ -42,15 +43,19 @@ export function ZhNote({ char, relation, children }: { char: string; relation: s
     };
 
     return (
-        <details onToggle={onToggle} className="group rounded-xl border border-line bg-card">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-ink [&::-webkit-details-marker]:hidden">
-                <span>
-                    <span className="font-bold">In Chinese</span>
-                    <span className="ml-2 text-sm text-ink-3">simplified, traditional and pinyin</span>
+        <details onToggle={onToggle} className={cn("group border-y border-line", className)}>
+            <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-3.5 gap-y-1 py-3 text-[15px] text-ink [&::-webkit-details-marker]:hidden">
+                <span lang="ja" aria-hidden className="font-jp text-lg font-extrabold">
+                    中
                 </span>
-                <ChevronDown size={18} aria-hidden className="shrink-0 text-ink-3 transition-transform group-open:rotate-180" />
+                <span className="font-bold">In Chinese</span>
+                <span className="min-w-0 text-sm text-ink-2 max-sm:order-last max-sm:basis-full">{summary}</span>
+                <span aria-hidden className="ml-auto text-sm text-ink-3">
+                    <span className="group-open:hidden">Show</span>
+                    <span className="hidden group-open:inline">Hide</span>
+                </span>
             </summary>
-            <div className="flex flex-col gap-4 border-t border-line px-4 py-4 text-sm leading-relaxed text-ink-2">
+            <div className="flex max-w-3xl flex-col gap-4 pb-5 text-sm leading-relaxed text-ink-2">
                 {children}
                 <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
                     {asked ? (
@@ -59,13 +64,9 @@ export function ZhNote({ char, relation, children }: { char: string; relation: s
                         </p>
                     ) : (
                         <>
-                            <button
-                                type="button"
-                                onClick={ask}
-                                className="inline-flex h-10 items-center rounded-full border border-line-2 px-4 text-sm text-ink transition-colors hover:border-[var(--c)] hover:text-[var(--c)]"
-                            >
+                            <Button size="sm" onClick={ask}>
                                 Want a Chinese edition?
-                            </button>
+                            </Button>
                             <span className="text-xs text-ink-3">One click tells us. No sign-up.</span>
                         </>
                     )}
