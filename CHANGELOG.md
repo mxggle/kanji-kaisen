@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Ancient-form stages that Wikimedia Commons can't fill are now taken directly from Academia Sinica 小學堂 (CC0 1.0), starting with the radicals; 木 now has oracle bone, bronze and seal forms. `pnpm data:xiaoxue` fetches them, and `/about/ancient-forms` credits each glyph with its Sinica code and a link to its 小學堂 page.
+
 ## [2.1.0] - 2026-10-31
 
 Story-first redesign on top of the unreleased 2.0.0 atlas. See `docs/superpowers/plans/2026-10-31-story-atlas-redesign.md`.
