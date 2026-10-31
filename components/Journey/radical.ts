@@ -2,7 +2,8 @@
 // Client-safe and loadable by the Node test runner (relative `.ts` imports).
 // Tests in radical.test.mjs.
 
-import { defaultCaption, STAGE_META, type AncientJourneyStage, type JourneyStageId } from "../../lib/story/journey.ts";
+import { toHiragana } from "wanakana";
+import { STAGE_META, type AncientJourneyStage } from "../../lib/story/journey.ts";
 
 // ------------------------------------------------------------- wording
 
@@ -11,40 +12,12 @@ function lowerFirst(text: string): string {
     return /^[A-Z](?![A-Z])/.test(text) ? text[0].toLowerCase() + text.slice(1) : text;
 }
 
-/** "Ki · tree, wood" for the page's heading. */
-export function radicalHeadline(name: string, meaning: string): string {
-    const m = lowerFirst(meaning.trim());
-    return m ? `${name} · ${m}` : name;
-}
-
 /** The first plain gloss of a radical's meaning: "Water (3 drops)" -> "water", "tree, wood" -> "tree". */
 export function shortMeaning(meaning: string): string {
     return meaning.split(/[,;/(]/)[0].trim().toLowerCase();
 }
 
-/**
- * A story's `position` as a phrase for the counts line: first sentence only,
- * no trailing full stop, shouting words lowered ("Always appears on the LEFT
- * side of the kanji." -> "always appears on the left side of the kanji").
- */
-export function positionPhrase(position: string): string {
-    const first = position.trim().split(/(?<=[.!?])\s+(?=[A-Z])/)[0] ?? "";
-    const calm = first.replace(/\b[A-Z]{2,}(?:-[A-Z]{2,})*\b/g, (w) => w.toLowerCase());
-    return lowerFirst(calm.replace(/[\s.]+$/, ""));
-}
-
-/** A KANJIDIC reading without okurigana dots or affix dashes: "やす.む" -> "やすむ", "-どき" -> "どき". */
-export function cleanReading(reading: string): string {
-    return reading.replace(/\./g, "").replace(/^-+|-+$/g, "");
-}
-
-/** "やすむ · キュウ": the first kun'yomi, then the first on'yomi (either may be missing). */
-export function readingLine(onyomi: readonly string[], kunyomi: readonly string[]): string {
-    const kun = kunyomi[0] ? cleanReading(kunyomi[0]) : "";
-    return [kun, onyomi[0] ?? ""].filter(Boolean).join(" · ");
-}
-
-// ------------------------------------------------------------- what it grows into
+// ------------------------------------------------------------- memory story examples
 
 export interface StoryExample {
     char: string;
@@ -67,60 +40,6 @@ export function usableExamples<T extends StoryExample>(examples: readonly T[] = 
     );
 }
 
-export interface GrowsPick {
-    char: string;
-    /** The memory story's one-liner, for story examples. */
-    explanation?: string;
-}
-
-/**
- * The kanji to show under "What X grows into": the story's examples that have
- * a page, then the radical's most common kanji, without repeats and without
- * the radical's own character. `common` must already be most common first.
- */
-export function pickGrowsInto(
-    radicalChar: string,
-    examples: readonly StoryExample[],
-    common: readonly { char: string }[],
-    limit: number,
-): GrowsPick[] {
-    const out: GrowsPick[] = [];
-    const seen = new Set([radicalChar]);
-    for (const ex of usableExamples(examples)) {
-        if (out.length >= limit) break;
-        if (!ex.exists || seen.has(ex.char)) continue;
-        seen.add(ex.char);
-        out.push({ char: ex.char, explanation: ex.explanation });
-    }
-    for (const k of common) {
-        if (out.length >= limit) break;
-        if (seen.has(k.char)) continue;
-        seen.add(k.char);
-        out.push({ char: k.char });
-    }
-    return out;
-}
-
-export interface PartLike {
-    char: string;
-    role: "meaning" | "sound" | "both" | "form";
-}
-
-/**
- * "木 tree + 交 sound" from a kanji's KanjiVG components. Sound parts are
- * labelled as such; other parts get their own meaning from `glossOf`. Empty
- * for kanji with fewer than two parts, which a sum can't explain.
- */
-export function partsLine(components: readonly PartLike[], glossOf: (part: PartLike) => string | null | undefined): string {
-    if (components.length < 2) return "";
-    return components
-        .map((c) => {
-            const label = c.role === "sound" ? "sound" : glossOf(c);
-            return label ? `${c.char} ${label}` : c.char;
-        })
-        .join(" + ");
-}
-
 // ------------------------------------------------------------- the journey
 
 export interface StageFile {
@@ -131,24 +50,6 @@ export interface StageFile {
 
 const shownBy = (stage: AncientJourneyStage, files: readonly StageFile[]) =>
     files.find((f) => f.src && f.src === stage.src)?.char;
-
-/**
- * Captions for stages whose file depicts another character than the page's
- * (氵's forms are 水's, 冫's are 仌's): the stage's usual caption plus which
- * character is shown. Other stages keep JourneyPlayer's default caption.
- */
-export function stageCaptions(
-    char: string,
-    stages: readonly AncientJourneyStage[],
-    files: readonly StageFile[],
-): Partial<Record<JourneyStageId, string>> {
-    const captions: Partial<Record<JourneyStageId, string>> = {};
-    for (const s of stages) {
-        const shown = shownBy(s, files);
-        if (shown && shown !== char) captions[s.stage] = `${defaultCaption(s.stage, char)} The character shown is ${shown}.`;
-    }
-    return captions;
-}
 
 const joinAnd = (items: string[]) =>
     items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
@@ -203,4 +104,219 @@ export function originText(text: string | undefined): string {
         .split(/(?<=[.!?])\s+/)
         .filter((sentence) => !ELIDED.test(sentence.replace(/[.!?]+$/, "")))
         .join(" ");
+}
+
+// ------------------------------------------------------------- names
+
+/** The romaji name in lower case, without notes: "Gen (Darkness)" -> "gen", "Hi / Nichi" -> "hi / nichi". */
+export function romajiName(name: string): string {
+    return name
+        .replace(/\s*\([^)]*\)/g, "")
+        .trim()
+        .toLowerCase();
+}
+
+/**
+ * The name in hiragana: "Sanzui" -> "さんずい", "Hi / Nichi" -> "ひ / にち".
+ * Rendaku つ is written づ ("Nikuzuki" -> "にくづき", "Sunzukuri" -> "すんづくり").
+ */
+export function radicalKana(name: string): string {
+    return romajiName(name)
+        .split(/\s*\/\s*/)
+        .map((word) => toHiragana(word.replace(/(?<=.)zu(?=ki|kuri)/g, "du")))
+        .join(" / ");
+}
+
+/** The meaning as a title, a leading capital lowered: "Water (3 drops)" -> "water (3 drops)". */
+export function radicalTitle(meaning: string): string {
+    return lowerFirst(meaning.trim());
+}
+
+// ------------------------------------------------------------- where it sits (KanjiVG)
+
+/** Where a radical sits in a kanji, from KanjiVG's kvg:position, or "repeated" when it is drawn more than once. */
+export type Placement = "left" | "right" | "top" | "bottom" | "enclosing" | "top-left" | "bottom-left" | "repeated";
+
+const POSITIONS: Record<string, Placement> = {
+    left: "left",
+    right: "right",
+    top: "top",
+    bottom: "bottom",
+    kamae: "enclosing",
+    tare: "top-left",
+    nyo: "bottom-left",
+};
+
+export interface KvgGroup {
+    element?: string;
+    position?: string;
+    part?: string;
+    /** 1-based stroke numbers of every path inside. */
+    strokes: number[];
+    parent: KvgGroup | null;
+}
+
+const KVG_TAG = /<g\b([^>]*)>|<\/g>|<path\b([^>]*?)\/?>/g;
+const kvgAttr = (attrs: string, name: string) => attrs.match(new RegExp(`kvg:${name}="([^"]*)"`))?.[1];
+
+/** The groups of a KanjiVG file below the kanji's own group, in document order. */
+export function kvgGroups(raw: string): KvgGroup[] {
+    const start = raw.indexOf('id="kvg:StrokePaths_');
+    if (start === -1) return [];
+    const end = raw.indexOf('id="kvg:StrokeNumbers_', start);
+    const body = raw.slice(raw.lastIndexOf("<g", start), end === -1 ? undefined : raw.lastIndexOf("<g", end));
+    const out: KvgGroup[] = [];
+    // The first two levels are the StrokePaths group and the kanji's own group.
+    const stack: (KvgGroup | null)[] = [];
+    let count = 0;
+    for (const [tag, groupAttrs, pathAttrs] of body.matchAll(KVG_TAG)) {
+        if (groupAttrs !== undefined) {
+            if (stack.length < 2) {
+                stack.push(null);
+                continue;
+            }
+            const group: KvgGroup = { strokes: [], parent: stack[stack.length - 1] };
+            for (const name of ["element", "position", "part"] as const) {
+                const value = kvgAttr(groupAttrs, name);
+                if (value) group[name] = value;
+            }
+            out.push(group);
+            stack.push(group);
+        } else if (tag === "</g>") {
+            stack.pop();
+        } else if (pathAttrs !== undefined) {
+            count++;
+            const n = Number(pathAttrs.match(/\bid="[^"]*-s(\d+)"/)?.[1] ?? count);
+            for (const group of stack) group?.strokes.push(n);
+        }
+    }
+    return out;
+}
+
+function within(group: KvgGroup, others: readonly KvgGroup[]): boolean {
+    for (let g = group.parent; g; g = g.parent) if (others.includes(g)) return true;
+    return false;
+}
+
+export interface PlacementHit {
+    placement: Placement;
+    /** The radical's strokes in the kanji (1-based, ascending). */
+    strokes: number[];
+}
+
+/**
+ * Where a radical sits in a kanji's KanjiVG file. `forms` are its shapes as
+ * KanjiVG names them (亻, 忄 …). The group's own kvg:position counts, else its
+ * nearest positioned ancestor's; a radical drawn more than once is
+ * "repeated". Null when the file has no such group or no position for it
+ * (本, or 東 where another part splits it).
+ */
+export function placementIn(raw: string, forms: readonly string[]): PlacementHit | null {
+    const groups = kvgGroups(raw);
+    const matches = groups.filter((g) => g.element !== undefined && forms.includes(g.element));
+    const outer = matches.filter((g) => !within(g, matches));
+    // kvg:part 2, 3 … continue part 1 of the same shape.
+    const distinct = outer.filter((g) => !g.part || g.part === "1");
+    if (distinct.length === 0) return null;
+    // A copy nested in another part counts as the radical only when every
+    // group around it is made of the radical alone (林 in 森), not when it is
+    // a piece of another part (the 亻 inside 隹 in 催).
+    const pure = (g: KvgGroup) => groups.filter((c) => c.parent === g).every((c) => matches.includes(c));
+    const own = distinct.filter((g) => {
+        for (let p = g.parent; p; p = p.parent) if (!pure(p)) return false;
+        return true;
+    });
+    if (own.length > 1) {
+        return { placement: "repeated", strokes: [...new Set(own.flatMap((g) => g.strokes))].sort((a, b) => a - b) };
+    }
+    const main = own[0] ?? distinct[0];
+    // Split by another part (東): no single place.
+    if (main.part) return null;
+    const strokes = [...main.strokes].sort((a, b) => a - b);
+    for (let g: KvgGroup | null = main; g; g = g.parent) {
+        const placement = g.position ? POSITIONS[g.position] : undefined;
+        if (placement) return { placement, strokes };
+    }
+    return null;
+}
+
+/**
+ * The first kanji (in the given order) for each placement, up to `limit`,
+ * looking at the first `scan` kanji. `placementOf` reads one; null skips it.
+ */
+export function pickPlacements<T extends { char: string }>(
+    kanji: readonly T[],
+    placementOf: (k: T) => PlacementHit | null,
+    limit = 3,
+    scan = 60,
+): (PlacementHit & { kanji: T })[] {
+    const out: (PlacementHit & { kanji: T })[] = [];
+    for (const k of kanji.slice(0, scan)) {
+        if (out.length >= limit) break;
+        const hit = placementOf(k);
+        if (!hit || out.some((p) => p.placement === hit.placement)) continue;
+        out.push({ ...hit, kanji: k });
+    }
+    return out;
+}
+
+// ------------------------------------------------------------- what it grows into (Wiktionary)
+
+export interface SourcedComponent {
+    char: string;
+    form?: string;
+    role?: "semantic" | "phonetic";
+}
+
+export interface FormulaPart {
+    /** As written in the kanji: the radical in the page's own shape (氵, not 水). */
+    char: string;
+    /** sound: marked phonetic; meaning: marked semantic, or unmarked (the parts of an ideogrammic compound). */
+    role: "meaning" | "sound";
+    radical: boolean;
+    /** Repeats in a row ("木 × 3"). */
+    count: number;
+}
+
+const isRadical = (c: SourcedComponent, forms: readonly string[]) => forms.includes(c.form ?? c.char) || forms.includes(c.char);
+
+/** A sourced origin builds on the radical: one of its parts is the radical, or (with no parts) its text names it. */
+export function buildsOn(entry: { components: readonly SourcedComponent[]; text?: string }, forms: readonly string[]): boolean {
+    if (entry.components.length > 0) return entry.components.some((c) => isRadical(c, forms));
+    return forms.some((f) => !!entry.text?.includes(f));
+}
+
+/** The sourced parts as a formula, repeats collapsed and the radical written as `radicalChar`. */
+export function growthFormula(components: readonly SourcedComponent[], radicalChar: string, forms: readonly string[]): FormulaPart[] {
+    const parts: FormulaPart[] = [];
+    for (const c of components) {
+        const radical = isRadical(c, forms);
+        const char = radical ? radicalChar : (c.form ?? c.char);
+        const role = c.role === "phonetic" ? "sound" : "meaning";
+        const prev = parts[parts.length - 1];
+        if (prev && prev.char === char && prev.role === role) prev.count++;
+        else parts.push({ char, role, radical, count: 1 });
+    }
+    return parts;
+}
+
+/** The radical alone, repeated (林 = 木 + 木, 森 = 木 × 3). */
+export function onlyRadical(formula: readonly FormulaPart[]): boolean {
+    return formula.length > 0 && formula.every((p) => p.radical) && formula.reduce((n, p) => n + p.count, 0) > 1;
+}
+
+/**
+ * Orders sourced examples for "What it grows into": the radical repeated
+ * first, then compounds of meaning and pictures, then sound compounds; those
+ * with a sourced sentence before those without; else in the given order
+ * (most common first). At most `limit`.
+ */
+export function rankGrowth<T extends { formation: string | null; text: string; formula?: readonly FormulaPart[] }>(items: readonly T[], limit: number): T[] {
+    const tier = (item: T) =>
+        (item.formula && onlyRadical(item.formula) ? -2 : 0) + (item.formation === "phono-semantic-compound" ? 2 : 0) + (item.text ? 0 : 1);
+    return items
+        .map((item, i) => ({ item, i }))
+        .sort((a, b) => tier(a.item) - tier(b.item) || a.i - b.i)
+        .slice(0, limit)
+        .map(({ item }) => item);
 }

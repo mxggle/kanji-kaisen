@@ -1,191 +1,240 @@
-// Hook-free blocks of the radical journey page (Story-Radical, M-Story).
-// The sourced Origin (Wiktionary) and the Memory story (a mnemonic) are kept
-// in separate, labelled blocks so a story is never read as etymology.
+// Server blocks of the radical page (boards A-Radical, A-M-Radical). The
+// sourced origin (Wiktionary) and the memory story stay in separate,
+// labelled primitives (OriginCard, MemoryStory) so a story is never read as
+// etymology.
 
 import Link from "next/link";
+import { Fragment } from "react";
 import { cn } from "@/lib/utils";
-import { kanjiPath } from "@/lib/atlas/paths";
-import type { GrowsItem, OriginView } from "./data";
+import { kanjiPath, radicalPath } from "@/lib/atlas/paths";
+import { themeVars } from "@/components/Atlas/category/themeStyles";
+import { KanjiTile } from "@/components/ui/KanjiTile";
+import { OriginCard } from "@/components/ui/OriginCard";
+import { RadicalSeal } from "@/components/ui/RadicalSeal";
+import { Tag } from "@/components/ui/Tag";
+import type { GrowthView, NeighbourRadical, OriginView, PlacementView } from "./data";
+import { shortMeaning, type FormulaPart, type Placement } from "./radical";
 
-/** Small uppercase label used as the heading of each block. */
-const LABEL = "text-[11px] font-medium uppercase tracking-[.14em] text-ink-3";
+const PLACEMENT_LABEL: Record<Placement, string> = {
+    left: "left",
+    right: "right",
+    top: "top",
+    bottom: "bottom",
+    enclosing: "around",
+    "top-left": "top and left",
+    "bottom-left": "bottom and left",
+    repeated: "repeated",
+};
 
-export function RadicalHead({
-    char,
-    headline,
-    counts,
-    uses,
-    className,
-}: {
-    char: string;
-    /** "Ki · tree, wood". */
-    headline: string;
-    /** "Radical in 112 kanji · standalone, on the left …". */
-    counts: string;
-    /** What the radical adds to a kanji's meaning (from the story data). */
-    uses?: string;
-    className?: string;
-}) {
+/** The sourced glyph origin, only rendered when Wiktionary gave one (rule 4: roman, with its source). */
+export function RadicalOrigin({ char, origin }: { char: string; origin: OriginView }) {
     return (
-        <div className={cn("min-w-0", className)}>
-            <div className="flex items-center gap-3.5 lg:items-end lg:gap-5">
-                <span
-                    lang="ja"
-                    aria-hidden
-                    className="glow flex-none font-jp text-[52px] font-extrabold leading-none text-c lg:text-[112px] lg:leading-[.9]"
-                >
-                    {char}
-                </span>
-                <div className="min-w-0 lg:pb-2">
-                    <h1 className="text-balance font-disp text-[26px] font-bold leading-none lg:text-[46px]">
-                        <span className="sr-only">{char} </span>
-                        {headline}
-                    </h1>
-                    <p className="mt-1.5 text-xs leading-snug text-ink-2 lg:mt-2 lg:text-sm">{counts}</p>
-                </div>
-            </div>
-            {uses && <p className="mt-3 text-sm leading-relaxed text-ink-2 lg:mt-4 lg:text-base lg:leading-[1.65]">{uses}</p>}
-        </div>
-    );
-}
-
-/** The sourced glyph origin, only rendered when Wiktionary gave one. */
-export function OriginBlock({ char, origin, className }: { char: string; origin: OriginView; className?: string }) {
-    const components = origin.components;
-    return (
-        <section aria-labelledby="origin-title" className={cn("rounded-2xl border border-line-2 bg-card p-5", className)}>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <h2 id="origin-title" className={LABEL}>Origin</h2>
-                {origin.formation && (
-                    <span className="rounded-full border border-c/45 px-2.5 py-0.5 text-xs text-c">
-                        {origin.formation.en}
-                        {origin.formation.zh && (
-                            <>
-                                {" "}
-                                <span lang="zh-Hant" className="font-jp">{origin.formation.zh}</span>
-                            </>
-                        )}
-                    </span>
-                )}
-            </div>
-            {origin.text && <p className="mt-3 text-[15px] leading-relaxed text-ink">{origin.text}</p>}
-            {components.length > 0 && (
-                <p className="mt-2.5 text-sm text-ink-2">
+        <OriginCard
+            lead={
+                origin.formation ? (
+                    <p className="flex flex-wrap gap-2">
+                        <Tag>
+                            {origin.formation.en}
+                            {origin.formation.zh && (
+                                <span lang="zh-Hant" className="font-jp">
+                                    {origin.formation.zh}
+                                </span>
+                            )}
+                        </Tag>
+                    </p>
+                ) : undefined
+            }
+            source={
+                <>
+                    Source:{" "}
+                    <a href={origin.revisionUrl} target="_blank" rel="noopener noreferrer">
+                        Wiktionary, <span lang="zh-Hant">{origin.page}</span>
+                    </a>{" "}
+                    (rev. {origin.revid}){origin.page !== char && <>, the entry for the full form</>}, CC BY-SA 4.0
+                </>
+            }
+        >
+            {origin.text && <p className="text-base leading-normal sm:text-lg">{origin.text}</p>}
+            {origin.components.length > 0 && (
+                <p className="mt-2 text-sm text-ink-2">
                     Built from{" "}
-                    {components.map((c, i) => (
-                        <span key={i}>
+                    {origin.components.map((c, i) => (
+                        <Fragment key={i}>
                             {i > 0 && " + "}
-                            <span lang="ja" className="font-jp text-ink">{c.form ?? c.char}</span>
+                            <span lang="zh-Hant" className="font-jp text-ink">
+                                {c.form ?? c.char}
+                            </span>
                             {c.gloss && <> “{c.gloss}”</>}
-                            {c.role && <> ({c.role})</>}
-                        </span>
+                            {c.role && <> ({c.role === "phonetic" ? "sound" : "meaning"})</>}
+                        </Fragment>
                     ))}
                 </p>
             )}
-            <p className="mt-3 text-xs text-ink-3">
-                Source:{" "}
-                <a
-                    href={origin.revisionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline decoration-line-2 underline-offset-2 hover:text-ink"
-                >
-                    Wiktionary{origin.page !== char ? <>, entry <span lang="ja">{origin.page}</span></> : null}
-                </a>{" "}
-                · CC BY-SA 4.0
-            </p>
-        </section>
+        </OriginCard>
     );
 }
 
-/** The radical's memory story, labelled as a mnemonic. */
-export function MemoryStoryBlock({ story, picture, className }: { story: string; picture?: string; className?: string }) {
-    if (!story && !picture) return null;
+/** A kanji drawn from KanjiVG with the radical's strokes in the theme colour. */
+function PlacedGlyph({ item }: { item: PlacementView }) {
+    const marked = new Set(item.radical);
     return (
-        <section aria-labelledby="story-title" className={cn("rounded-2xl border border-dashed border-line-2 p-5", className)}>
-            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <h2 id="story-title" className={LABEL}>Memory story</h2>
-                <span className="text-xs text-ink-3">A mnemonic to help you remember, not a history</span>
-            </div>
-            {story && (
-                <blockquote className="mt-3 font-disp text-[19px] italic leading-[1.4] text-ink lg:text-[21px]">“{story}”</blockquote>
-            )}
-            {picture && <p className="mt-3 text-sm leading-relaxed text-ink-2">{picture}</p>}
-        </section>
+        <svg viewBox="0 0 109 109" aria-hidden focusable="false" className="size-11 flex-none fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:6]">
+            {item.strokes.map((d, i) => (
+                <path key={i} d={d} className={marked.has(i) ? "stroke-c" : "stroke-ink-2"} />
+            ))}
+        </svg>
     );
 }
 
-/** "What 木 grows into": a few kanji with meaning, reading and a one-line note. */
-export function GrowsIntoList({
-    char,
-    items,
-    total,
-    className,
-}: {
-    char: string;
-    items: GrowsItem[];
-    /** All the radical's kanji, for "All N →". */
-    total: number;
-    className?: string;
-}) {
+/** "Where it sits in a kanji": up to three kanji, one per placement (KanjiVG positions). */
+export function Placements({ char, items, lead }: { char: string; items: PlacementView[]; lead?: string }) {
     if (items.length === 0) return null;
-    const hasStory = items.some((i) => i.noteKind === "story");
-    const hasParts = items.some((i) => i.noteKind === "parts");
     return (
-        <section aria-labelledby="grows-title" className={cn("min-w-0", className)}>
-            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-[13px] text-ink-3 lg:mb-2">
-                <h2 id="grows-title" className="font-normal">
-                    What <span lang="ja" className="font-jp">{char}</span> grows into
-                </h2>
-                {total > items.length && (
-                    <a href="#kanji" className="text-ink-2 underline-offset-4 hover:text-ink hover:underline">
-                        All {total} <span aria-hidden>→</span>
-                    </a>
-                )}
-            </div>
-            <ul className="flex flex-col lg:gap-2">
+        <section aria-labelledby="placements-title" className="flex flex-col gap-2.5">
+            <h2 id="placements-title" className="type-label">
+                Where it sits in a kanji
+            </h2>
+            {lead && <p className="max-w-[60ch] text-sm leading-relaxed text-ink-2">{lead}</p>}
+            <ul className="flex flex-wrap gap-2.5">
                 {items.map((item) => (
-                    <li key={item.char}>
+                    <li key={item.char} className="min-w-0">
                         <Link
                             href={kanjiPath(item.char)}
-                            className={cn(
-                                "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-t border-line py-2 transition-colors",
-                                "lg:gap-4 lg:rounded-xl lg:border lg:bg-card lg:px-4 lg:py-3 hover:border-c",
-                                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]",
-                            )}
+                            className="flex items-center gap-3 rounded-2xl border border-line bg-card py-2.5 pl-3 pr-4 transition-colors hover:border-ink-3"
                         >
-                            <span lang="ja" className="font-jp text-[28px] font-extrabold leading-none lg:text-[40px]">{item.char}</span>
-                            <span className="min-w-0 text-[13px] leading-normal text-ink-2 lg:text-sm">
-                                <b className="font-bold text-ink">{item.meaning}</b>
-                                {item.reading && (
-                                    <>
-                                        {" · "}
-                                        <span lang="ja" className="font-jp">{item.reading}</span>
-                                    </>
-                                )}
-                                {item.note && (
-                                    <span
-                                        className={cn(
-                                            "block max-lg:line-clamp-2",
-                                            item.noteKind === "story" && "font-disp text-[15px] italic leading-snug lg:text-base",
-                                        )}
-                                    >
-                                        {item.note}
-                                    </span>
-                                )}
-                                {item.hasBuild && <span className="hidden text-c lg:inline">See how it was built →</span>}
+                            <PlacedGlyph item={item} />
+                            <span className="min-w-0 text-sm text-ink-2">
+                                <span lang="ja" className="sr-only">
+                                    {item.char},{" "}
+                                </span>
+                                <span className="text-ink">{PLACEMENT_LABEL[item.placement]}</span>
+                                <span className="sr-only"> ({char})</span>
+                                {item.meaning && <> · {item.meaning}</>}
                             </span>
                         </Link>
                     </li>
                 ))}
             </ul>
-            {(hasStory || hasParts) && (
-                <p className="mt-2 text-xs text-ink-3">
-                    {hasStory && "Italic notes are memory aids from the story."}
-                    {hasStory && hasParts && " "}
-                    {hasParts && "Parts from KanjiVG."}
-                </p>
-            )}
         </section>
+    );
+}
+
+/** One part of a formula: solid accent line for meaning, dashed for sound (rule 2); the radical in --c. */
+function FormulaGlyph({ part }: { part: FormulaPart }) {
+    return (
+        <span
+            lang="ja"
+            className={cn(
+                "font-jp underline decoration-c decoration-[1.5px] underline-offset-[5px]",
+                part.role === "sound" ? "decoration-dashed" : "decoration-solid",
+                part.radical && "text-c",
+            )}
+        >
+            {part.char}
+        </span>
+    );
+}
+
+function Formula({ parts, radicalChar, kanjiChar }: { parts: FormulaPart[]; radicalChar: string; kanjiChar: string }) {
+    if (parts.length === 0) {
+        return (
+            <>
+                <FormulaGlyph part={{ char: radicalChar, role: "meaning", radical: true, count: 1 }} />
+                <span aria-hidden> → </span>
+                <span className="sr-only"> becomes </span>
+                <span lang="ja" className="font-jp">
+                    {kanjiChar}
+                </span>
+            </>
+        );
+    }
+    return (
+        <>
+            {parts.map((part, i) => (
+                <Fragment key={i}>
+                    {i > 0 && " + "}
+                    {part.count > 2 ? (
+                        <>
+                            <FormulaGlyph part={part} /> × {part.count}
+                        </>
+                    ) : (
+                        Array.from({ length: part.count }, (_, n) => (
+                            <Fragment key={n}>
+                                {n > 0 && " + "}
+                                <FormulaGlyph part={part} />
+                            </Fragment>
+                        ))
+                    )}
+                    {part.role === "sound" && <span className="ml-1 text-xs font-normal text-ink-3">sound</span>}
+                </Fragment>
+            ))}
+        </>
+    );
+}
+
+/** "What it grows into": sourced examples only, each a tile, its formula and its source. */
+export function GrowthList({ radicalChar, items }: { radicalChar: string; items: GrowthView[] }) {
+    return (
+        <ul className="grid gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
+            {items.map((item) => (
+                <li key={item.kanji.char} className="flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-card p-4 sm:gap-5 sm:p-5">
+                    <KanjiTile kanji={item.kanji} size="lg" className="w-[104px] flex-none px-2 sm:w-[120px]" />
+                    <div className="flex min-w-0 flex-col gap-1.5">
+                        <p className="text-[17px] font-bold leading-snug">
+                            <Formula parts={item.formula} radicalChar={radicalChar} kanjiChar={item.kanji.char} />
+                        </p>
+                        {item.text && <p className="line-clamp-4 text-sm leading-normal text-ink-2">{item.text}</p>}
+                        <p className="text-xs leading-normal text-ink-3">
+                            {item.formation && <>{item.formation.en} · </>}
+                            <a href={item.revisionUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 transition-colors hover:text-ink">
+                                Wiktionary{item.page !== item.kanji.char && <>, <span lang="zh-Hant">{item.page}</span></>}
+                            </a>
+                            , CC BY-SA 4.0
+                        </p>
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+/** Previous or next radical in the theme, as a card with its seal. */
+export function NeighbourCard({ radical, dir, theme }: { radical: NeighbourRadical | null; dir: "prev" | "next"; theme: string }) {
+    if (!radical) return <span />;
+    const count = Array.from(radical.chars).length;
+    const text = (
+        <span className={cn("flex min-w-0 flex-col", dir === "next" && "items-end")}>
+            <span className="text-xs text-ink-3">
+                {dir === "prev" ? "Previous" : "Next"} in {theme}
+            </span>
+            <span className="max-w-full truncate">
+                {shortMeaning(radical.meaning)}
+                <span className="max-sm:hidden"> · {count} kanji</span>
+            </span>
+        </span>
+    );
+    return (
+        <Link
+            href={radicalPath(radical.key)}
+            style={themeVars(radical.category)}
+            className={cn(
+                "flex min-w-0 items-center gap-3 rounded-2xl border border-line bg-card p-4 transition-colors hover:border-ink-3 sm:gap-4 sm:px-[22px] sm:py-5",
+                dir === "next" && "justify-end text-right",
+            )}
+        >
+            {dir === "prev" && (
+                <span aria-hidden className="text-sm text-ink-3">
+                    ‹
+                </span>
+            )}
+            {dir === "next" && text}
+            <RadicalSeal char={radical.char} size="md" chars={radical.chars} />
+            {dir === "prev" && text}
+            {dir === "next" && (
+                <span aria-hidden className="text-sm text-ink-3">
+                    ›
+                </span>
+            )}
+        </Link>
     );
 }
