@@ -134,6 +134,7 @@ export default async function RadicalPage({ params }: Params) {
                             captions={captions}
                             title={title}
                             emptyNote={emptyJourneyNote(char)}
+                            analyticsId={radical.key}
                         />
                         {shownNote && <p className="mt-3 text-xs text-ink-3">{shownNote}</p>}
                     </section>

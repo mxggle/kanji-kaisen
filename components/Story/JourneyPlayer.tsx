@@ -23,6 +23,9 @@ export interface JourneyPlayerProps {
     emptyNote?: string | null;
     // Fire `journey_played` on Play (pages that track their own event pass false).
     analytics?: boolean;
+    // Sent as `radical` with `journey_played`; defaults to `char`. Radical pages
+    // pass their key so side forms (kihen) aren't counted as the base (ki).
+    analyticsId?: string;
     className?: string;
 }
 
@@ -82,6 +85,7 @@ export function JourneyPlayer({
     title,
     emptyNote = DEFAULT_EMPTY_NOTE,
     analytics = true,
+    analyticsId,
     className,
 }: JourneyPlayerProps) {
     const tabs = useMemo(() => journeyTabs(char, stages, captions), [char, stages, captions]);
@@ -119,7 +123,7 @@ export function JourneyPlayer({
             setPlaying(false);
             return;
         }
-        if (analytics) trackEvent("journey_played", { radical: char, stages: tabs.length });
+        if (analytics) trackEvent("journey_played", { radical: analyticsId ?? char, stages: tabs.length });
         // From an ancient stage (paused or picked), carry on from there;
         // from today, start again at the oldest form.
         if (active === last) goTo(0);
