@@ -1,6 +1,8 @@
 // Meaning multiple-choice options with "plausible" distractors: same theme,
-// same JLPT level, similar stroke count and overlapping meaning words rank
-// highest. Shared by the classic practice quiz and /study.
+// same JLPT level and similar stroke count rank highest. A candidate that
+// shares a content word with the answer is never offered, so only one option
+// is right ("ocean, sea" never sits beside "ocean, western style"). Shared by
+// the classic practice quiz, the learn layer, /study and the projector quiz.
 
 export interface QuizCandidate {
     char: string;
@@ -29,18 +31,22 @@ export function tokenizeMeaning(meaning: string): Set<string> {
     );
 }
 
-function overlapCount(a: Set<string>, b: Set<string>): number {
-    let count = 0;
-    a.forEach((token) => {
-        if (b.has(token)) count += 1;
-    });
-    return count;
+// Small words two unrelated meanings can share ("the", "of", "to").
+const STOP_WORDS = new Set(["an", "as", "at", "be", "by", "in", "is", "it", "of", "on", "or", "to", "up", "and", "for", "one", "out", "the", "with"]);
+
+/** The content words of a meaning: tokenizeMeaning without small function words. */
+function contentWords(meaning: string): Set<string> {
+    return new Set([...tokenizeMeaning(meaning)].filter((token) => !STOP_WORDS.has(token)));
+}
+
+/** True when two meanings share a content word, so a learner could fairly pick either. */
+export function sharesMeaning(a: string, b: string): boolean {
+    const words = contentWords(a);
+    for (const token of contentWords(b)) if (words.has(token)) return true;
+    return false;
 }
 
 export function scoreDistractor(target: QuizCandidate, candidate: QuizCandidate): number {
-    const targetTokens = tokenizeMeaning(target.meaning);
-    const candidateTokens = tokenizeMeaning(candidate.meaning);
-
     let score = 0;
 
     // 1) Same category: strongest signal for semantically similar context.
@@ -54,16 +60,13 @@ export function scoreDistractor(target: QuizCandidate, candidate: QuizCandidate)
     if (strokeDiff <= 2) score += 2;
     else if (strokeDiff <= 4) score += 1;
 
-    // 4) Meaning token overlap: direct semantic closeness.
-    score += overlapCount(targetTokens, candidateTokens) * 4;
-
     return score;
 }
 
 /** The target meaning plus `distractorCount` distractor meanings, in a stable per-kanji order. */
 export function buildMeaningOptions(target: QuizCandidate, pool: QuizCandidate[], distractorCount = 3): string[] {
     const ranked = pool
-        .filter((k) => k.char !== target.char && k.meaning !== target.meaning)
+        .filter((k) => k.char !== target.char && k.meaning !== target.meaning && !sharesMeaning(k.meaning, target.meaning))
         .map((candidate) => ({
             char: candidate.char,
             meaning: candidate.meaning,

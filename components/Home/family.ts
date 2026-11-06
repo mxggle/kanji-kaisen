@@ -1,6 +1,8 @@
 // The home page's "Read a kanji by its parts" example: a phonetic series laid
 // out as meaning part + sound part = kanji. Pure; tests in family.test.mjs.
 
+import { radicalPosition } from "../Theme/view.ts";
+
 export interface FamilyKanji {
     char: string;
     meanings: readonly string[];
@@ -36,7 +38,12 @@ export function familyRows(series: readonly FamilyKanji[], phonetic: string, rea
     return rows;
 }
 
-/** The first plain gloss of a radical's meaning: "Water (3 drops)" -> "water", "sun, day" -> "sun". */
+/**
+ * The first plain gloss of a radical's meaning, plus its position when it names
+ * one: "Water (3 drops)" -> "water", "sun, day" -> "sun", "rain (top radical)" -> "rain · top".
+ */
 export function gloss(meaning: string): string {
-    return meaning.split(/[,;/(]/)[0].trim().toLowerCase();
+    const first = meaning.split(/[,;/(]/)[0].trim().toLowerCase();
+    const position = radicalPosition(meaning);
+    return first && position ? `${first} · ${position}` : first;
 }

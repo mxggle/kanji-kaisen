@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCategories, getCategory } from "@/lib/atlas";
-import { CATEGORIES, isCategoryName, THEME_MARK } from "@/lib/atlas/categories";
 import { categoryPath, radicalPath } from "@/lib/atlas/paths";
 import type { AtlasRadicalSummary } from "@/lib/atlas/types";
 import { PageShell } from "@/components/Atlas/PageShell";
 import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 import { InkPaint } from "@/components/Ink/InkPaint";
-import { AtlasPath, type PathNeighbour } from "@/components/Layout/AtlasPath";
+import { AtlasPath } from "@/components/Layout/AtlasPath";
 import { Plate } from "@/components/Layout/Plate";
 import { Chip } from "@/components/ui/Chip";
 import { PaintedBar } from "@/components/ui/PaintedBar";
@@ -19,7 +18,7 @@ import { getThemeOrder, themeChars, themeRadicals } from "@/components/Theme/dat
 import { flattenOrder } from "@/components/Theme/order";
 import { ThemeImage } from "@/components/Theme/parts";
 import { RadicalPreview, ThemeActionBar, ThemeActions, ThemeAtlas, ThemeSeals } from "@/components/Theme/ThemeAtlas";
-import { levelCounts, ringNeighbours } from "@/components/Theme/view";
+import { levelCounts } from "@/components/Theme/view";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -38,14 +37,6 @@ export async function generateMetadata({ params }: Params) {
         description: `${category.story?.title ? `${category.story.title}: ` : ""}${category.kanjiCount} kanji built from ${category.radicalCount} ${category.name.toLowerCase()} radicals such as ${radicalChars}. ${category.story?.description ?? ""}`,
         path: categoryPath(category.name),
     });
-}
-
-function neighbour(name: string, dir: "Previous" | "Next"): PathNeighbour {
-    return {
-        href: categoryPath(name),
-        glyph: isCategoryName(name) ? THEME_MARK[name] : name.slice(0, 1),
-        label: `${dir} theme: ${name}`,
-    };
 }
 
 const SideFormLinks = ({ forms }: { forms: AtlasRadicalSummary[] }) =>
@@ -70,7 +61,6 @@ export default async function CategoryPage({ params }: Params) {
     const levels = levelCounts(category.kanji.map((k) => k.jlpt));
     const n5 = levels.find((l) => l.level === "N5")?.count ?? 0;
     const folded = [...sideForms.values()].flat();
-    const ring = ringNeighbours<string>(CATEGORIES, meta.name);
     const chars = themeChars();
     const others = getCategories().filter((c) => c.slug !== slug);
     const browse = `/browse?theme=${meta.slug}`;
@@ -78,10 +68,10 @@ export default async function CategoryPage({ params }: Params) {
     const specimen = (
         <div className="relative isolate mx-auto h-[440px] w-full max-w-[460px] overflow-hidden rounded-[999px_999px_14px_14px] border border-line bg-card sm:h-[540px] min-[60rem]:h-[620px] min-[60rem]:max-w-none">
             <ThemeImage src={meta.image} sizes="(min-width: 960px) 460px, (min-width: 500px) 460px, 100vw" preload />
-            <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_50%,rgba(var(--shade),.92)_92%)]" />
-            <div className="absolute inset-x-5 bottom-5 flex flex-col gap-2 sm:inset-x-6 sm:bottom-[22px]">
+            {/* The caption sits on its own near-solid backing so it stays ≥ 4.5:1 over any art. */}
+            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-[linear-gradient(180deg,rgba(var(--shade),0)_0%,rgba(var(--shade),.95)_38%)] px-5 pt-12 pb-5 sm:px-6 sm:pb-[22px]">
                 <PaintedBar chars={order} caption label={`Your ink in ${meta.short}`} />
-                <p className="text-xs text-ink-3">The bar fills as this theme&apos;s kanji darken.</p>
+                <p className="text-xs text-ink-2">The bar fills as this theme&apos;s kanji darken.</p>
             </div>
         </div>
     );
@@ -109,8 +99,7 @@ export default async function CategoryPage({ params }: Params) {
                 <ThemeAtlas theme={{ name: meta.name, slug: meta.slug }} radicals={radicals} order={order}>
                     <AtlasPath
                         steps={[{ label: meta.name, short: meta.short, mark: { kind: "dot", category: meta.name } }]}
-                        prev={ring ? neighbour(ring.prev, "Previous") : null}
-                        next={ring ? neighbour(ring.next, "Next") : null}
+                        more={{ href: "/categories", label: "All ten themes" }}
                     />
                     <Plate specimen={specimen} specimenLabel="Theme art" reading={reading} />
 

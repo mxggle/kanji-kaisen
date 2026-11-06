@@ -32,4 +32,5 @@ test("gloss keeps the first plain word", () => {
     assert.equal(gloss("Water (3 drops)"), "water");
     assert.equal(gloss("sun, day"), "sun");
     assert.equal(gloss("rice, grain"), "rice");
+    assert.equal(gloss("rain (top radical)"), "rain · top");
 });

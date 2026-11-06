@@ -14,10 +14,15 @@ import { useSearchIndex } from "@/components/Study/useSearchIndex";
 import { BUTTON, BUTTON_MAIN } from "./ui";
 
 /** /set: a shared set for students. Everything comes from the link; no account. */
-export function SetClient() {
+export function SetClient({ themes }: { themes: Record<string, string> }) {
     const params = useSearchParams();
     const { byChar, error } = useSearchIndex();
     const openedRef = useRef(false);
+    const themeOf = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const [name, chars] of Object.entries(themes)) for (const char of chars) map.set(char, name);
+        return map;
+    }, [themes]);
 
     // Until the index loads, show every kanji in the link; then keep known ones only.
     const set = useMemo(() => decodeSet(params, byChar ? (c) => byChar.has(c) : undefined), [params, byChar]);
@@ -71,7 +76,7 @@ export function SetClient() {
                         const entry = byChar?.get(char);
                         return (
                             <li key={char}>
-                                <KanjiTile kanji={{ char, meanings: entry?.m ?? [], onyomi: entry?.on ?? [], kunyomi: entry?.kun ?? [] }} />
+                                <KanjiTile kanji={{ char, meanings: entry?.m ?? [], onyomi: entry?.on ?? [], kunyomi: entry?.kun ?? [], category: themeOf.get(char) ?? null }} />
                             </li>
                         );
                     })}

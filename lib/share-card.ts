@@ -367,9 +367,9 @@ export interface StrokeStyle {
     dashed: boolean;
 }
 
-/** One style per KanjiVG stroke; strokes outside every component take the kanji's colour (夜) or ink (墨). */
+/** One style per KanjiVG stroke; strokes outside every component take the accent: the kanji's colour (夜) or vermilion (墨). */
 export function strokeStyles(model: Pick<CardModel, "color" | "components">, skin: CardSkin, strokeCount: number): StrokeStyle[] {
-    const styles = Array.from({ length: strokeCount }, () => ({ color: skin === "night" ? model.color : CARD_PALETTE.ink.ink, dashed: false }));
+    const styles = Array.from({ length: strokeCount }, () => ({ color: skin === "night" ? model.color : VERMILION, dashed: false }));
     for (const part of model.components) {
         const style = { color: partColor(part, skin), dashed: partDashed(part) };
         for (const index of strokeIndexes(part.strokes)) {

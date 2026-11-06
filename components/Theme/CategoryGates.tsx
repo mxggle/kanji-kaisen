@@ -29,7 +29,8 @@ const LAYOUT = {
     rail: {
         // The row bleeds to the screen edges on phones; the vertical padding keeps focus rings unclipped.
         list: "-mx-4 flex gap-2.5 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:gap-x-4 sm:gap-y-[18px] sm:overflow-visible sm:p-0",
-        item: "w-[118px] flex-none sm:w-auto",
+        // The scrolling row clips at its edges, so a gate's focus ring sits inside it.
+        item: "w-[118px] flex-none sm:w-auto [&_a:focus-visible]:outline-offset-[-3px] sm:[&_a:focus-visible]:outline-offset-[3px]",
         sizes: "(min-width: 640px) 220px, 118px",
     },
 } as const;

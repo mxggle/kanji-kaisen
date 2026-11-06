@@ -36,6 +36,8 @@ interface AtlasPathProps {
     next?: PathNeighbour | null;
     /** Phones show the path in the header; false keeps it out (demos). */
     inHeader?: boolean;
+    /** A text link on the right instead of ‹ › neighbours (theme pages: "All ten themes"). */
+    more?: { href: string; label: string };
     className?: string;
 }
 
@@ -63,7 +65,8 @@ function Step({ step, compact }: { step: PathStep; compact?: boolean }) {
             {!glyphOnly && <span className="min-w-0 truncate">{label}</span>}
         </>
     );
-    const cls = cn("inline-flex min-w-0 items-center", compact ? "gap-[5px]" : "gap-1.5");
+    // The phone header clips overflow, so its focus ring sits inside the link.
+    const cls = cn("inline-flex min-w-0 items-center", compact ? "gap-[5px] rounded-md focus-visible:outline-offset-[-2px]" : "gap-1.5");
     if (step.href) {
         return (
             <Link href={step.href} className={cn(cls, "transition-colors hover:text-ink")}>
@@ -89,7 +92,7 @@ const SEP = (
  * atlas page (theme, radical, kanji) shows it; on phones it moves into the
  * header. Server-safe.
  */
-export function AtlasPath({ steps, prev, next, inHeader = true, className }: AtlasPathProps) {
+export function AtlasPath({ steps, prev, next, more, inHeader = true, className }: AtlasPathProps) {
     return (
         <>
             <nav aria-label="Atlas path" className={cn("hidden min-h-14 flex-wrap items-center gap-2.5 py-3 text-sm text-ink-3 lg:flex", className)}>
@@ -102,7 +105,12 @@ export function AtlasPath({ steps, prev, next, inHeader = true, className }: Atl
                         <Step step={step} />
                     </span>
                 ))}
-                {(prev || next) && (
+                {more && (
+                    <Link href={more.href} className="ml-auto inline-flex h-8 items-center rounded-full px-2.5 text-ink-2 transition-colors hover:bg-card hover:text-ink">
+                        {more.label}
+                    </Link>
+                )}
+                {!more && (prev || next) && (
                     <span className="ml-auto flex items-center gap-1">
                         {prev && (
                             <Link href={prev.href} aria-label={prev.label} className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-ink-2 transition-colors hover:bg-card hover:text-ink">

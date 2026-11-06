@@ -82,7 +82,7 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
             <article
                 aria-label="Worksheet"
                 aria-busy={!ready}
-                className={cn("mx-auto bg-card shadow-[0_1px_2px_rgb(0_0_0/.08),0_24px_48px_-24px_rgb(40_30_20/.45)] p-[5mm] sm:p-[12mm] print:max-w-none print:p-0 print:shadow-none print:bg-transparent", pageWidth)}
+                className={cn("mx-auto border border-line bg-paper p-[5mm] sm:p-[12mm] print:max-w-none print:border-0 print:p-0 print:bg-transparent", pageWidth)}
             >
                 {error ? (
                     <div role="alert" className="text-sm text-ink-2">

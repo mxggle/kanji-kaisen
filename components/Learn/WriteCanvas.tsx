@@ -58,7 +58,7 @@ export function WriteCanvas({ strokes, onComplete, apiRef }: WriteCanvasProps) {
                 height: 300,
                 strokeColor: token("--ink", "#EDEAE2"),
                 correctColor: token("--c", "#EDEAE2"),
-                incorrectColor: token("--bad", "#F87171"),
+                incorrectColor: token("--ink-3", "#8C877D"),
                 hintColor: token("--c", "#EDEAE2"),
                 gridColor: token("--line-2", "rgba(237,234,226,.28)"),
                 showGhost: false,

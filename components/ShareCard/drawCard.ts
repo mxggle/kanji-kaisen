@@ -100,7 +100,7 @@ async function loadFonts(fonts: Fonts, model: CardModel): Promise<void> {
     const jpText = `${model.char}解${model.readings.join("")}${parts.map((p) => p.char).join("")}`;
     const uiText = `${parts.map((p) => p.gloss).join("")}${model.urlLabel}+=…`;
     const loads = [
-        document.fonts.load(font("italic 500", 40, fonts.disp), `${model.question.before}${model.question.after}meaning sound`),
+        document.fonts.load(font("500", 40, fonts.disp), `${model.question.before}${model.question.after}meaning sound`),
         document.fonts.load(font("700", 92, fonts.disp), `${model.meaning}Kanji Kaisen`),
         document.fonts.load(font("800", 36, fonts.jp), jpText),
         document.fonts.load(font("600", 40, fonts.jp), model.char),
@@ -268,7 +268,7 @@ function measurer(ctx: Ctx, style: string, family: string): Measure {
 
 function drawQuestion(ctx: Ctx, model: CardModel, pal: Palette, fonts: Fonts) {
     const { before, after } = model.question;
-    const latin = measurer(ctx, "italic 500", fonts.disp);
+    const latin = measurer(ctx, "500", fonts.disp);
     const jp = measurer(ctx, "600", fonts.jp);
     const width = (size: number) => latin(before, size) + jp(model.char, size) + latin(after, size);
     let size = 40;
@@ -279,9 +279,9 @@ function drawQuestion(ctx: Ctx, model: CardModel, pal: Palette, fonts: Fonts) {
     let x = PAD;
     const y = 72 + size;
     for (const [text, measure, style, family] of [
-        [before, latin, "italic 500", fonts.disp],
+        [before, latin, "500", fonts.disp],
         [model.char, jp, "600", fonts.jp],
-        [after, latin, "italic 500", fonts.disp],
+        [after, latin, "500", fonts.disp],
     ] as const) {
         ctx.font = font(style, size, family);
         ctx.fillText(text, x, y);
@@ -342,7 +342,7 @@ function drawEquation(ctx: Ctx, model: CardModel, skin: CardSkin, pal: Palette, 
     const colMax = Math.max(box, Math.min(190, Math.floor((RIGHT - PAD - MEANING_MIN_WIDTH - ops * OP_WIDTH - items * GAP) / n)));
 
     const glossMeasure = measurer(ctx, "400", fonts.ui);
-    const labelMeasure = measurer(ctx, "italic 500", fonts.disp);
+    const labelMeasure = measurer(ctx, "500", fonts.disp);
     const columns = parts.map((part) => {
         const gloss = part.gloss ? fitText(part.gloss, colMax, glossMeasure, { max: 26, min: 18 }) : null;
         const label = part.roleLabel ? fitText(part.roleLabel, colMax, labelMeasure, { max: 24, min: 18 }) : null;
@@ -375,7 +375,7 @@ function drawEquation(ctx: Ctx, model: CardModel, skin: CardSkin, pal: Palette, 
             ctx.fillText(col.gloss.text, x + col.width / 2, glossY);
         }
         if (col.label) {
-            ctx.font = font("italic 500", col.label.size, fonts.disp);
+            ctx.font = font("500", col.label.size, fonts.disp);
             ctx.fillStyle = partColor(col.part, skin);
             ctx.fillText(col.label.text, x + col.width / 2, labelY);
         }

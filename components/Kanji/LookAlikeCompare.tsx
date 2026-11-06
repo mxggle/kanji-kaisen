@@ -4,7 +4,10 @@ import { kanjiPath } from "@/lib/atlas/paths";
 import { Chip } from "@/components/ui/Chip";
 import type { LookAlikeView } from "./types";
 
-/** A glyph drawn from its strokes, the parts only it has in the accent. */
+/**
+ * A glyph drawn from its strokes: the parts only it has in full ink, the shared
+ * ones faint. No accent, since the accent marks a part's role (rule 2).
+ */
 function Glyph({ char, paths, highlight }: { char: string; paths: string[]; highlight: number[] }) {
     if (!paths.length) {
         return (
@@ -17,7 +20,7 @@ function Glyph({ char, paths, highlight }: { char: string; paths: string[]; high
     return (
         <svg viewBox="0 0 109 109" aria-hidden className="size-24 overflow-visible fill-none [stroke-linecap:round] [stroke-linejoin:round] sm:size-[104px]" strokeWidth={5}>
             {paths.map((d, i) => (
-                <path key={i} d={d} className={lit.has(i) ? "stroke-c" : "stroke-ink"} />
+                <path key={i} d={d} className={lit.has(i) || lit.size === 0 ? "stroke-ink" : "stroke-ink-3"} />
             ))}
         </svg>
     );
@@ -73,7 +76,7 @@ interface LookAlikeCompareProps {
 
 /**
  * "Easy to confuse": this kanji beside its closest look-alike, the strokes of
- * the parts that differ in the accent, and the other look-alikes as chips.
+ * the parts that differ in full ink, and the other look-alikes as chips.
  */
 export function LookAlikeCompare({ char, meaning, paths, items, className }: LookAlikeCompareProps) {
     const [first, ...rest] = items;

@@ -76,8 +76,8 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 className={cn(
                                     "flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
                                     !answered && "cursor-pointer border-line bg-card text-ink hover:border-ink-3",
-                                    answered && isAnswer && "border-ok bg-ok/10 text-ink",
-                                    answered && isPicked && !isAnswer && "border-dashed border-bad bg-card text-ink",
+                                    answered && isAnswer && "border-c bg-c/15 text-ink",
+                                    answered && isPicked && !isAnswer && "border-dashed border-ink-3 bg-card text-ink-2",
                                     answered && !isAnswer && !isPicked && "border-line text-ink-3",
                                 )}
                             >
@@ -85,7 +85,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                     aria-hidden
                                     className={cn(
                                         "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs",
-                                        answered && isAnswer ? "border-ok text-ok" : "border-line-2 text-ink-3",
+                                        answered && isAnswer ? "border-c bg-c text-onacc" : "border-line-2 text-ink-3",
                                     )}
                                 >
                                     {answered && isAnswer ? <Check className="size-3.5" /> : i + 1}
@@ -93,7 +93,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 <span className="min-w-0 break-words">
                                     {option}
                                     {answered && isAnswer && <span className="sr-only"> (the answer)</span>}
-                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-bad">Your answer</span>}
+                                    {answered && isPicked && !isAnswer && <span className="block text-xs text-ink-3">Your answer</span>}
                                 </span>
                             </button>
                         </li>
@@ -103,7 +103,7 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
 
             {answered && (
                 <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5" role="status">
-                    <p className={cn("font-bold", correct ? "text-ok" : "text-ink")}>
+                    <p className="font-bold text-ink">
                         {correct ? "Right." : <>Not quite: it means “{target.meaning}”. Nothing is lost.</>}
                     </p>
                     <KanjiDetails entry={entry} showMeanings={!correct} />
