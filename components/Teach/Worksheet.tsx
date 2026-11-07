@@ -8,6 +8,7 @@ import { formatReading } from "@/lib/atlas/readings";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import type { TeachWord, TeachWords } from "@/lib/teach-set";
 import { KANJIVG_VIEWBOX, type KanjiStrokes } from "./strokes";
+import { Settle } from "@/components/Browse/Settle";
 
 export interface WorksheetProps {
     title: string;
@@ -47,9 +48,12 @@ export function Worksheet({ title, chars, entries, strokes, words, showWords, an
     const preview = limit !== undefined;
     // The builder preview sits inside /teach, which has its own h1.
     const Title = preview ? "p" : "h1";
+    // Builder preview only: the sheet is re-printed (unrolls) when its first kanji or the words change.
+    // The printed worksheet carries no motion at all.
+    const reprint = preview ? ({ "data-enter": "unroll", style: { "--i": 0, "--kk-dur": "640ms" } as React.CSSProperties } as const) : null;
 
     return (
-        <div className="text-ink font-ui">
+        <div className="text-ink font-ui" {...reprint}>
             <header className="flex flex-wrap items-end justify-between gap-x-[6mm] gap-y-[2mm] pb-[2.5mm] border-b-[1.5px] border-ink">
                 <div className="min-w-0">
                     <p className="text-[8pt] text-ink-3">Kanji Kaisen · worksheet</p>
@@ -66,7 +70,9 @@ export function Worksheet({ title, chars, entries, strokes, words, showWords, an
             ))}
 
             {preview && chars.length > shown.length && (
-                <p className="py-[3mm] text-[9pt] text-ink-3">…and {chars.length - shown.length} more on the printed sheet.</p>
+                <p className="py-[3mm] text-[9pt] text-ink-3">
+                    …and <Settle value={chars.length}>{chars.length - shown.length} more</Settle> on the printed sheet.
+                </p>
             )}
 
             {showWords && wordList.length > 0 && (

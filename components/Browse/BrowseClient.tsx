@@ -10,7 +10,9 @@ import { Tool } from "@/components/Layout/Tool";
 import { Button } from "@/components/ui/Button";
 import { InkLegend, InkSwatch } from "@/components/ui/InkLegend";
 import { Tag } from "@/components/ui/Tag";
+import { enterOrder } from "@/components/Motion/tokens";
 import { FilterPanel, InkFilter, JlptFilter, RadicalFilter, ReadingFilter, StrokeFilter, ThemeFilter } from "./FilterGroups";
+import { Settle } from "./Settle";
 import { TileGrid } from "./TileGrid";
 import {
     DEFAULT_FILTERS,
@@ -100,6 +102,8 @@ export function BrowseClient({ items, initialFilters, radicals }: BrowseClientPr
             kind="Browse"
             title={`Browse ${fmt(items.length)} kanji`}
             lede="Filter by what you know about a kanji. Everything combines, and the address keeps your filters so you can share them."
+            // The tiles' glyphs are shared elements: the result choreographs itself (head row here, TileGrid's cascade).
+            enterResult={false}
             actions={
                 <>
                     <Button variant="quiet" href={sheet.href} prefetch={false} aria-disabled={none || undefined} tabIndex={none ? -1 : undefined}>
@@ -125,14 +129,14 @@ export function BrowseClient({ items, initialFilters, radicals }: BrowseClientPr
             }
         >
             <section aria-label="Results" className="flex flex-col gap-[18px]">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5" data-enter="" style={enterOrder(5)}>
                     <p aria-live="polite" className="text-[17px] font-bold leading-snug text-ink">
-                        {fmt(results.length)} kanji
+                        <Settle value={results.length}>{fmt(results.length)} kanji</Settle>
                     </p>
                     {tags.length > 0 && (
                         <ul aria-label="Active filters" className="flex flex-wrap gap-2">
                             {tags.map((tag) => (
-                                <li key={tag.key}>
+                                <li key={tag.key} data-enter="fade" style={enterOrder(0)}>
                                     <RemovableTag tag={tag} onRemove={() => replace(tag.without)} />
                                 </li>
                             ))}
@@ -158,7 +162,7 @@ export function BrowseClient({ items, initialFilters, radicals }: BrowseClientPr
                 </div>
 
                 {none ? (
-                    <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                    <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5" data-enter="" style={enterOrder(0)}>
                         <p className="text-sm text-ink-2">No kanji match all of these. Remove a filter to see more.</p>
                         {tags.length > 0 && (
                             <Button size="sm" onClick={clearAll}>

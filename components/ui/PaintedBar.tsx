@@ -26,6 +26,10 @@ interface PaintedBarProps {
 /**
  * The one way a group (theme, radical, deck) shows progress (rule 3): a 4px
  * bar in --c, optionally with "N% painted · M of T familiar". Server-safe.
+ *
+ * Motion: the fill is painted by one brush stroke, left to right, when it
+ * scrolls into view (data-reveal="brush"); when ink arrives after hydration
+ * or changes, the fill's edge sweeps to its new width.
  */
 export function PaintedBar({ chars, painted, known = 0, total, caption = false, label, className, style }: PaintedBarProps) {
     const list = chars === undefined ? undefined : Array.from(new Set(Array.from(chars)));
@@ -52,7 +56,10 @@ export function PaintedBar({ chars, painted, known = 0, total, caption = false, 
                 </span>
             )}
             <span aria-hidden className="block h-1 overflow-hidden rounded-sm bg-line-2">
-                <i className="block h-full w-[var(--painted)] rounded-sm bg-c transition-[width] duration-500 motion-reduce:transition-none" />
+                <i
+                    data-reveal="brush"
+                    className="block h-full w-[var(--painted)] rounded-sm bg-c transition-[width] duration-700 ease-[var(--ease-ink)] motion-reduce:transition-none"
+                />
             </span>
         </div>
     );

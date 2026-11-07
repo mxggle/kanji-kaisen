@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SHADE_JP, SHADE_NAMES, SHADES, themeProgress, type InkEntries, type Shade } from "@/lib/ink";
@@ -15,6 +15,8 @@ import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import type { JlptLevel } from "@/lib/atlas/types";
 import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { Tool } from "@/components/Layout/Tool";
+import { flip, leave, measure, type Rects } from "@/components/Browse/flip";
+import { enterOrder } from "@/components/Motion/tokens";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { KanjiTile } from "@/components/ui/KanjiTile";
@@ -28,6 +30,9 @@ const EMPTY: InkEntries = {};
 const TILE_GRID = "grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-2.5";
 
 const short = (theme: string) => (isCategoryName(theme) ? THEME_SHORT[theme] : theme);
+
+/** Hooks on what appears in answer to the learner start at once, not at the result's place in the page entrance. */
+const NOW = enterOrder(0);
 
 /** The learner's ink and saved list, with a char → theme lookup for tile colours. */
 function useAtlas(atlas: AtlasIndex) {
@@ -86,7 +91,7 @@ export function MyList({ atlas }: { atlas: AtlasIndex }) {
                 <Saved chars={savedChars} ready={listReady} ink={ink} themeOf={themeOf} level={level} />
                 <Revisit chars={revisit} ready={inkReady} ink={ink} themeOf={themeOf} />
                 <Study atlas={atlas} ink={ink} saved={savedChars} revisit={revisit} level={level} known={known} />
-                <p className="text-sm text-ink-2">
+                <p className="text-sm text-ink-2" data-reveal="fade">
                     Prefer the old checkpoint path?{" "}
                     <Link href="/practice" prefetch={false} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
                         Classic practice
@@ -117,7 +122,7 @@ function InkRail({ atlas, all, ink, ready }: { atlas: AtlasIndex; all: string; i
                                 {SHADE_JP[shade]}
                             </span>
                             <span className="flex-1 text-sm">{SHADE_NAMES[shade]}</span>
-                            <span className={cn("text-sm tabular-nums text-ink-2", !ready && "invisible")}>{counts[shade].toLocaleString("en")}</span>
+                            <span className={cn("text-sm tabular-nums text-ink-2 transition-opacity duration-500", !ready && "invisible opacity-0")}>{counts[shade].toLocaleString("en")}</span>
                         </li>
                     ))}
                 </ul>
@@ -168,13 +173,23 @@ function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: s
     const [filter, setFilter] = useState<Filter>("all");
     const [editing, setEditing] = useState(false);
     const [removed, setRemoved] = useState<{ char: string; entry: StudyEntry } | null>(null);
+    // Removing or restoring a kanji slides the others to their new places (FLIP).
+    const gridRef = useRef<HTMLUListElement>(null);
+    const flipFrom = useRef<Rects | null>(null);
 
     const counts = shadeCounts(ink, chars);
     const shown = filterByShade(ink, chars, filter);
 
+    useLayoutEffect(() => {
+        if (!flipFrom.current) return;
+        flip(gridRef.current, flipFrom.current);
+        flipFrom.current = null;
+    });
+
     const remove = (char: string) => {
         const entry = entries[char];
         if (!entry) return;
+        flipFrom.current = measure(gridRef.current);
         unsave(char);
         setRemoved({ char, entry });
     };
@@ -196,7 +211,7 @@ function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: s
             <SectionHeader jp="保存" title="Saved" id={titleId} aside={ready ? aside : undefined} />
 
             {removed && (
-                <div role="status" className="flex items-center justify-between gap-3 rounded-xl border border-line bg-card px-4 py-2 text-sm">
+                <div key={removed.char} role="status" data-enter="" style={enterOrder(0, 0, { "--rise": "8px" } as React.CSSProperties)} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-card px-4 py-2 text-sm">
                     <span className="text-ink-2">
                         Removed{" "}
                         <span lang="ja" className="font-jp text-ink">
@@ -208,6 +223,7 @@ function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: s
                         variant="quiet"
                         size="sm"
                         onClick={() => {
+                            flipFrom.current = measure(gridRef.current);
                             restore(removed.char, removed.entry);
                             setRemoved(null);
                         }}
@@ -224,7 +240,7 @@ function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: s
                     ))}
                 </ul>
             ) : chars.length === 0 ? (
-                <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5" data-enter="" style={NOW}>
                     <p className="text-base text-ink">Nothing saved yet.</p>
                     <p className="text-sm text-ink-2">Open any kanji and press Save to keep it here. Your ink is kept either way: every kanji you learn darkens on its own.</p>
                     <Button href={studyPath({ kind: "jlpt", level })} size="sm" className="self-start">
@@ -255,18 +271,27 @@ function Saved({ chars, ready, ink, themeOf, level }: TileListProps & { chars: s
                         </p>
                     )}
                     {shown.length === 0 ? (
-                        <p className="py-4 text-sm text-ink-3">No saved kanji at this shade.</p>
+                        <p className="py-4 text-sm text-ink-3" data-enter="fade" style={NOW}>
+                            No saved kanji at this shade.
+                        </p>
                     ) : (
-                        <ul className={TILE_GRID}>
+                        // New tiles (the list arriving, another shade, an undo) rise in as they come into view.
+                        <ul ref={gridRef} className={TILE_GRID} data-reveal-group="rise">
                             {shown.map((char) => (
-                                <li key={char} className="relative min-w-0">
+                                <li key={char} data-flip={char} className="relative min-w-0">
                                     <KanjiTile kanji={tileData(char, byChar?.get(char), themeOf)} shade={ink[char]?.shade ?? 0} />
                                     {editing && (
                                         <button
                                             type="button"
-                                            onClick={() => remove(char)}
+                                            onClick={(e) => {
+                                                // The tile fades out first; then the others close the gap.
+                                                const tile = e.currentTarget.closest("li");
+                                                if (entries[char]) leave(tile, () => remove(char));
+                                            }}
                                             aria-label={`Remove ${char} from My list`}
                                             title="Remove from My list"
+                                            data-enter="fade"
+                                            style={NOW}
                                             className="absolute -right-1.5 -top-1.5 flex size-8 items-center justify-center rounded-full border border-line-2 bg-bg text-ink-2 transition-colors hover:border-ink hover:text-ink"
                                         >
                                             <X className="size-4" aria-hidden />
@@ -286,7 +311,7 @@ function Revisit({ chars, ready, ink, themeOf }: TileListProps & { chars: string
     const titleId = useId();
     const { byChar } = useSearchIndex();
     return (
-        <section aria-labelledby={titleId} className="flex flex-col gap-[18px]">
+        <section aria-labelledby={titleId} className="flex flex-col gap-[18px]" data-reveal="">
             <SectionHeader jp="再訪" title="Worth a revisit" id={titleId} aside="A suggestion, not a queue" />
             <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-card px-[22px] py-5">
                 {!ready ? (
@@ -384,8 +409,8 @@ function Study({ atlas, ink, saved, revisit, level, known }: StudyProps) {
 
     return (
         <section aria-labelledby={titleId} className="flex flex-col gap-[18px]">
-            <SectionHeader jp="学習" title="Study" id={titleId} aside="Pick a deck, then a way to study it" />
-            <div role="group" aria-label="Deck" className="flex flex-wrap items-center gap-2">
+            <SectionHeader jp="学習" title="Study" id={titleId} aside="Pick a deck, then a way to study it" data-reveal="fade" />
+            <div role="group" aria-label="Deck" className="flex flex-wrap items-center gap-2" data-reveal="fade">
                 <span aria-hidden className="mr-1 text-sm text-ink-2">
                     Deck
                 </span>
@@ -396,7 +421,7 @@ function Study({ atlas, ink, saved, revisit, level, known }: StudyProps) {
                 ))}
             </div>
             {deck === "paste" && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" data-enter="" style={enterOrder(0, 0, { "--rise": "8px" } as React.CSSProperties)}>
                     <label htmlFor={pasteId} className="text-sm text-ink-2">
                         Paste or type the kanji you want to study, up to 60.
                     </label>
@@ -414,7 +439,7 @@ function Study({ atlas, ink, saved, revisit, level, known }: StudyProps) {
                     </p>
                 </div>
             )}
-            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
+            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4" data-reveal-group="rise">
                 {MODES.map((mode) => {
                     const href = hrefFor(mode.id);
                     return (

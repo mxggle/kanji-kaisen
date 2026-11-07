@@ -8,11 +8,17 @@ import type { JlptLevel } from "@/lib/atlas/types";
 import { SHADES, SHADE_JP, SHADE_NAMES, type Shade } from "@/lib/ink";
 import { Chip } from "@/components/ui/Chip";
 import { RadicalSeal } from "@/components/ui/RadicalSeal";
+import { enterOrder } from "@/components/Motion/tokens";
 import { ALL_LEVELS, MAX_STROKES, MIN_STROKES, THEME_SLUGS, parseReading, type LevelCounts } from "./filters";
 import { matchRadicals, radicalLabel, type RadicalOption } from "./radicals";
 
 // The Browse rail's filter groups. Each one is a small controlled component
 // (value + onChange) so other rails (Teach's "Add from") can pick the ones they need.
+//
+// Motion: what appears in answer to the learner (a seal the radical box finds,
+// a hint, the phone panel opening) fades or rises in at once (--i 0, so it
+// doesn't inherit the rail's place in the page entrance).
+const NOW = enterOrder(0);
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
@@ -98,7 +104,7 @@ export function InkFilter({ value, onChange }: { value: Shade[]; onChange: (valu
                         aria-label={`${SHADE_JP[shade]} ${SHADE_NAMES[shade]}`}
                         title={SHADE_NAMES[shade]}
                         onClick={() => toggle(shade)}
-                        className="w-full min-w-0 cursor-pointer rounded-[11px] border-2 border-transparent p-[3px] transition-colors hover:border-line-2 aria-pressed:border-ink"
+                        className="w-full min-w-0 cursor-pointer rounded-[11px] border-2 border-transparent p-[3px] transition-[border-color,scale] duration-150 hover:border-line-2 active:scale-[.94] aria-pressed:border-ink motion-reduce:active:scale-100"
                     >
                         <span lang="ja" data-ink={shade} className="flex h-[38px] items-center justify-center rounded-lg border font-jp text-base font-extrabold">
                             {SHADE_JP[shade]}
@@ -204,7 +210,7 @@ export function RadicalFilter({
             {shown.length > 0 && (
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] justify-items-center gap-1">
                     {shown.map((r) => (
-                        <span key={r.key} title={radicalLabel(r)} className="inline-flex">
+                        <span key={r.key} title={radicalLabel(r)} className="inline-flex" data-enter="fade" style={NOW}>
                             <RadicalSeal
                                 char={r.char}
                                 size="md"
@@ -220,7 +226,7 @@ export function RadicalFilter({
                 </div>
             )}
             {noMatch && (
-                <p id={hintId} className="text-xs text-ink-3">
+                <p id={hintId} className="text-xs text-ink-3" data-enter="fade" style={NOW}>
                     No radical matches “{query.trim()}”.
                 </p>
             )}
@@ -272,7 +278,7 @@ export function ReadingFilter({ value, onChange }: { value: string | null; onCha
                 className={FIELD}
             />
             {invalid && (
-                <p id={hintId} className="text-xs text-ink-3">
+                <p id={hintId} className="text-xs text-ink-3" data-enter="fade" style={NOW}>
                     Type a reading in kana or romaji.
                 </p>
             )}
@@ -302,7 +308,8 @@ export function FilterPanel({ activeCount, children, label = "Filters" }: { acti
                 {activeCount > 0 && <span className="text-sm text-ink-2">· {activeCount} on</span>}
                 <ChevronDown aria-hidden className={cn("ml-auto size-[18px] flex-none text-ink-2 transition-transform motion-reduce:transition-none", open && "rotate-180")} />
             </button>
-            <div id={id} className={cn("min-w-0 flex-col gap-[26px] lg:flex", open ? "flex" : "hidden")}>
+            {/* data-enter replays each time the phone panel opens (display: none → flex). */}
+            <div id={id} className={cn("min-w-0 flex-col gap-[26px] lg:flex", open ? "flex" : "hidden")} data-enter="" style={enterOrder(0, 0, { "--rise": "10px" } as React.CSSProperties)}>
                 {children}
             </div>
         </>

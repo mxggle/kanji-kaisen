@@ -4,18 +4,26 @@ import { formatReading, readingToRomaji } from "@/lib/atlas/readings";
 import { kanjiPath } from "@/lib/atlas/paths";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { Tag } from "@/components/ui/Tag";
+import { enterOrder } from "@/components/Motion/tokens";
 import { jlptLevelOf } from "./session";
 
-/** Meanings, on/kun readings with romaji and a link to the kanji page (the back of a flashcard). */
+/**
+ * Meanings, on/kun readings with romaji and a link to the kanji page (the back of a flashcard).
+ * Motion: as it appears, the meaning soaks in first, then the readings and the facts rise.
+ */
 export function KanjiDetails({ entry, showMeanings = true }: { entry: SearchIndexEntry; showMeanings?: boolean }) {
     return (
         <div className="flex flex-col gap-3 text-left">
-            {showMeanings && <p className="text-xl font-bold text-ink">{entry.m.slice(0, 5).join(", ")}</p>}
-            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
+            {showMeanings && (
+                <p className="text-xl font-bold text-ink" data-enter="ink" style={enterOrder(0, 0, { "--blur": "6px" } as React.CSSProperties)}>
+                    {entry.m.slice(0, 5).join(", ")}
+                </p>
+            )}
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm" data-enter="" style={enterOrder(1, 0, { "--rise": "8px" } as React.CSSProperties)}>
                 <ReadingRow label="On" readings={entry.on} />
                 <ReadingRow label="Kun" readings={entry.kun} />
             </dl>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1" data-enter="" style={enterOrder(2, 0, { "--rise": "8px" } as React.CSSProperties)}>
                 <Tag>{jlptLevelOf(entry.j)}</Tag>
                 <Tag>{entry.s} strokes</Tag>
                 <Link href={kanjiPath(entry.c)} className="ml-1 inline-flex items-center gap-1 text-sm text-ink underline underline-offset-[3px] hover:text-ink-2">

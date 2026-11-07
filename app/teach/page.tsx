@@ -40,9 +40,10 @@ export default function TeachPage() {
         <PageShell>
             <TeachBuilder lists={lists} siteHost={SITE_URL.replace(/^https?:\/\//, "")} />
 
+            {/* Below the builder: the heading fades in, then the three cards rise as they scroll into view. */}
             <section aria-labelledby="teach-features" className="mt-20 flex flex-col gap-6 border-t border-line pt-12">
-                <SectionHeader jp="三つ" title="Three tools, one set" id="teach-features" aside="A free kanji worksheet generator, with no account" />
-                <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <SectionHeader jp="三つ" title="Three tools, one set" id="teach-features" aside="A free kanji worksheet generator, with no account" data-reveal="fade" />
+                <ul className="grid grid-cols-1 gap-4 md:grid-cols-3" data-reveal-group="rise">
                     {FEATURES.map(({ icon: Icon, title, text }) => (
                         <li key={title} className="flex flex-col gap-2 rounded-2xl border border-line bg-card px-[22px] py-5">
                             <Icon size={20} className="text-ink-3" aria-hidden />
@@ -51,7 +52,7 @@ export default function TeachPage() {
                         </li>
                     ))}
                 </ul>
-                <p className="text-xs text-ink-3">
+                <p className="text-xs text-ink-3" data-reveal="fade">
                     Stroke order from KanjiVG (CC BY-SA 3.0). Readings and example words: see{" "}
                     <Link href="/about" className={PROSE_LINK}>
                         About &amp; credits

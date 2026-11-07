@@ -49,7 +49,8 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
         <div data-skin="ink" className="min-h-screen bg-bg text-ink pt-4 pb-16 px-3 sm:px-4 print:min-h-0 print:p-0 print:bg-transparent">
             <style>{`@page { size: ${paper === "letter" ? "letter" : "A4"} portrait; margin: 12mm; }`}</style>
 
-            <div className={cn("mx-auto mb-4 flex flex-col gap-3 print:hidden", pageWidth)}>
+            {/* On screen only: the toolbar fades in, then the sheet rises (motion hooks are off in print). */}
+            <div className={cn("mx-auto mb-4 flex flex-col gap-3 print:hidden", pageWidth)} data-enter="fade">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <Link
                         href={set.chars.length ? `/teach?${encodeSet(set)}` : "/teach"}
@@ -82,6 +83,8 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
             <article
                 aria-label="Worksheet"
                 aria-busy={!ready}
+                data-enter=""
+                style={{ "--i": 1, "--rise": "12px" } as React.CSSProperties}
                 className={cn("mx-auto border border-line bg-paper p-[5mm] sm:p-[12mm] print:max-w-none print:border-0 print:p-0 print:bg-transparent", pageWidth)}
             >
                 {error ? (

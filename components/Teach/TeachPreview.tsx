@@ -26,6 +26,8 @@ const TABS = [
 ] as const;
 
 const TABS_ID = "teach";
+/** Motion hooks here answer a click at once (not at the result's place in the page entrance). */
+const NOW = { "--i": 0 } as React.CSSProperties;
 const PREVIEW_KANJI = 2;
 
 interface TeachPreviewProps {
@@ -79,18 +81,18 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                 <Tabs id={TABS_ID} label="Use the set" items={TABS} value={tab} onChange={setTab} />
                 <span className="flex-1" />
                 {tab === "worksheet" && (
-                    <a href={empty ? undefined : printHref} target="_blank" rel="noopener" aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)}>
+                    <a href={empty ? undefined : printHref} target="_blank" rel="noopener" aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)} data-enter="fade" style={NOW}>
                         <Printer aria-hidden /> Print or save PDF
                     </a>
                 )}
                 {tab === "projector" && (
-                    <Link href={empty ? "/teach" : presentHref} aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)}>
+                    <Link href={empty ? "/teach" : presentHref} aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)} data-enter="fade" style={NOW}>
                         <MonitorPlay aria-hidden /> Present full screen
                     </Link>
                 )}
                 {tab === "share" && (
-                    <Button variant="primary" onClick={copyLink} disabled={empty}>
-                        {copied === "copied" ? <Check aria-hidden /> : <Copy aria-hidden />}
+                    <Button variant="primary" onClick={copyLink} disabled={empty} data-enter="fade" style={NOW}>
+                        {copied === "copied" ? <Check aria-hidden data-enter="stamp" style={NOW} /> : <Copy aria-hidden />}
                         <span aria-live="polite">{copied === "copied" ? "Link copied" : copied === "selected" ? "Link selected: press Ctrl+C" : "Copy link"}</span>
                     </Button>
                 )}
@@ -98,7 +100,7 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
 
             <div role="tabpanel" id={tabPanelId(TABS_ID, tab)} aria-labelledby={tabId(TABS_ID, tab)} className="min-w-0">
                 {tab === "worksheet" && (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4" data-enter="fade" style={NOW}>
                         <WorksheetPreview chars={chars} title={title} entries={entries} showWords={showWords} siteHost={siteHost} />
                         <div className="flex flex-wrap items-center gap-2">
                             <Segmented
@@ -117,7 +119,7 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                 )}
 
                 {tab === "projector" && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3" data-enter="fade" style={NOW}>
                         <ProjectorPreview chars={chars} entries={entries} themeOf={themeOf} />
                         <p className="text-sm leading-relaxed text-ink-2">
                             Full screen, large type, readable from the back of a room. Space draws one stroke at a time so you can talk
@@ -128,7 +130,7 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                 )}
 
                 {tab === "share" && (
-                    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card px-[22px] py-5">
+                    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card px-[22px] py-5" data-enter="fade" style={NOW}>
                         <div className="flex flex-col gap-1">
                             <h3 className="text-[17px] font-bold leading-snug">Anyone with this link can open the set. No account needed.</h3>
                             <p className="text-sm text-ink-2">The set lives in the address itself, so nothing is stored on a server.</p>

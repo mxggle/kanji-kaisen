@@ -9,14 +9,19 @@ import { countByStatus } from "@/lib/study-list";
 import { isCategoryName, THEME_SHORT } from "@/lib/atlas/categories";
 import { Chip } from "@/components/ui/Chip";
 import { KindLabel, SectionHeader } from "@/components/ui/SectionHeader";
+import { enterOrder } from "@/components/Motion/tokens";
 import type { PickerData } from "./StudyClient";
 import { revisitChars } from "./my-list";
 import { studyPath, type DeckRequest, type StudyMode } from "./session";
 
-const CARD = "flex min-w-0 flex-col gap-1 rounded-2xl border border-line bg-card px-5 py-4 transition-colors";
+const CARD = "flex min-w-0 flex-col gap-1 rounded-2xl border border-line bg-card px-5 py-4 transition-[border-color,scale] duration-200";
 
-/** /study without a deck: your list, a JLPT level or a theme. */
+/**
+ * /study without a deck: your list, a JLPT level or a theme.
+ * Motion: the heading, then each group of decks rises in turn (after the empty-deck note when there is no heading).
+ */
 export function DeckPicker({ picker, mode, heading = true }: { picker: PickerData; mode: StudyMode | null; heading?: boolean }) {
+    const at = (i: number) => enterOrder(heading ? i : i + 2);
     const listReady = useStudyStoreHydrated();
     const inkReady = useInkHydrated();
     const entries = useStudyStore((s) => s.entries);
@@ -29,15 +34,19 @@ export function DeckPicker({ picker, mode, heading = true }: { picker: PickerDat
         <div className="flex flex-col gap-12">
             {heading && (
                 <header className="flex flex-col gap-3">
-                    <KindLabel jp="学習">Study</KindLabel>
-                    <h1 className="type-title">Pick a deck</h1>
-                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2">
+                    <KindLabel jp="学習" data-enter="fade">
+                        Study
+                    </KindLabel>
+                    <h1 className="type-title" data-enter="ink" style={enterOrder(1)}>
+                        Pick a deck
+                    </h1>
+                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2" data-enter="" style={enterOrder(2)}>
                         Then flashcards or a meaning quiz. Nothing is scored against you; stop whenever you like.
                     </p>
                 </header>
             )}
 
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4" data-enter="" style={at(3)}>
                 <SectionHeader jp="保存" title="Your list" aside={<Link href="/my-list" className="hover:text-ink">Open My list</Link>} />
                 <div className="grid gap-3 sm:grid-cols-2">
                     <DeckCard
@@ -57,7 +66,7 @@ export function DeckPicker({ picker, mode, heading = true }: { picker: PickerDat
                 </div>
             </section>
 
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4" data-enter="" style={at(4)}>
                 <SectionHeader jp="級" title="JLPT level" />
                 <div className="flex flex-wrap gap-2">
                     {picker.jlpt.map(({ level, count }) => (
@@ -68,7 +77,7 @@ export function DeckPicker({ picker, mode, heading = true }: { picker: PickerDat
                 </div>
             </section>
 
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4" data-enter="" style={at(5)}>
                 <SectionHeader jp="主題" title="Themes" />
                 <div className="flex flex-wrap gap-2">
                     {picker.themes.map((t) => (
@@ -79,7 +88,7 @@ export function DeckPicker({ picker, mode, heading = true }: { picker: PickerDat
                 </div>
             </section>
 
-            <p className="text-sm text-ink-2">
+            <p className="text-sm text-ink-2" data-enter="fade" style={at(6)}>
                 Every{" "}
                 <Link href="/radicals" className="text-ink underline underline-offset-[3px] hover:text-ink-2">
                     radical
@@ -104,7 +113,7 @@ function DeckCard({ href, title, meta, disabled, empty }: { href: string; title:
         );
     }
     return (
-        <Link href={href} className={cn(CARD, "hover:border-ink-3")}>
+        <Link href={href} className={cn(CARD, "hover:border-ink-3 active:scale-[.985] motion-reduce:active:scale-100")}>
             <span className="text-[17px] font-bold">{title}</span>
             <span className="text-sm text-ink-3">{meta}</span>
         </Link>

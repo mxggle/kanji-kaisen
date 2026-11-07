@@ -1,0 +1,81 @@
+/*
+ * Motion for the tool pages (Browse, Search, My list, Study, Teach). Builds on
+ * the hooks and tokens in app/motion.css; spec in docs/design/motion.md.
+ *
+ * These are transitions from @starting-style, not hook animations, for one
+ * reason: a transition only plays when an element is first styled, so it can
+ * be switched off while a view transition runs without replaying afterwards.
+ * Lists of shared-element tiles (<Morph>) need that: a tile must sit still
+ * while its glyph flies in from the kanji page.
+ */
+
+/*
+ * A cascade: each child of [data-cascade] rises in when it is first rendered,
+ * staggered by its --ci (set inline: its place in the list or in its batch).
+ * Plays on first paint (server HTML) and for every child added later (a new
+ * filter result, "Show more"); children that stay are left alone.
+ *   --cascade-delay  wait before the first one (0)
+ *   --cascade-step   between two children (14ms)
+ *   --cascade-cap    last step that still waits longer (24)
+ */
+[data-cascade] > * {
+  transition:
+    opacity 360ms var(--ease-out),
+    translate 520ms var(--ease-ink);
+  transition-delay: calc(var(--cascade-delay, 0ms) + min(var(--ci, 0), var(--cascade-cap, 24)) * var(--cascade-step, 14ms));
+}
+
+@starting-style {
+  [data-cascade] > * {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
+/* Browse and Search: on first paint the grid waits for the title row; after hydration a new set answers at once. */
+html:not([data-motion]) [data-cascade="page"] {
+  --cascade-delay: 280ms;
+}
+
+/* During a page change the grid arrives with the page: a glyph may be flying into one of these tiles. */
+html:active-view-transition [data-cascade] > * {
+  transition: none;
+}
+
+/*
+ * A value that re-inks when it changes (the result count, "Card 3 of 20"):
+ * <Settle> re-keys this span, and only after hydration, so the first paint
+ * is left to the page's own entrance. A small soak, no ticking numbers.
+ */
+[data-settle] {
+  display: inline-block;
+}
+
+html[data-motion] [data-settle] {
+  transition:
+    opacity 280ms var(--ease-out),
+    filter 360ms var(--ease-ink),
+    translate 360ms var(--ease-ink);
+}
+
+@starting-style {
+  html[data-motion] [data-settle] {
+    opacity: 0;
+    filter: blur(3px);
+    translate: 0 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cascade] > *,
+  html[data-motion] [data-settle] {
+    transition: none !important;
+  }
+}
+
+@media print {
+  [data-cascade] > *,
+  [data-settle] {
+    transition: none !important;
+  }
+}

@@ -17,6 +17,7 @@ import { SourcePicker } from "./SourcePicker";
 import { TeachPreview } from "./TeachPreview";
 import type { TeachLists, TeachRadical } from "./types";
 import { FOCUS } from "./ui";
+import { enterOrder } from "@/components/Motion/tokens";
 
 const noopSubscribe = () => () => {};
 
@@ -26,32 +27,39 @@ interface TeachBuilderProps {
 }
 
 /**
- * /teach builder. The server renders it with an empty set; on the client it
- * remounts once with the set from the URL (?k=&t=), so links from the
+ * /teach builder. The server renders it with an empty set; the first client
+ * render reads the set from the URL (?k=&t=) once, so links from the
  * projector or a kanji page open with their kanji.
  */
 export function TeachBuilder({ lists, siteHost }: TeachBuilderProps) {
     const search = useSyncExternalStore(noopSubscribe, () => window.location.search, () => null);
     const known = useMemo(() => new Set(lists.jlpt.flatMap((l) => Array.from(l.chars))), [lists.jlpt]);
-    // The key flips once, from the server render to the first client render.
-    // Later URL changes come from the builder itself and are ignored here.
-    const phase = search === null ? "server" : "client";
-    return <Builder key={phase} lists={lists} known={known} initialSearch={search} syncUrl={phase === "client"} siteHost={siteHost} />;
+    return <Builder lists={lists} known={known} search={search} siteHost={siteHost} />;
 }
 
 interface BuilderProps {
     lists: TeachLists;
     known: ReadonlySet<string>;
-    initialSearch: string | null;
-    /** False for the server-rendered instance, which must not overwrite the URL before it is read. */
-    syncUrl: boolean;
+    /** The URL's query: null in the server render (and hydration), then the address on the client. */
+    search: string | null;
     siteHost: string;
 }
 
-function Builder({ lists, known, initialSearch, syncUrl, siteHost }: BuilderProps) {
-    const [start] = useState(() => (initialSearch ? decodeSet(initialSearch, known) : { chars: [], title: "" }));
-    const [chars, setChars] = useState<string[]>(start.chars);
-    const [title, setTitle] = useState(start.title);
+const readSet = (search: string | null, known: ReadonlySet<string>) => (search ? decodeSet(search, known) : { chars: [], title: "" });
+
+function Builder({ lists, known, search, siteHost }: BuilderProps) {
+    const [chars, setChars] = useState<string[]>(() => readSet(search, known).chars);
+    const [title, setTitle] = useState(() => readSet(search, known).title);
+    // The server render can't see the URL. The first client render takes the
+    // set from it, once, in place (no remount, so the page's entrance isn't
+    // replayed at hydration). Later URL changes come from the builder itself.
+    const [syncUrl, setSyncUrl] = useState(search !== null);
+    if (!syncUrl && search !== null) {
+        const start = readSet(search, known);
+        setSyncUrl(true);
+        setChars(start.chars);
+        setTitle(start.title);
+    }
     const [status, setStatus] = useState("");
     const { byChar } = useSearchIndex();
     const savedSets = useSavedSets();
@@ -155,7 +163,7 @@ function Builder({ lists, known, initialSearch, syncUrl, siteHost }: BuilderProp
             </div>
 
             {shared && (
-                <p className="text-sm leading-relaxed text-ink-2">
+                <p className="text-sm leading-relaxed text-ink-2" data-enter="fade" style={enterOrder(0)}>
                     All {chars.length} share{" "}
                     <span lang="ja" className="font-jp text-[1.15em] font-extrabold text-ink">
                         {shared.char}
@@ -194,7 +202,7 @@ function Builder({ lists, known, initialSearch, syncUrl, siteHost }: BuilderProp
                     </h3>
                     <ul className="flex flex-col">
                         {savedSets.map((s) => (
-                            <li key={s.id} className="flex items-center gap-1 border-t border-line first:border-t-0">
+                            <li key={s.id} className="flex items-center gap-1 border-t border-line first:border-t-0" data-enter="fade" style={enterOrder(0)}>
                                 <button
                                     type="button"
                                     onClick={() => load(s)}

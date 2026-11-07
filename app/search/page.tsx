@@ -7,7 +7,9 @@ import { PageShell } from "@/components/Atlas/PageShell";
 import { TrackEvent } from "@/components/Atlas/TrackEvent";
 import { InkPaint } from "@/components/Ink/InkPaint";
 import { SearchBox } from "@/components/Search/SearchBox";
+import { Settle } from "@/components/Browse/Settle";
 import { TileGrid } from "@/components/Browse/TileGrid";
+import { enterOrder } from "@/components/Motion/tokens";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { InkLegend } from "@/components/ui/InkLegend";
@@ -54,20 +56,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <PageShell>
             {q && <TrackEvent name="search_performed" properties={{ query: q, result_count: results.length, source: "search_page" }} />}
             <InkPaint>
+                {/* Entrance: label, the query, the line under it, the box; then the result head and the tiles' cascade. */}
                 <div className="flex flex-col gap-3 pt-8 pb-8 sm:pt-10">
-                    <KindLabel jp="検索">Search</KindLabel>
-                    <h1 className="type-title break-words">{q ? <>“{q}”</> : "Search kanji"}</h1>
-                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2">
+                    <KindLabel jp="検索" data-enter="fade">
+                        Search
+                    </KindLabel>
+                    <h1 className="type-title break-words" data-enter="ink" style={enterOrder(1)}>
+                        {/* A new query re-inks in place (the page itself doesn't change). */}
+                        <Settle value={q}>{q ? <>“{q}”</> : "Search kanji"}</Settle>
+                    </h1>
+                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2" data-enter="" style={enterOrder(2)}>
                         {q
                             ? "Kanji whose meaning, reading or form matches. Kana and romaji both work."
                             : "Type a kanji, an English meaning, kana or romaji: water, みず, mizu or 水."}
                     </p>
                     {/* Keyed by the query so the box resets when navigating between searches. */}
-                    <SearchBox key={q} variant="hero" defaultValue={q} autoFocus={!q} className="mt-3" />
+                    <div className="mt-3" data-enter="" style={enterOrder(3)}>
+                        <SearchBox key={q} variant="hero" defaultValue={q} autoFocus={!q} />
+                    </div>
                 </div>
 
                 {!q ? (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2" data-enter="" style={enterOrder(4)}>
                         <span className="mr-1 text-xs text-ink-3">Try</span>
                         {EXAMPLES.map((ex) => (
                             <Chip key={ex} href={searchPath(ex)}>
@@ -76,7 +86,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         ))}
                     </div>
                 ) : results.length === 0 ? (
-                    <div className="flex max-w-[640px] flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                    <div className="flex max-w-[640px] flex-col items-start gap-3 rounded-2xl border border-line bg-card px-[22px] py-5" data-enter="" style={enterOrder(4)}>
                         <p className="text-[17px] font-bold text-ink">No kanji found for “{q}”.</p>
                         <p className="text-sm text-ink-2">Try a single English word, or a reading in kana or romaji. Browse can also filter by theme, radical and reading.</p>
                         <Button href="/browse" size="sm">
@@ -85,8 +95,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </div>
                 ) : (
                     <section aria-label="Results" className="flex flex-col gap-[18px]">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
-                            <p className="text-[17px] font-bold leading-snug text-ink">{count}</p>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5" data-enter="" style={enterOrder(4)}>
+                            <p className="text-[17px] font-bold leading-snug text-ink">
+                                <Settle value={q}>{count}</Settle>
+                            </p>
                             <InkLegend className="sm:ml-auto" />
                         </div>
                         <TileGrid items={tiles} label={`Kanji for “${q}”`} />

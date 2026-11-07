@@ -12,6 +12,8 @@ import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { Button } from "@/components/ui/Button";
 import { PaintedBar } from "@/components/ui/PaintedBar";
 import { KindLabel } from "@/components/ui/SectionHeader";
+import { Settle } from "@/components/Browse/Settle";
+import { enterOrder } from "@/components/Motion/tokens";
 import { Flashcard } from "./Flashcard";
 import { QuizCard } from "./QuizCard";
 import { SessionSummary, type CardResult } from "./SessionSummary";
@@ -177,13 +179,16 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
         const entry = byChar!.get(char) as SearchIndexEntry;
         return shell(
             <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3" data-enter="fade">
                     <div className="min-w-0">
                         <p className="type-label truncate">
                             {title} · {mode === "quiz" ? "Meaning quiz" : "Flashcards"}
                         </p>
                         <p className="text-sm text-ink-2" aria-live="polite">
-                            Card {position + 1} of {session.cards.length}
+                            {/* The whole line is re-keyed, so the live region still reads it out in full. */}
+                            <Settle value={position}>
+                                Card {position + 1} of {session.cards.length}
+                            </Settle>
                         </p>
                     </div>
                     <Button size="sm" onClick={() => finish(results)}>
@@ -220,9 +225,13 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
     return shell(
         <div className="flex flex-col gap-8">
             <header className="flex flex-col gap-3">
-                <KindLabel jp="学習">Study</KindLabel>
-                <h1 className="type-title">{title}</h1>
-                <p className="text-base leading-relaxed text-ink-2">
+                <KindLabel jp="学習" data-enter="fade">
+                    Study
+                </KindLabel>
+                <h1 className="type-title" data-enter="ink" style={enterOrder(1)}>
+                    {title}
+                </h1>
+                <p className="text-base leading-relaxed text-ink-2" data-enter="" style={enterOrder(2)}>
                     {deck.length} kanji
                     {ranges.length > 1 && `, studied ${SESSION_SIZE} at a time`}.{" "}
                     <Link href={backHref} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
@@ -232,7 +241,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 <PaintedBar chars={deck} caption label="Your ink in this deck" className="max-w-md pt-1" />
             </header>
 
-            <fieldset className="flex flex-col gap-3">
+            <fieldset className="flex flex-col gap-3" data-enter="" style={enterOrder(3)}>
                 <legend className="type-label mb-3">Mode</legend>
                 <div className="grid gap-3 sm:grid-cols-2">
                     {MODES.map((m) => (
@@ -265,7 +274,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 </div>
             </fieldset>
 
-            <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card px-[22px] py-5">
+            <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card px-[22px] py-5" data-enter="" style={enterOrder(4)}>
                 {ranges.length > 1 && (
                     <div className="flex max-w-xs flex-col gap-1.5">
                         <label htmlFor={rangeId} className="type-label">
@@ -296,7 +305,7 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                 )}
             </div>
 
-            <Button variant="primary" size="lg" onClick={() => beginRange(rangeIndex)} disabled={deck.length === 0} className="self-start">
+            <Button variant="primary" size="lg" onClick={() => beginRange(rangeIndex)} disabled={deck.length === 0} className="self-start" data-enter="" style={enterOrder(5)}>
                 Start{range ? ` · ${range.end - range.start} ${range.end - range.start === 1 ? "card" : "cards"}` : ""}
             </Button>
         </div>,

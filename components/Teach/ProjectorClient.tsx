@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Maximize, Minimize, MessageCircleQuestion, X } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
@@ -12,6 +12,8 @@ import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { decodeSet, encodeSet } from "@/lib/teach-set";
 import { cn } from "@/lib/utils";
 import { meaningLabel, toQuizCandidate } from "@/components/Study/session";
+import { Settle } from "@/components/Browse/Settle";
+import { enterOrder } from "@/components/Motion/tokens";
 import { useSearchIndex } from "@/components/Study/useSearchIndex";
 import { INITIAL_PROJECTOR, keyDirection, projectorKey, projectorReducer } from "./projector-state";
 import { StrokeGlyph } from "./StrokeGlyph";
@@ -42,6 +44,14 @@ const projectorReadings = (entry: SearchIndexEntry | undefined) =>
 const CONTROL =
     "inline-flex items-center gap-2 h-11 px-4 rounded-full border border-line-2 text-ink-2 hover:text-ink hover:border-ink-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
+/**
+ * One step of a slide's entrance: drifts in from the side the class is moving
+ * towards (from the right going forward, from the left going back), in order.
+ * Big, plain and quick enough for a projector: no blur, nothing longer than
+ * the house entrance.
+ */
+const slideIn = (i: number, dir: number) => enterOrder(i, 0, { "--drift": `${dir * 28}px` } as React.CSSProperties);
+
 /** /teach/present: one kanji at a time, full screen, a stroke per key press, and a quiz for the room. */
 export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
     const params = useSearchParams();
@@ -55,6 +65,10 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
     const count = chars.length;
     const strokes = useKanjiStrokes(chars);
     const [state, dispatch] = useReducer(projectorReducer, INITIAL_PROJECTOR);
+    // Which way the last change of kanji went (+1 forward, -1 back): the next slide drifts in from that side.
+    const [slide, setSlide] = useState({ index: state.index, dir: 1 });
+    if (slide.index !== state.index) setSlide({ index: state.index, dir: state.index > slide.index ? 1 : -1 });
+    const dir = slide.dir;
 
     const radicalOf = useMemo(() => {
         const map = new Map<string, TeachRadical>();
@@ -190,7 +204,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
             className="fixed inset-0 z-[70] flex flex-col bg-bg text-ink outline-none overflow-hidden"
             style={{ "--tc": color } as React.CSSProperties}
         >
-            <header className="flex items-center gap-2 sm:gap-3 px-[3vw] pt-[2.5vh]">
+            <header className="flex items-center gap-2 sm:gap-3 px-[3vw] pt-[2.5vh]" data-enter="fade">
                 <p className="flex-1 min-w-0 truncate font-disp text-[clamp(1.1rem,1.8vw,1.9rem)] font-semibold text-ink-2">
                     {set.title || "Kanji set"}
                 </p>
@@ -234,16 +248,27 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                     <button type="button" onClick={retry} className={CONTROL}>Try again</button>
                 </div>
             ) : !byChar ? (
-                <p className="flex-1 flex items-center justify-center text-ink-3 text-xl">Loading…</p>
+                <p className="flex-1 flex items-center justify-center text-ink-3 text-xl" data-enter="fade" style={enterOrder(2)}>
+                    Loading…
+                </p>
             ) : !char || !entry ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3 text-ink-2">
                     <p className="text-xl text-ink">This link has no kanji to present.</p>
                     <Link href="/teach" className="text-ink underline underline-offset-2">Build a set</Link>
                 </div>
             ) : (
-                <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]">
+                // Keyed by the kanji: each slide is new, and plays its entrance (slideIn).
+                <div
+                    key={char}
+                    className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]"
+                >
                     {/* Clicking the kanji draws the next stroke; keyboard users press Space. */}
-                    <div onClick={() => dispatch({ type: "advance", total, count })} className="justify-self-center cursor-pointer select-none">
+                    <div
+                        onClick={() => dispatch({ type: "advance", total, count })}
+                        className="justify-self-center cursor-pointer select-none"
+                        data-enter="drift"
+                        style={slideIn(0, dir)}
+                    >
                         {glyph ? (
                             <StrokeGlyph
                                 key={char}
@@ -262,23 +287,34 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                     </div>
 
                     {state.quiz === "off" ? (
-                        <div className="flex flex-col gap-[2.2vh] min-w-0 text-center md:text-left">
-                            <p className="font-disp font-bold leading-[1.02] text-[clamp(2.25rem,5.4vw,6.5rem)] break-words">{meaningLabel(entry.m)}</p>
-                            <p lang="ja" className="font-jp font-semibold text-[clamp(1.6rem,3.4vw,4rem)] leading-tight">{projectorReadings(entry)}</p>
-                            {radical && <RadicalLine radical={radical} />}
+                        // Keyed panels: turning the quiz on or off swaps them, and the new one plays its entrance.
+                        <div key="strokes" className="flex flex-col gap-[2.2vh] min-w-0 text-center md:text-left">
+                            <p className="font-disp font-bold leading-[1.02] text-[clamp(2.25rem,5.4vw,6.5rem)] break-words" data-enter="drift" style={slideIn(1, dir)}>
+                                {meaningLabel(entry.m)}
+                            </p>
+                            <p lang="ja" className="font-jp font-semibold text-[clamp(1.6rem,3.4vw,4rem)] leading-tight" data-enter="drift" style={slideIn(2, dir)}>
+                                {projectorReadings(entry)}
+                            </p>
+                            {radical && <RadicalLine radical={radical} enter={slideIn(3, dir)} />}
                             {total !== null && total > 0 && (
-                                <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]">
+                                <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]" data-enter="fade" style={enterOrder(4)}>
                                     {state.drawn === 0 ? `${total} strokes · Space draws the first` : `Stroke ${state.drawn} of ${total}`}
                                 </p>
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-[2.4vh] min-w-0">
-                            <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]">
+                        <div key="quiz" className="flex flex-col gap-[2.4vh] min-w-0">
+                            <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]" data-enter="fade">
                                 Question {state.index + 1} of {count} · show of hands
                             </p>
-                            <p className="font-disp font-bold leading-none text-[clamp(2rem,4.2vw,5rem)]">What does it mean?</p>
-                            <ol className="grid grid-cols-1 lg:grid-cols-2 gap-[1.4vh] lg:gap-[1.2vw]">
+                            <p className="font-disp font-bold leading-none text-[clamp(2rem,4.2vw,5rem)]" data-enter="drift" style={slideIn(1, dir)}>
+                                What does it mean?
+                            </p>
+                            <ol
+                                className="grid grid-cols-1 lg:grid-cols-2 gap-[1.4vh] lg:gap-[1.2vw]"
+                                data-enter-group=""
+                                style={{ "--rise": "14px", "--delay": "110ms" } as React.CSSProperties}
+                            >
                                 {options.map((option, i) => {
                                     const correct = option === answer;
                                     const revealed = state.quiz === "revealed";
@@ -286,7 +322,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                         <li
                                             key={option}
                                             className={cn(
-                                                "px-[1.4vw] py-[1.4vh] min-h-[7vh] flex items-center rounded-xl border border-line-2 text-[clamp(1.15rem,2.2vw,2.6rem)] leading-tight transition-opacity",
+                                                "px-[1.4vw] py-[1.4vh] min-h-[7vh] flex items-center rounded-xl border border-line-2 text-[clamp(1.15rem,2.2vw,2.6rem)] leading-tight transition-[opacity,color,border-color] duration-300",
                                                 revealed && correct && "border-c text-c",
                                                 revealed && !correct && "opacity-40",
                                             )}
@@ -299,7 +335,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                 })}
                             </ol>
                             {state.quiz === "revealed" ? (
-                                <div className="flex flex-col gap-[1vh]">
+                                <div className="flex flex-col gap-[1vh]" data-enter="" style={enterOrder(0, 0, { "--rise": "12px" } as React.CSSProperties)}>
                                     <p lang="ja" className="font-jp font-semibold text-[clamp(1.4rem,2.6vw,3rem)]">{projectorReadings(entry)}</p>
                                     {radical && <RadicalLine radical={radical} />}
                                 </div>
@@ -311,6 +347,8 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                                         refocus(e);
                                     }}
                                     aria-keyshortcuts="R"
+                                    data-enter=""
+                                    style={enterOrder(0, 360, { "--rise": "10px" } as React.CSSProperties)}
                                     className="self-start inline-flex items-center h-[clamp(3rem,6vh,4.5rem)] px-[clamp(1.25rem,2vw,2.5rem)] rounded-full bg-ink text-bg font-bold text-[clamp(1.1rem,1.8vw,2rem)] hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                                 >
                                     Reveal
@@ -321,7 +359,7 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                 </div>
             )}
 
-            <footer className="flex items-center gap-3 px-[3vw] pb-[2.5vh] text-ink-3 text-[clamp(.9rem,1.25vw,1.3rem)]">
+            <footer className="flex items-center gap-3 px-[3vw] pb-[2.5vh] text-ink-3 text-[clamp(.9rem,1.25vw,1.3rem)]" data-enter="fade" style={enterOrder(2)}>
                 <button
                     type="button"
                     onClick={(e) => {
@@ -336,7 +374,11 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
                     <ChevronLeft size={20} aria-hidden />
                 </button>
                 <p className="flex-1 min-w-0 text-center md:text-left">
-                    {position && <span className="text-ink-2 font-medium">{position}</span>}
+                    {position && (
+                        <span className="text-ink-2 font-medium">
+                            <Settle value={position}>{position}</Settle>
+                        </span>
+                    )}
                     <span className="hidden md:inline">
                         {" "}· Space: {state.quiz === "off" ? "next stroke" : state.quiz === "asking" ? "reveal" : "next question"} · → next kanji · Q:{" "}
                         {state.quiz === "off" ? "quiz the class" : "back to strokes"} · Esc: {state.quiz === "off" ? "exit" : "close quiz"}
@@ -373,9 +415,9 @@ export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
     );
 }
 
-function RadicalLine({ radical }: { radical: TeachRadical }) {
+function RadicalLine({ radical, enter }: { radical: TeachRadical; enter?: React.CSSProperties }) {
     return (
-        <p className="text-ink-2 text-[clamp(1.1rem,1.9vw,2.2rem)]">
+        <p className="text-ink-2 text-[clamp(1.1rem,1.9vw,2.2rem)]" data-enter={enter ? "drift" : undefined} style={enter}>
             Radical{" "}
             <span lang="ja" className="font-jp font-extrabold text-c text-[1.3em] leading-none">
                 {radical.char}

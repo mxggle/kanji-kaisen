@@ -16,6 +16,8 @@ import { extractKanji, MAX_SET_KANJI } from "@/lib/teach-set";
 import { cn } from "@/lib/utils";
 import type { TeachLists } from "./types";
 import { FOCUS } from "./ui";
+import { enterOrder } from "@/components/Motion/tokens";
+import "@/components/Browse/tool-motion.css";
 
 export type Source = "theme" | "radical" | "jlpt" | "list" | "text";
 
@@ -29,6 +31,12 @@ const SOURCES: { id: Source; label: string }[] = [
 
 // Long lists (a JLPT level has up to 1,200 kanji) show this many until expanded.
 const PREVIEW_COUNT = 96;
+
+// What a choice brings up fades in at once (not at the rail's place in the page entrance).
+const NOW = enterOrder(0);
+
+/** Candidate kanji cascade in quickly, top-left first (tool-motion.css). */
+const CASCADE = { "--cascade-step": "8ms" } as React.CSSProperties;
 
 interface SourcePickerProps {
     lists: TeachLists;
@@ -78,7 +86,7 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
 
             <div className="flex flex-col">
                 {source === "theme" && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3" data-enter="fade" style={NOW}>
                         <div role="group" aria-label="Themes" className="flex flex-wrap gap-1.5">
                             {lists.themes.map((t) => (
                                 <Chip key={t.slug} pressed={theme === t.slug} onClick={() => setTheme(t.slug)} theme={t.name} count={Array.from(t.chars).length} className="h-8 px-3">
@@ -91,7 +99,7 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
                 )}
 
                 {source === "radical" && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3" data-enter="fade" style={NOW}>
                         <RadicalFilter radicals={radicalOptions} value={radical} onChange={setRadical} limit={8} />
                         {selectedRadical ? (
                             candidates(selectedRadical.chars, `Radical ${selectedRadical.char} ${selectedRadical.meaning}`)
@@ -102,7 +110,7 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
                 )}
 
                 {source === "jlpt" && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3" data-enter="fade" style={NOW}>
                         <div role="group" aria-label="JLPT levels" className="flex flex-wrap gap-1.5">
                             {lists.jlpt.map((l) => (
                                 <Chip key={l.level} pressed={level === l.level} onClick={() => setLevel(l.level)} count={Array.from(l.chars).length} className="h-8 px-3">
@@ -123,7 +131,11 @@ export function SourcePicker({ lists, known, inSet, entries, onAdd, onToggle }: 
 }
 
 function Hint({ children }: { children: React.ReactNode }) {
-    return <p className="text-sm text-ink-3">{children}</p>;
+    return (
+        <p className="text-sm text-ink-3" data-enter="fade" style={NOW}>
+            {children}
+        </p>
+    );
 }
 
 function MyListSource({ candidates }: { candidates: (chars: string, label: string) => React.ReactNode }) {
@@ -152,6 +164,8 @@ function TextSource({ known, onAdd }: { known: ReadonlySet<string>; onAdd: (char
     return (
         <form
             className="flex flex-col gap-2"
+            data-enter="fade"
+            style={NOW}
             onSubmit={(e) => {
                 e.preventDefault();
                 if (found.length === 0) return;
@@ -208,12 +222,12 @@ function Candidates({ chars, label, inSet, entries, onAdd, onToggle }: Candidate
                     {missing.length === 0 ? "All added" : addCount < missing.length ? `Add first ${addCount}` : `Add all ${addCount}`}
                 </Button>
             </div>
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1.5">
-                {shown.map((c) => {
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1.5" data-cascade="" style={CASCADE}>
+                {shown.map((c, i) => {
                     const added = inSet.has(c);
                     const meaning = entries?.get(c)?.m[0];
                     return (
-                        <li key={c}>
+                        <li key={c} style={{ "--ci": i % PREVIEW_COUNT } as React.CSSProperties}>
                             <button
                                 type="button"
                                 aria-pressed={added}
@@ -222,7 +236,7 @@ function Candidates({ chars, label, inSet, entries, onAdd, onToggle }: Candidate
                                 title={meaning ? `${c} ${meaning}` : c}
                                 aria-label={meaning ? `${c}, ${meaning}` : c}
                                 className={cn(
-                                    "w-full aspect-square flex items-center justify-center rounded-xl border font-jp font-extrabold text-xl transition-colors disabled:opacity-40",
+                                    "w-full aspect-square flex items-center justify-center rounded-xl border font-jp font-extrabold text-xl transition-[color,background-color,border-color,opacity,scale] duration-200 active:scale-[.92] disabled:opacity-40 motion-reduce:active:scale-100",
                                     added ? "bg-ink border-ink text-bg" : "bg-bg border-line hover:border-ink-3",
                                     FOCUS,
                                 )}

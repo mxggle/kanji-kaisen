@@ -10,6 +10,7 @@ import { listSaved } from "@/lib/study-list";
 import { DeckPicker } from "./DeckPicker";
 import { StudySession, type DeckSource } from "./StudySession";
 import { SessionSkeleton, STUDY_COLUMN } from "./ui";
+import { enterOrder } from "@/components/Motion/tokens";
 import type { DeckRequest, StudyMode } from "./session";
 
 export interface ServerDeck {
@@ -49,7 +50,7 @@ export function StudyClient({ request, notFound, serverDeck, initialMode, catego
         return (
             <div className={STUDY_COLUMN}>
                 {notFound && (
-                    <div role="alert" className="mb-10 flex flex-col gap-1 rounded-2xl border border-line bg-card px-[22px] py-5 text-sm text-ink-2">
+                    <div role="alert" className="mb-10 flex flex-col gap-1 rounded-2xl border border-line bg-card px-[22px] py-5 text-sm text-ink-2" data-enter="fade">
                         <p className="text-base text-ink">Deck not found.</p>
                         <p>That link doesn&apos;t match a radical, theme, JLPT level or kanji set. Pick a deck below instead.</p>
                     </div>
@@ -138,8 +139,10 @@ function ListDeckSnapshot({ kind, initialMode, categoryOf, picker }: ListDeckPro
 function EmptyDeck({ title, message }: { title: string; message: string }) {
     return (
         <header className="mb-12 flex flex-col gap-3">
-            <h1 className="type-title">{title}</h1>
-            <p className="text-base leading-relaxed text-ink-2">
+            <h1 className="type-title" data-enter="ink">
+                {title}
+            </h1>
+            <p className="text-base leading-relaxed text-ink-2" data-enter="" style={enterOrder(1)}>
                 {message}{" "}
                 <Link href={browsePath({ jlpt: "N5" })} className="text-ink underline underline-offset-[3px] hover:text-ink-2">
                     Browse N5 kanji
