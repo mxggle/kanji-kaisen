@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { radicalPath } from "@/lib/atlas/paths";
 import { RadicalSeal } from "@/components/ui/RadicalSeal";
 import { Tag } from "@/components/ui/Tag";
@@ -19,14 +20,27 @@ export interface SealRadical {
     sideOf?: string;
 }
 
+/** The first grid's entrance: after the page header, with a tight stagger so rows of seals stay quick. */
+const FIRST_GRID = { "--delay": "280ms", "--stagger": "30ms" } as CSSProperties;
+
 /**
  * Radicals as seals linking to their pages, filled by the page's <InkPaint>.
  * 古 marks radicals with sourced ancient forms. The colour comes from the
  * nearest theme (--tc). Server-safe.
+ *
+ * The seals are stamped onto the page as they scroll in (`enter`: on first
+ * paint, for the grid already on screen), and each flies into its radical
+ * page's seal: every radical shows once per grid, so a page must not show the
+ * same radical in two grids.
  */
-export function RadicalSealGrid({ radicals }: { radicals: SealRadical[] }) {
+export function RadicalSealGrid({ radicals, enter }: { radicals: SealRadical[]; enter?: boolean }) {
     return (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-x-2 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(92px,1fr))] sm:gap-x-3">
+        <ul
+            data-enter-group={enter ? "stamp" : undefined}
+            data-reveal-group={enter ? undefined : "stamp"}
+            style={enter ? FIRST_GRID : undefined}
+            className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-x-2 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(92px,1fr))] sm:gap-x-3"
+        >
             {radicals.map((r) => {
                 const count = Array.from(r.chars).length;
                 const detail = r.sideOf ? `side form of ${r.sideOf}` : `${count} kanji`;
@@ -48,7 +62,8 @@ export function RadicalSealGrid({ radicals }: { radicals: SealRadical[] }) {
                                 </span>
                             }
                             label={`${r.char} ${r.name}, ${r.meaning}, ${detail}${r.ancient > 0 ? ", with ancient forms" : ""}`}
-                            className="w-full"
+                            morph={r.key}
+                            className="w-full transition-transform duration-(--dur-micro) ease-(--ease-out) active:scale-[.97] motion-reduce:transition-none"
                         />
                     </li>
                 );

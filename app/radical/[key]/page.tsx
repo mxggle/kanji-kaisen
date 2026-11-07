@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Printer } from "lucide-react";
@@ -10,6 +11,7 @@ import { PageShell } from "@/components/Atlas/PageShell";
 import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { TrackEvent } from "@/components/Atlas/TrackEvent";
 import { atlasMetadata } from "@/components/Atlas/metadata";
+import { MorphLanding } from "@/components/Atlas/MorphLanding";
 import { InkPaint } from "@/components/Ink/InkPaint";
 import { AtlasPath, type PathStep } from "@/components/Layout/AtlasPath";
 import { Plate } from "@/components/Layout/Plate";
@@ -29,6 +31,7 @@ import { GrowthList, NeighbourCard, Placements, RadicalOrigin } from "@/componen
 import { NextKanjiButton } from "@/components/Journey/NextKanjiButton";
 import { RadicalKanjiGrid } from "@/components/Journey/RadicalKanjiGrid";
 import { emptyJourneyNote, radicalKana, radicalTitle, romajiName, shortMeaning } from "@/components/Journey/radical";
+import { enterOrder } from "@/components/Motion/tokens";
 
 type Params = { params: Promise<{ key: string }> };
 
@@ -88,6 +91,9 @@ export default async function RadicalPage({ params }: Params) {
     const studyLabel = kanji.length > 1 ? `Study all ${kanji.length}` : "Study it";
     const printHref = setPath("print", { chars: kanji.slice(0, PRINT_KANJI).map((k) => k.char), title: `${char} ${title}` });
     const cardKanji = getKanji(char);
+    // A kanji's glyph may fly to its page from one tile per page: the growth list
+    // keeps those it shows, the full grid takes the rest.
+    const grown = new Set(growth.map((g) => g.kanji.char));
 
     const steps: PathStep[] = [
         ...(category ? [{ label: category, short: themeShort, href: categoryPath(category), mark: { kind: "dot", category } } satisfies PathStep] : []),
@@ -105,17 +111,29 @@ export default async function RadicalPage({ params }: Params) {
 
     const reading = (
         <div className="flex flex-col gap-[22px]">
-            <KindLabel jp="部首">Radical{category && <> · in {category}</>}</KindLabel>
+            <KindLabel jp="部首" data-enter="fade" style={enterOrder(1)}>
+                Radical{category && <> · in {category}</>}
+            </KindLabel>
             <div className="flex items-center gap-3.5 sm:gap-[22px]">
-                <RadicalSeal char={char} size="lg" chars={chars} className="flex-none" orbClassName="max-sm:size-16 max-sm:text-[34px] min-[960px]:size-[120px] min-[960px]:text-[64px]" />
+                {/* The seal is pressed onto the page, or lands from the seal that was followed (morph). */}
+                <span data-enter="stamp" style={enterOrder(2)} className="flex flex-none">
+                    <RadicalSeal
+                        char={char}
+                        size="lg"
+                        chars={chars}
+                        morph={radical.key}
+                        className="flex-none"
+                        orbClassName="max-sm:size-16 max-sm:text-[34px] min-[960px]:size-[120px] min-[960px]:text-[64px]"
+                    />
+                </span>
                 <div className="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-                    <h1 className="type-title text-balance">
+                    <h1 data-enter="ink" style={enterOrder(3)} className="type-title text-balance">
                         <span lang="ja" className="sr-only">
                             {char}{" "}
                         </span>
                         {title}
                     </h1>
-                    <p className="text-sm leading-snug text-ink-2">
+                    <p data-enter style={enterOrder(4)} className="text-sm leading-snug text-ink-2">
                         <KanaName name={radical.name} />
                         {base && (
                             <>
@@ -141,30 +159,45 @@ export default async function RadicalPage({ params }: Params) {
                     </p>
                 </div>
             </div>
-            <p className="flex flex-wrap gap-2">
+            <p data-enter-group="rise" style={{ "--delay": "220ms" } as CSSProperties} className="flex flex-wrap gap-2">
                 {strokes.length > 0 && <Tag>{strokes.length === 1 ? "1 stroke" : `${strokes.length} strokes`}</Tag>}
                 {kanji.length > 0 && <Tag>Radical of {kanji.length} kanji</Tag>}
                 {insideCount > 0 && <Tag>Part of {insideCount}</Tag>}
             </p>
             {kanji.length > 0 && (
-                <PaintedBar
-                    chars={chars}
-                    caption
-                    label={
-                        <>
-                            Your ink in{" "}
-                            <span lang="ja" className="font-jp">
-                                {char}
-                            </span>
-                        </>
-                    }
-                    className="max-w-[520px]"
-                />
+                <div data-enter="fade" style={enterOrder(5)}>
+                    <PaintedBar
+                        chars={chars}
+                        caption
+                        label={
+                            <>
+                                Your ink in{" "}
+                                <span lang="ja" className="font-jp">
+                                    {char}
+                                </span>
+                            </>
+                        }
+                        className="max-w-[520px]"
+                    />
+                </div>
             )}
-            {origin && <RadicalOrigin char={char} origin={origin} />}
-            {radical.story && <MemoryStory>{radical.story}</MemoryStory>}
-            <Placements char={char} items={placements} lead={radical.transformsMeaning || undefined} />
-            <div className="flex flex-wrap items-center gap-2.5">
+            {origin && (
+                <div data-enter style={enterOrder(6)}>
+                    <RadicalOrigin char={char} origin={origin} />
+                </div>
+            )}
+            {/* Story text soaks in (rule 4: ink is its only kind). */}
+            {radical.story && (
+                <div data-enter="ink" style={enterOrder(6, 80, { "--blur": "6px" } as CSSProperties)}>
+                    <MemoryStory>{radical.story}</MemoryStory>
+                </div>
+            )}
+            {placements.length > 0 && (
+                <div data-enter style={enterOrder(7)}>
+                    <Placements char={char} items={placements} lead={radical.transformsMeaning || undefined} />
+                </div>
+            )}
+            <div data-enter style={enterOrder(7)} className="flex flex-wrap items-center gap-2.5">
                 {kanji.length > 0 && (
                     <>
                         <NextKanjiButton chars={chars} className="max-lg:hidden" />
@@ -191,13 +224,15 @@ export default async function RadicalPage({ params }: Params) {
         <InkPaint>
             <PageShell style={themeVars(category)}>
                 <TrackEvent name="radical_viewed" properties={{ radical: radical.key, kanji_count: radical.kanji.length }} />
+                <MorphLanding />
                 <AtlasPath steps={steps} prev={neighbour(neighbors.prev, "Previous")} next={neighbour(neighbors.next, "Next")} />
 
-                <Plate specimen={specimen} reading={reading} specimenLabel={`The journey of ${char}`} />
+                <Plate specimen={specimen} reading={reading} specimenLabel={`The journey of ${char}`} specimenEnter="unroll" />
 
                 {growth.length > 0 && (
                     <section aria-labelledby="grows-title" className="mt-16 flex flex-col gap-[22px] sm:mt-24">
                         <SectionHeader
+                            data-reveal="rise"
                             jp="育つ"
                             id="grows-title"
                             title="What it grows into"
@@ -218,6 +253,7 @@ export default async function RadicalPage({ params }: Params) {
                 {kanji.length > 0 && (
                     <section id="kanji" aria-labelledby="kanji-title" className="mt-16 flex scroll-mt-24 flex-col gap-[22px] sm:mt-24">
                         <SectionHeader
+                            data-reveal="rise"
                             jp="一覧"
                             id="kanji-title"
                             title={
@@ -231,12 +267,12 @@ export default async function RadicalPage({ params }: Params) {
                             }
                             aside="Most used first"
                         />
-                        <RadicalKanjiGrid tiles={kanji.map((k) => ({ char: k.char, jlpt: k.jlpt, tile: <KanjiTile kanji={k} /> }))} />
+                        <RadicalKanjiGrid tiles={kanji.map((k) => ({ char: k.char, jlpt: k.jlpt, tile: <KanjiTile kanji={k} morph={!grown.has(k.char)} /> }))} />
                     </section>
                 )}
 
                 {(neighbors.prev || neighbors.next) && (
-                    <nav aria-label={`Other radicals in ${themeShort}`} className="mt-14 grid grid-cols-2 gap-3 sm:mt-16 sm:gap-4">
+                    <nav aria-label={`Other radicals in ${themeShort}`} data-reveal-group="rise" className="mt-14 grid grid-cols-2 gap-3 sm:mt-16 sm:gap-4">
                         <NeighbourCard radical={neighbors.prev} dir="prev" theme={themeShort} />
                         <NeighbourCard radical={neighbors.next} dir="next" theme={themeShort} />
                     </nav>

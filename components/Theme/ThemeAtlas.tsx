@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { kanjiPath, radicalPath } from "@/lib/atlas/paths";
 import { setPath } from "@/lib/teach-set";
 import { ActionBar } from "@/components/ui/ActionBar";
 import { Button } from "@/components/ui/Button";
 import { KanjiTile } from "@/components/ui/KanjiTile";
 import { RadicalSeal } from "@/components/ui/RadicalSeal";
+import { enterOrder } from "@/components/Motion/tokens";
 import { groupOf, nextKanji, nextVerb, type NextKanji } from "./order";
 import { shadeReader, useInkEntries } from "./useInk";
 import type { ThemeRadical } from "./types";
@@ -70,29 +71,45 @@ export function ThemeAtlas({ theme, radicals, order, children }: ThemeAtlasProps
     return <ThemeAtlasContext.Provider value={value}>{children}</ThemeAtlasContext.Provider>;
 }
 
+/** Where the preview sits in the theme page's entrance (the card fades in just before). */
+const PREVIEW_ORDER = 5;
+
+/** A tight grid: a shorter stagger keeps a dozen tiles inside the entrance. */
+const TILE_STAGGER = { "--stagger": "30ms" } as CSSProperties;
+
 /** The selected radical: its seal, name, count and first kanji, with a link to its page. */
 export function RadicalPreview() {
     const { radicals, selected, previewRef } = useThemeAtlas();
     const radical = radicals[selected];
+    // The radical shown at mount plays with the page's entrance; a new pick answers at once.
+    const [first] = useState(radical?.key);
     if (!radical) return null;
     const count = Array.from(radical.chars).length;
+    const order = radical.key === first ? PREVIEW_ORDER : 0;
 
     return (
         <section
             ref={previewRef}
             aria-labelledby="radical-preview"
+            data-enter="fade"
+            style={enterOrder(PREVIEW_ORDER - 1)}
             className="flex scroll-mt-6 flex-col gap-4 rounded-2xl border border-line bg-card p-4 sm:px-[22px] sm:py-5"
         >
             <div className="flex flex-wrap items-center gap-x-3.5 gap-y-3">
-                <RadicalSeal char={radical.char} size="md" chars={radical.chars} />
+                {/* Keyed by radical: a new pick presses the new seal (stamp). The only seal
+                    for this radical on the page (ThemeSeals leaves it out), so it flies to
+                    the radical page when "Open radical" is followed. */}
+                <span key={radical.key} data-enter="stamp" style={enterOrder(order)} className="inline-flex flex-none">
+                    <RadicalSeal char={radical.char} size="md" chars={radical.chars} morph={radical.key} />
+                </span>
                 <div aria-live="polite" className="flex min-w-0 flex-col">
-                    <h2 id="radical-preview" className="text-[17px] font-bold leading-[1.35]">
+                    <h2 key={radical.key} id="radical-preview" data-enter="fade" style={enterOrder(order)} className="text-[17px] font-bold leading-[1.35]">
                         <span lang="ja" className="sr-only">
                             {radical.char}{" "}
                         </span>
                         {radical.gloss}
                     </h2>
-                    <p className="text-xs text-ink-3">
+                    <p key={`${radical.key}-count`} data-enter="fade" style={enterOrder(order, 40)} className="text-xs text-ink-3">
                         {radical.name} · radical of {count.toLocaleString("en")} kanji · most used first
                     </p>
                 </div>
@@ -100,11 +117,16 @@ export function RadicalPreview() {
                     Open radical
                 </Button>
             </div>
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(76px,1fr))]">
+            {/* The tiles rise in reading order, after the seal; each kanji shows once on the page, so its glyph flies to its page. */}
+            <ul
+                data-enter-group="rise"
+                style={enterOrder(0, order ? order * 55 : 60, TILE_STAGGER)}
+                className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(76px,1fr))]"
+            >
                 {radical.tiles.map((kanji) => (
                     // Keyed by kanji, so a new radical mounts new tiles and <InkPaint> paints them.
                     <li key={kanji.char} className="min-w-0">
-                        <KanjiTile kanji={kanji} />
+                        <KanjiTile kanji={kanji} morph />
                     </li>
                 ))}
             </ul>
@@ -136,7 +158,7 @@ export function ThemeActions() {
     const printChars = radical ? radical.tiles.map((k) => k.char) : [];
 
     return (
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div data-enter style={enterOrder(PREVIEW_ORDER + 1)} className="flex flex-wrap items-center gap-2.5">
             {next && (
                 <Button variant="primary" size="lg" href={learnHref(next)} className="max-lg:hidden">
                     <NextLabel next={next} />
@@ -177,11 +199,16 @@ export function ThemeActionBar() {
     );
 }
 
-/** Every radical of the theme as a seal, most useful first. Picking one shows it in the preview. */
+/**
+ * Every radical of the theme as a seal, most useful first. Picking one shows
+ * it in the preview. The seals are stamped in as they scroll into view; each
+ * but the previewed one (whose seal is in the preview) can fly to and from
+ * its radical page.
+ */
 export function ThemeSeals() {
     const { radicals, selected, pick } = useThemeAtlas();
     return (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-x-3 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(92px,1fr))]">
+        <ul data-reveal-group="stamp" className="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-x-3 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(92px,1fr))]">
             {radicals.map((radical, i) => {
                 const count = Array.from(radical.chars).length;
                 return (
@@ -194,7 +221,8 @@ export function ThemeSeals() {
                             pressed={i === selected}
                             onClick={() => pick(i)}
                             label={`${radical.char} ${radical.gloss}, ${count} kanji`}
-                            className="w-full"
+                            morph={i === selected ? undefined : radical.key}
+                            className="w-full transition-transform duration-(--dur-micro) ease-(--ease-out) active:scale-[.97] motion-reduce:transition-none"
                         />
                     </li>
                 );

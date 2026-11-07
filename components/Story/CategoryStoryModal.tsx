@@ -5,6 +5,7 @@ import { getCategoryStory, getAllRadicalStories } from "@/lib/story-loader";
 import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useEffect } from "react";
 import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
+import { useDialogMotion } from "./useDialogMotion";
 
 interface CategoryStoryModalProps {
     category: string;
@@ -29,6 +30,8 @@ const THEME_ICONS: Record<string, string> = {
 export function CategoryStoryModal({ category, onClose, themeClass }: CategoryStoryModalProps) {
     const story = getCategoryStory(category);
     const icon = THEME_ICONS[category] || "📚";
+    // Opens with the dialog pattern; every way out plays the exit first.
+    const { backdrop, panel, close } = useDialogMotion<HTMLDivElement, HTMLDivElement>(onClose);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -59,12 +62,13 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
+                ref={backdrop}
                 className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                onClick={onClose}
+                onClick={close}
             />
 
             {/* Modal Content */}
-            <div className={`
+            <div ref={panel} className={`
                 relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
                 bg-zinc-900/95 rounded-3xl border ${themeClass.split(' ')[1]}
                 shadow-2xl custom-scrollbar
@@ -93,8 +97,8 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                             </div>
                         </div>
                         <button
-                            onClick={onClose}
-                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                            onClick={close}
+                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-[background-color,transform] duration-(--dur-micro) active:scale-[.97]"
                         >
                             <X size={20} className="text-white/60" />
                         </button>
@@ -135,11 +139,11 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                 {/* Footer */}
                 <div className="sticky bottom-0 p-4 bg-gradient-to-t from-zinc-900 to-transparent">
                     <button
-                        onClick={onClose}
+                        onClick={close}
                         className={`
                             w-full py-3 rounded-xl font-medium
                             ${bgColorClass} text-white
-                            hover:opacity-90 transition-opacity
+                            hover:opacity-90 transition-[opacity,transform] duration-(--dur-micro) active:scale-[.97]
                         `}
                     >
                         Start Learning

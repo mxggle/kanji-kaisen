@@ -43,11 +43,30 @@ export interface JourneyPlayerProps {
 const STEP_MS = 1400;
 const DEFAULT_EMPTY_NOTE = "No ancient form with a clear public-domain source has been found for this character yet.";
 
-// The stroke being drawn (dash offset 1 -> 0 over a unit pathLength).
+// The stroke being drawn (dash offset 1 -> 0 over a unit pathLength), on the motion tokens (app/motion.css).
 const CSS = `
-.kkj-draw{stroke-dasharray:1;stroke-dashoffset:1;animation:kkj-draw .45s ease-out .08s forwards}
+.kkj-draw{stroke-dasharray:1;stroke-dashoffset:1;animation:kkj-draw var(--dur-stroke) var(--ease-out) 80ms forwards}
 @keyframes kkj-draw{to{stroke-dashoffset:0}}
 `;
+
+/**
+ * A stage of the plate, by its place in time: the one shown, one already
+ * passed (it recedes, smaller) or one still to come (it waits a little larger
+ * and settles in like a seal pressed). Moving forward, each form gives way to
+ * the next; moving back, they rewind. The incoming form soaks in on the ink
+ * curve while the outgoing one leaves in half the time.
+ */
+const STAGE_STATE = {
+    shown: "opacity-100 duration-[640ms] ease-(--ease-ink) delay-[60ms]",
+    past: "scale-[.94] opacity-0 duration-(--dur-ui) ease-(--ease-in)",
+    next: "scale-[1.05] opacity-0 duration-(--dur-ui) ease-(--ease-in)",
+} as const;
+
+/** The kanji page's Ancient tab: small figures, so a lighter blur. */
+const GRID_ENTER = { "--blur": "6px" } as CSSProperties;
+
+/** The stage strip arrives oldest first, after the plate starts to unroll: the journey read in order. */
+const STRIP_ENTER = { "--delay": "180ms", "--blur": "6px" } as CSSProperties;
 
 const STROKE_SVG = "fill-none [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:4.4]";
 
@@ -126,7 +145,8 @@ function JourneyGrid({ char, tabs, todayStrokes, emptyNote, className, style }: 
     const ancientCount = tabs.length - 1;
     return (
         <div className={cn("flex min-w-0 flex-col gap-3.5 text-ink", className)} style={style}>
-            <ul className="grid grid-cols-2 gap-3">
+            {/* Oldest first, each time the tab is shown (a hidden panel restarts its animations). */}
+            <ul data-enter-group="ink" style={GRID_ENTER} className="grid grid-cols-2 gap-3">
                 {tabs.map((tab) => (
                     <li key={tab.id} className="min-w-0">
                         <figure className="flex flex-col gap-2 rounded-xl bg-bg p-3.5">
@@ -277,8 +297,8 @@ export function JourneyPlayer({
                                 key={tab.id}
                                 aria-hidden
                                 className={cn(
-                                    "absolute inset-x-0 top-0 bottom-9 transition-[opacity,transform] duration-700 ease-out",
-                                    i === active ? "opacity-100" : "scale-[.94] opacity-0",
+                                    "absolute inset-x-0 top-0 bottom-9 transition-[opacity,transform] motion-reduce:transition-none",
+                                    STAGE_STATE[i === active ? "shown" : i < active ? "past" : "next"],
                                 )}
                             >
                                 {tab.src ? (
@@ -293,25 +313,34 @@ export function JourneyPlayer({
                             </div>
                         ))}
                     </div>
+                    {/* The caption changes with the stage: keyed, so the new one fades in (data-enter). */}
                     <p aria-live="polite" className="absolute inset-x-3 bottom-2.5 flex items-baseline justify-between gap-3 text-xs text-ink-3 sm:inset-x-4 sm:bottom-3">
-                        <span className="min-w-0 truncate">
+                        <span key={current.id} data-enter="fade" className="min-w-0 truncate">
                             <b className="font-medium text-ink">{label.full}</b> · <span className="sm:hidden">{current.id === "today" ? when : stageEra(when)}</span>
                             <span className="max-sm:hidden">{when}</span>
                         </span>
                         {ref && (
-                            <span lang={current.id === "today" ? undefined : "zh-Hant"} className="max-w-[45%] shrink-0 truncate max-sm:hidden">
+                            <span key={`${current.id}-ref`} data-enter="fade" lang={current.id === "today" ? undefined : "zh-Hant"} className="max-w-[45%] shrink-0 truncate max-sm:hidden">
                                 {ref}
                             </span>
                         )}
                     </p>
                 </div>
                 {shownCaption && current.caption !== defaultCaption(current.id, char) && (
-                    <p className="mt-3 text-sm leading-relaxed text-ink-2">{shownCaption}</p>
+                    <p key={current.id} data-enter="fade" className="mt-3 text-sm leading-relaxed text-ink-2">
+                        {shownCaption}
+                    </p>
                 )}
             </div>
 
             {ancientCount > 0 && (
-                <div role="tablist" aria-label={`Stages of ${char}`} className="grid gap-1.5 sm:gap-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+                <div
+                    role="tablist"
+                    aria-label={`Stages of ${char}`}
+                    data-enter-group="ink"
+                    className="relative grid gap-(--tab-gap) [--tab-gap:--spacing(1.5)] sm:[--tab-gap:--spacing(2)]"
+                    style={{ ...STRIP_ENTER, gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+                >
                     {tabs.map((tab, i) => {
                         const selected = i === active;
                         return (
@@ -329,8 +358,10 @@ export function JourneyPlayer({
                                 onClick={() => pick(i)}
                                 onKeyDown={(e) => onTabKey(e, i)}
                                 className={cn(
-                                    "flex min-h-14 min-w-0 cursor-pointer flex-col items-center gap-1 rounded-[10px] border px-1 py-2 text-[11px] font-medium transition-colors sm:gap-1.5 sm:rounded-xl sm:py-2.5 sm:text-xs",
-                                    selected ? "border-c bg-bg text-ink" : "border-line text-ink-3 hover:border-line-2 hover:text-ink",
+                                    "relative z-[1] flex min-h-14 min-w-0 cursor-pointer flex-col items-center gap-1 rounded-[10px] border px-1 py-2 text-[11px] font-medium sm:gap-1.5 sm:rounded-xl sm:py-2.5 sm:text-xs",
+                                    "transition-[color,border-color,transform] duration-(--dur-micro) ease-(--ease-out) active:scale-[.97] motion-reduce:transition-none",
+                                    // The selected outline is the sliding mark below.
+                                    selected ? "border-transparent text-ink" : "border-line text-ink-3 hover:border-line-2 hover:text-ink",
                                 )}
                             >
                                 {tab.src ? (
@@ -345,6 +376,17 @@ export function JourneyPlayer({
                             </button>
                         );
                     })}
+                    {/* The selected stage's outline, one column wide: it slides from stage to stage as the journey plays. */}
+                    <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-y-0 left-0 z-0 rounded-[10px] border border-c bg-bg transition-transform duration-(--dur-enter) ease-(--ease-ink) motion-reduce:transition-none sm:rounded-xl"
+                        style={{
+                            // It arrives with the strip, but never blurred: a soft --c edge would read as a glow (rule 5).
+                            "--blur": "0px",
+                            width: `calc((100% - ${tabs.length - 1} * var(--tab-gap)) / ${tabs.length})`,
+                            transform: `translateX(calc(${active} * (100% + var(--tab-gap))))`,
+                        } as CSSProperties}
+                    />
                 </div>
             )}
 

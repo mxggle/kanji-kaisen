@@ -81,6 +81,13 @@ function Step({ step, compact }: { step: PathStep; compact?: boolean }) {
     );
 }
 
+/** A pill link on the right (neighbours, "All ten themes"): it answers hover with a fill and a press with a dip. */
+const PILL =
+    "group/pill inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-ink-2 transition-[color,background-color,transform] duration-(--dur-micro) ease-(--ease-out) hover:bg-card hover:text-ink active:scale-[.97] motion-reduce:transition-none";
+
+/** The ‹ › arrow leans the way the link goes. */
+const ARROW = "transition-transform duration-(--dur-ui) ease-(--ease-out) motion-reduce:transition-none";
+
 const SEP = (
     <span aria-hidden className="flex-none opacity-55">
         ›
@@ -91,11 +98,14 @@ const SEP = (
  * Learn › theme › radical › kanji, with ‹ › neighbours on the right. Every
  * atlas page (theme, radical, kanji) shows it; on phones it moves into the
  * header. Server-safe.
+ *
+ * Motion: it fades in first, before the plate's entrance (and again in the
+ * phone header whenever a page puts it there).
  */
 export function AtlasPath({ steps, prev, next, more, inHeader = true, className }: AtlasPathProps) {
     return (
         <>
-            <nav aria-label="Atlas path" className={cn("hidden min-h-14 flex-wrap items-center gap-2.5 py-3 text-sm text-ink-3 lg:flex", className)}>
+            <nav aria-label="Atlas path" data-enter="fade" className={cn("hidden min-h-14 flex-wrap items-center gap-2.5 py-3 text-sm text-ink-3 lg:flex", className)}>
                 <Link href="/" className="transition-colors hover:text-ink">
                     Learn
                 </Link>
@@ -106,26 +116,30 @@ export function AtlasPath({ steps, prev, next, more, inHeader = true, className 
                     </span>
                 ))}
                 {more && (
-                    <Link href={more.href} className="ml-auto inline-flex h-8 items-center rounded-full px-2.5 text-ink-2 transition-colors hover:bg-card hover:text-ink">
+                    <Link href={more.href} className={cn(PILL, "ml-auto")}>
                         {more.label}
                     </Link>
                 )}
                 {!more && (prev || next) && (
                     <span className="ml-auto flex items-center gap-1">
                         {prev && (
-                            <Link href={prev.href} aria-label={prev.label} className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-ink-2 transition-colors hover:bg-card hover:text-ink">
-                                <span aria-hidden>‹</span>
+                            <Link href={prev.href} aria-label={prev.label} className={PILL}>
+                                <span aria-hidden className={cn(ARROW, "group-hover/pill:-translate-x-0.5")}>
+                                    ‹
+                                </span>
                                 <span lang="ja" aria-hidden className="font-jp font-extrabold">
                                     {prev.glyph}
                                 </span>
                             </Link>
                         )}
                         {next && (
-                            <Link href={next.href} aria-label={next.label} className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-ink-2 transition-colors hover:bg-card hover:text-ink">
+                            <Link href={next.href} aria-label={next.label} className={PILL}>
                                 <span lang="ja" aria-hidden className="font-jp font-extrabold">
                                     {next.glyph}
                                 </span>
-                                <span aria-hidden>›</span>
+                                <span aria-hidden className={cn(ARROW, "group-hover/pill:translate-x-0.5")}>
+                                    ›
+                                </span>
                             </Link>
                         )}
                     </span>
@@ -135,7 +149,7 @@ export function AtlasPath({ steps, prev, next, more, inHeader = true, className 
             {inHeader && <div aria-hidden className="h-4 lg:hidden" />}
             {inHeader && (
                 <HeaderPath>
-                    <nav aria-label="Atlas path" className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[13px] text-ink-3">
+                    <nav aria-label="Atlas path" data-enter="fade" className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[13px] text-ink-3">
                         {steps.map((step, i) => (
                             <span key={i} className="contents">
                                 {i > 0 && SEP}

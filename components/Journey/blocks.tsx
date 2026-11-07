@@ -100,7 +100,7 @@ export function Placements({ char, items, lead }: { char: string; items: Placeme
                     <li key={item.char} className="min-w-0">
                         <Link
                             href={kanjiPath(item.char)}
-                            className="flex items-center gap-3 rounded-2xl border border-line bg-card py-2.5 pl-3 pr-4 transition-colors hover:border-ink-3"
+                            className="flex items-center gap-3 rounded-2xl border border-line bg-card py-2.5 pl-3 pr-4 transition-[border-color,transform] duration-(--dur-ui) ease-(--ease-out) hover:border-ink-3 active:scale-[.98] motion-reduce:transition-none"
                         >
                             <PlacedGlyph item={item} />
                             <span className="min-w-0 text-sm text-ink-2">
@@ -172,13 +172,17 @@ function Formula({ parts, radicalChar, kanjiChar }: { parts: FormulaPart[]; radi
     );
 }
 
-/** "What it grows into": sourced examples only, each a tile, its formula and its source. */
+/**
+ * "What it grows into": sourced examples only, each a tile, its formula and
+ * its source. The cards rise as they scroll in, and each tile's glyph flies to
+ * its kanji page (the radical page's grid leaves these kanji out of its own morph).
+ */
 export function GrowthList({ radicalChar, items }: { radicalChar: string; items: GrowthView[] }) {
     return (
-        <ul className="grid gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
+        <ul data-reveal-group="rise" className="grid gap-4 sm:gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
             {items.map((item) => (
                 <li key={item.kanji.char} className="flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-card p-4 sm:gap-5 sm:p-5">
-                    <KanjiTile kanji={item.kanji} size="lg" className="w-[104px] flex-none px-2 sm:w-[120px]" />
+                    <KanjiTile kanji={item.kanji} size="lg" morph className="w-[104px] flex-none px-2 sm:w-[120px]" />
                     <div className="flex min-w-0 flex-col gap-1.5">
                         <p className="text-[17px] font-bold leading-snug">
                             <Formula parts={item.formula} radicalChar={radicalChar} kanjiChar={item.kanji.char} />
@@ -198,7 +202,12 @@ export function GrowthList({ radicalChar, items }: { radicalChar: string; items:
     );
 }
 
-/** Previous or next radical in the theme, as a card with its seal. */
+const ARROW = "text-sm text-ink-3 transition-transform duration-(--dur-ui) ease-(--ease-out) motion-reduce:transition-none";
+
+/**
+ * Previous or next radical in the theme, as a card with its seal. Its seal
+ * flies into the radical page it opens; the arrow leans the way it goes on hover.
+ */
 export function NeighbourCard({ radical, dir, theme }: { radical: NeighbourRadical | null; dir: "prev" | "next"; theme: string }) {
     if (!radical) return <span />;
     const count = Array.from(radical.chars).length;
@@ -218,20 +227,21 @@ export function NeighbourCard({ radical, dir, theme }: { radical: NeighbourRadic
             href={radicalPath(radical.key)}
             style={themeVars(radical.category)}
             className={cn(
-                "flex min-w-0 items-center gap-3 rounded-2xl border border-line bg-card p-4 transition-colors hover:border-ink-3 sm:gap-4 sm:px-[22px] sm:py-5",
+                "group/card flex min-w-0 items-center gap-3 rounded-2xl border border-line bg-card p-4 sm:gap-4 sm:px-[22px] sm:py-5",
+                "transition-[border-color,transform] duration-(--dur-ui) ease-(--ease-out) hover:border-ink-3 active:scale-[.985] motion-reduce:transition-none",
                 dir === "next" && "justify-end text-right",
             )}
         >
             {dir === "prev" && (
-                <span aria-hidden className="text-sm text-ink-3">
+                <span aria-hidden className={cn(ARROW, "group-hover/card:-translate-x-1")}>
                     ‹
                 </span>
             )}
             {dir === "next" && text}
-            <RadicalSeal char={radical.char} size="md" chars={radical.chars} />
+            <RadicalSeal char={radical.char} size="md" chars={radical.chars} morph={radical.key} />
             {dir === "prev" && text}
             {dir === "next" && (
-                <span aria-hidden className="text-sm text-ink-3">
+                <span aria-hidden className={cn(ARROW, "group-hover/card:translate-x-1")}>
                     ›
                 </span>
             )}

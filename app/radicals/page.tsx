@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { getAllRadicals, getRadical } from "@/lib/atlas";
 import { CATEGORIES, getCategorySlug, THEME_JP, THEME_SHORT } from "@/lib/atlas/categories";
@@ -5,6 +6,8 @@ import { categoryPath } from "@/lib/atlas/paths";
 import { PageShell } from "@/components/Atlas/PageShell";
 import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { atlasMetadata } from "@/components/Atlas/metadata";
+import { MorphLanding } from "@/components/Atlas/MorphLanding";
+import { enterOrder } from "@/components/Motion/tokens";
 import { InkPaint } from "@/components/Ink/InkPaint";
 import { compareByFrequency } from "@/components/Theme/order";
 import { ancientStageCount } from "@/components/Journey/data";
@@ -58,16 +61,19 @@ export default function RadicalsPage() {
     return (
         <InkPaint>
             <PageShell className="pt-8 sm:pt-10">
+                <MorphLanding />
                 <header className="flex max-w-3xl flex-col gap-3 pb-8">
-                    <KindLabel jp="部首">
+                    <KindLabel jp="部首" data-enter="fade">
                         Learn · {radicals.length} radicals · {CATEGORIES.length} themes
                     </KindLabel>
-                    <h1 className="type-title">Radicals</h1>
-                    <p className="max-w-[60ch] text-base leading-relaxed text-ink-2">
+                    <h1 data-enter="ink" style={enterOrder(1)} className="type-title">
+                        Radicals
+                    </h1>
+                    <p data-enter style={enterOrder(2)} className="max-w-[60ch] text-base leading-relaxed text-ink-2">
                         Radicals are the building blocks of kanji. Learn what each one means and where it comes from, and you can make an educated guess about
                         thousands of characters. Each opens its journey from the oldest sourced form to today, with every kanji that uses it.
                     </p>
-                    <p className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-ink-3">
+                    <p data-enter style={enterOrder(3)} className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-ink-3">
                         <span className="inline-flex items-center gap-2">
                             <Tag className="h-[18px] px-1.5 text-[11px]">
                                 <span lang="ja">古</span>
@@ -78,7 +84,7 @@ export default function RadicalsPage() {
                     </p>
                 </header>
 
-                <nav aria-label="Themes" className="flex flex-wrap gap-2">
+                <nav aria-label="Themes" data-enter-group="rise" style={{ "--delay": "165ms", "--stagger": "30ms" } as CSSProperties} className="flex flex-wrap gap-2">
                     {groups.map((g) => (
                         <Chip key={g.category} href={`#${g.slug}`} theme={g.category} count={g.radicals.length}>
                             {THEME_SHORT[g.category]}
@@ -86,7 +92,7 @@ export default function RadicalsPage() {
                     ))}
                 </nav>
 
-                {groups.map((g) => (
+                {groups.map((g, i) => (
                     <section
                         key={g.category}
                         id={g.slug}
@@ -94,7 +100,11 @@ export default function RadicalsPage() {
                         style={themeVars(g.category)}
                         className="mt-12 flex scroll-mt-24 flex-col gap-6 border-t border-line pt-8 sm:mt-16"
                     >
+                        {/* The first theme is on screen at load: it plays with the header; the rest as they scroll in. */}
                         <SectionHeader
+                            data-enter={i === 0 ? "rise" : undefined}
+                            data-reveal={i === 0 ? undefined : "rise"}
+                            style={i === 0 ? enterOrder(4) : undefined}
                             id={`${g.slug}-title`}
                             jp={THEME_JP[g.category]}
                             title={g.category}
@@ -107,7 +117,7 @@ export default function RadicalsPage() {
                                 </span>
                             }
                         />
-                        <RadicalSealGrid radicals={g.radicals} />
+                        <RadicalSealGrid radicals={g.radicals} enter={i === 0} />
                     </section>
                 ))}
             </PageShell>
