@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - The Sort menu on Browse and the card range on Study are pill fields with an ink chevron, not the browser's own control (new `components/ui/Select.tsx`).
 - A disabled primary button is an empty outline, not a half-faded grey fill. Teach's print buttons now use the shared button style.
 - On phones the kanji page's Readings tab carries its 読 mark, like 筆 Strokes and 古 Ancient. Teach's "Three tools, one set" cards use the same kanji-in-a-ring mark as My list's study modes (刷 · 映 · 送), not stock line icons.
+- Study: checkboxes are drawn in line and ink (an empty box, ink-filled with a tick when on) instead of the browser's grey native box, and the meaning quiz's four answers are the same pill as the learn layer's Recall options.
 
 ## [2.2.0] - 2026-11-01
 
