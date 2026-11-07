@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-11-08
+
+Motion and a calmer palette, the last pass on One Atlas. 1.1.0 was the last release on `main`, so 2.0.0 to 2.3.0 ship together.
+
+### Added
+- Motion that moves like ink: things soak in, unroll, get stamped or get painted, and nothing bounces (`docs/design/motion.md`, `app/motion.css`, `components/Motion/`).
+  - The first home-page visit of a browser session opens with 解 written into the logo frame. Any key, click or touch skips it, and bots, print and reduced motion never see it.
+  - Page changes drift out and rise in through React `<ViewTransition>`, and a kanji tile, radical seal or theme gate flies into the page it opens.
+  - Every page has entrances in a set order, plus scroll reveals. Buttons, chips and tiles answer a press, the tab pill slides, and switching 夜/墨 spreads from the toggle like ink.
+  - With reduced motion nothing moves and nothing is hidden. Without JavaScript nothing is hidden. `/system` has a Motion section.
+
 ### Changed
 - The ten theme colours are now one family of mineral pigments (青磁 celadon, 縹 blue, 茜 red, 砥粉 clay, 山吹 gold, 鉛 grey, 菫 violet, 鶸 green, 撫子 pink, 藤 wisteria) in place of stock bright UI colours, so they sit with the warm ink and paper of the rest of the site. They share one lightness and a lower chroma, the hues are spread so Body, Tools, Time and Thought no longer crowd together, and Home is a clay tan, not a near-white. The success, error and hint colours follow the same family. Every theme × shade × text pair still passes 4.5:1.
 - Scrollbars are a thin line on no track. The Browse and Teach rails show theirs only while the pointer is over them, so the rail no longer grows a grey bar that reads as a divider.
