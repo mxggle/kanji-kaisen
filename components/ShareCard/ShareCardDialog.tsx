@@ -8,7 +8,9 @@ import { trackEvent } from "@/lib/analytics";
 import { buildCardModel, type ShareCardInput } from "@/lib/share-card";
 import { useSkin } from "@/components/Skin/useSkin";
 import { SKIN_LABELS } from "@/components/Skin/skin";
+import { prefersReducedMotion } from "@/components/Motion/tokens";
 import { renderShareCard } from "./drawCard";
+import styles from "./share-card.module.css";
 
 type CardState =
     | { status: "drawing" }
@@ -16,6 +18,10 @@ type CardState =
     | { status: "error" };
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** The dialog's exit (share-card.module.css), where the browser can play it. */
+const CLOSE_MS = 180;
+const closeDelay = () => (prefersReducedMotion() || typeof CSS === "undefined" || !CSS.supports("overlay", "auto") ? 0 : CLOSE_MS);
 
 const buttonClass =
     "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
@@ -38,14 +44,22 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
     const [attempt, setAttempt] = useState(0);
     const [message, setMessage] = useState("");
 
-    // A native modal: the page behind is inert and Esc closes it.
+    // A native modal: the page behind is inert and Esc closes it. It is
+    // unmounted once its exit has played (focus is back on the opener at once).
     useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
         if (!dialog.open) dialog.showModal();
-        dialog.addEventListener("close", onClose);
+        let timer = 0;
+        const onDialogClose = () => {
+            // A close event queued by an earlier cleanup (React's dev double effect) can land after reopening: ignore it.
+            if (dialog.open) return;
+            timer = window.setTimeout(onClose, closeDelay());
+        };
+        dialog.addEventListener("close", onDialogClose);
         return () => {
-            dialog.removeEventListener("close", onClose);
+            window.clearTimeout(timer);
+            dialog.removeEventListener("close", onDialogClose);
             if (dialog.open) dialog.close();
         };
     }, [onClose]);
@@ -130,7 +144,7 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
             aria-describedby={descriptionId}
             onKeyDown={onKeyDown}
             onClick={onClick}
-            className="m-auto w-[min(92vw,460px)] max-h-[94dvh] overflow-y-auto rounded-2xl border border-line-2 bg-card p-0 text-ink backdrop:bg-black/70"
+            className={`m-auto w-[min(92vw,460px)] max-h-[94dvh] overflow-y-auto rounded-2xl border border-line-2 bg-card p-0 text-ink backdrop:bg-black/70 ${styles.dialog}`}
         >
             <div className="flex flex-col gap-4 p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
@@ -156,7 +170,7 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
                     {card.status === "ready" ? (
                         // A blob URL: next/image has nothing to optimise here.
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={card.url} alt={model.alt} width={1080} height={1350} className="h-full w-full object-contain" />
+                        <img src={card.url} alt={model.alt} width={1080} height={1350} data-enter="fade" className="h-full w-full object-contain" />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center" aria-hidden>
                             <span lang="ja" className="font-jp text-8xl text-ink-3 motion-safe:animate-pulse">

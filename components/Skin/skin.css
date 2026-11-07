@@ -1,0 +1,65 @@
+/*
+ * Changing skin is a moment: the new skin spreads like ink from the 夜/墨
+ * button that was pressed (components/Skin/spreadSkin.ts). It is a View
+ * Transition of the root, scoped by html[data-skin-shift] so page navigations
+ * keep their own transition (app/motion.css). Motion spec: docs/design/motion.md.
+ *
+ * spreadSkin sets --skin-x / --skin-y (the button's centre) and --skin-r (the
+ * distance to the farthest corner) on <html> for the length of the change.
+ */
+html[data-skin-shift]::view-transition-old(root),
+html[data-skin-shift]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-skin-shift]::view-transition-new(root) {
+  animation: kk-skin-spread 760ms var(--ease-ink) both;
+}
+
+@keyframes kk-skin-spread {
+  from {
+    clip-path: circle(0 at var(--skin-x, 50%) var(--skin-y, 0));
+  }
+  to {
+    clip-path: circle(var(--skin-r, 150vmax) at var(--skin-x, 50%) var(--skin-y, 0));
+  }
+}
+
+/*
+ * Inside the spreading ink the page is already in its new skin: colour
+ * transitions (globals.css fades body over .4s, controls over 150ms) would
+ * make it soak in a second time, so they are off while the skin changes. The
+ * pill is the one thing that still moves.
+ */
+html[data-skin-shift] *,
+html[data-skin-shift] *::before,
+html[data-skin-shift] *::after {
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+html[data-skin-shift] [data-skin-pill] {
+  transition-duration: var(--dur-ui) !important;
+}
+
+/*
+ * The pressed pill of the 夜/墨 control. Driven by <html data-skin> so it is
+ * right before hydration. At rest it fills one half of the control, flush with
+ * the middle (the control's own rounded clip shapes the outer end); in between
+ * its inner corners round, so it lifts off as a pill and lands flush again.
+ */
+.kk-skin-pill {
+  clip-path: inset(0 50% 0 0 round 999px 0 0 999px);
+  transition: clip-path var(--dur-ui) var(--ease-out);
+}
+
+[data-skin="ink"] .kk-skin-pill {
+  clip-path: inset(0 0 0 50% round 0 999px 999px 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kk-skin-pill {
+    transition: none;
+  }
+}

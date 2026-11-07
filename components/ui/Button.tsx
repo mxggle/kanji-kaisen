@@ -6,7 +6,7 @@ export type ButtonVariant = "primary" | "secondary" | "quiet";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
-    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full border font-medium leading-none transition-[border-color,color,opacity] disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-[18px] [&_svg]:flex-none";
+    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full border font-medium leading-none transition-[border-color,color,opacity,scale] active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-[18px] [&_svg]:flex-none";
 
 const VARIANTS: Record<ButtonVariant, string> = {
     // Ink, never a theme colour (rule 1). At most one per screen.

@@ -6,7 +6,8 @@ import { useSettingsStore } from "@/lib/settings-store";
 import { KANJI_DATA } from "@/lib/data";
 import { X, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from "framer-motion";
+import { DUR, EASE } from "@/components/Motion/tokens";
 import { trackEvent } from "@/lib/analytics";
 import { isHandwritingSkipped } from "@/lib/handwriting-preferences";
 
@@ -275,13 +276,15 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                     skipHandwriting={shouldSkipHandwriting}
                 />
 
+                {/* Lean framer (LazyMotion + m); with reduced motion only the fade stays. */}
+                <LazyMotion features={domAnimation}>
+                <MotionConfig reducedMotion="user">
                 <AnimatePresence mode="wait">
-                    <motion.div
+                    <m.div
                         key={`${currentIndex}-${phase}`}
                         initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
+                        animate={{ opacity: 1, x: 0, transition: { duration: DUR.ui + 0.06, ease: EASE.out } }}
+                        exit={{ opacity: 0, x: -20, transition: { duration: DUR.ui / 2 + 0.03, ease: EASE.in } }}
                         className="w-full min-h-full flex items-start justify-center py-4"
                     >
                         {phase === "info" && (
@@ -319,8 +322,10 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                                 kanjiIndex={currentIndex + 1}
                             />
                         )}
-                    </motion.div>
+                    </m.div>
                 </AnimatePresence>
+                </MotionConfig>
+                </LazyMotion>
             </div>
 
             {/* Bottom Form/Feedback Link */}

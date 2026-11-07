@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { CHECKPOINTS, getCategoryFromSlug } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { RadicalCard } from "@/components/Path/RadicalCard";
@@ -73,12 +73,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     return (
         <div className="min-h-screen bg-black text-white pb-20 pt-8 relative">
-            <div className="px-4 max-w-2xl mx-auto">
+            <div data-enter="fade" className="px-4 max-w-2xl mx-auto">
                 <ClassicPracticeBanner />
             </div>
 
             {/* Header */}
-            <div className="pt-8 pb-8 px-4 max-w-2xl mx-auto flex items-center gap-4">
+            <div data-enter="rise" style={{ "--i": 1 } as CSSProperties} className="pt-8 pb-8 px-4 max-w-2xl mx-auto flex items-center gap-4">
                 <Link href="/practice" className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
@@ -106,8 +106,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 </button>
             </div>
 
-            {/* Path */}
-            <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
+            {/* Path: each checkpoint rises in as it scrolls into view */}
+            <div data-reveal-group="rise" className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
                 {categoryCheckpoints.map((checkpoint) => {
                     const isCompleted = !!completedCheckpoints[checkpoint.id];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/lib/settings-store";
 import { useProgressStore } from "@/lib/store";
@@ -20,14 +20,17 @@ function ToggleRow({
     description,
     enabled,
     onToggle,
+    enter,
 }: {
     label: string;
     description: string;
     enabled: boolean;
     onToggle: () => void;
+    /** Rises in when it mounts (a row that appears when another is switched off). */
+    enter?: boolean;
 }) {
     return (
-        <div className="flex items-center justify-between gap-4 py-4">
+        <div data-enter={enter ? "rise" : undefined} style={enter ? ({ "--rise": "8px" } as CSSProperties) : undefined} className="flex items-center justify-between gap-4 py-4">
             <div className="flex-1">
                 <p className="text-[15px] font-bold text-ink">{label}</p>
                 <p className="text-sm text-ink-2">{description}</p>
@@ -39,14 +42,15 @@ function ToggleRow({
                 aria-checked={enabled}
                 aria-label={label}
                 className={cn(
-                    "relative inline-flex h-[26px] w-12 flex-none items-center rounded-full border transition-colors",
+                    "relative inline-flex h-[26px] w-12 flex-none items-center rounded-full border transition-[background-color,border-color,scale] duration-(--dur-micro) active:scale-[.94]",
                     enabled ? "border-ink bg-ink" : "border-line-2 bg-transparent",
                 )}
             >
+                {/* The knob slides across on the house curve and takes its new shade on the way. */}
                 <span
                     aria-hidden
                     className={cn(
-                        "inline-block size-5 rounded-full transition-transform duration-200",
+                        "inline-block size-5 rounded-full transition-[translate,background-color] duration-(--dur-ui) ease-(--ease-out)",
                         enabled ? "translate-x-[24px] bg-bg" : "translate-x-[2px] bg-ink-3",
                     )}
                 />
@@ -108,8 +112,9 @@ export default function SettingsPage() {
 
             <DocumentSection jp="練習" title="Classic practice">
                 <p className="text-sm">These only affect the step-by-step practice path. Kanji pages always offer stroke animation and free tracing.</p>
+                {/* Shown once the stored settings are read: it fades in rather than popping. */}
                 {mounted && (
-                    <div className="divide-y divide-line rounded-2xl border border-line bg-card px-5">
+                    <div data-enter="fade" className="divide-y divide-line rounded-2xl border border-line bg-card px-5">
                         <ToggleRow
                             label="Always skip handwriting"
                             description="Skip the trace and AI handwriting steps in classic practice."
@@ -118,6 +123,7 @@ export default function SettingsPage() {
                         />
                         {!skipHandwritingGlobally && (
                             <ToggleRow
+                                enter
                                 label="Skip handwriting for today"
                                 description="Skip the trace and AI handwriting steps in classic practice until your local day resets."
                                 enabled={skipHandwritingForTodayEnabled}

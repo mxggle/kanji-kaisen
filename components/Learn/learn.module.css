@@ -1,9 +1,11 @@
 /*
- * The #learn stage. Colours come from tokens on the strokes' own utilities;
- * this file only draws a stroke in (paths need pathLength="1"). Hidden, not
- * just offset, before it starts so round caps don't leave a dot.
+ * The #learn layer. Colours come from tokens on the elements' own utilities;
+ * this file only moves things (docs/design/motion.md). Strokes need
+ * pathLength="1" to be drawn in; they are hidden, not just offset, before they
+ * start so round caps don't leave a dot.
  */
 
+/* Trace: the stroke being drawn (live). */
 .draw {
   stroke-dasharray: 1 2;
   animation: learn-draw var(--dur, 0.7s) ease-out both;
@@ -23,9 +25,128 @@
   }
 }
 
+/* ---------- Opening and closing (the dialog pattern, full screen) ---------- */
+
+/* The paper fades in; the stage, the step card and the words rise in after it (data-enter). */
+.open {
+  animation: learn-fade var(--dur-ui) var(--ease-out) backwards;
+}
+
+/* Closing takes half the time: the paper fades out and the content sinks a little. */
+.leaving {
+  pointer-events: none;
+  animation: learn-out 200ms var(--ease-in) forwards;
+}
+
+.leaving .sink {
+  animation: learn-sink 200ms var(--ease-in) forwards;
+}
+
+@keyframes learn-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes learn-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes learn-sink {
+  to {
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+/* ---------- Moving between 会 想 描 書 ---------- */
+
+/* The step card's content fades up; the pill in the tabs slides with it. */
+.step {
+  animation: learn-step 360ms var(--ease-ink) backwards;
+}
+
+@keyframes learn-step {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+/* ---------- The stage ---------- */
+
+/*
+ * Meet (and the end of the loop): the kanji is written in, stroke by stroke,
+ * in its parts' lines. --stroke-n is the stroke's order, --stroke-step the
+ * time between strokes and --stroke-wait the wait before the first (own
+ * names, so the --i and --delay of a data-enter around the stage don't leak
+ * in). Never live: only the stroke being traced glows (rule 5).
+ */
+.write,
+.dashed {
+  animation: learn-draw var(--dur-stroke) var(--ease-out) backwards;
+  animation-delay: calc(var(--stroke-wait, 0ms) + var(--stroke-n, 0) * var(--stroke-step, 90ms));
+}
+
+.write {
+  stroke-dasharray: 1 2;
+}
+
+/* A dashed (sound) stroke can't be drawn along its dashes: it appears in its turn. */
+.dashed {
+  animation-name: learn-fade;
+}
+
+/* The Trace guide, its start dot and the Write canvas fade in. */
+.appear {
+  animation: learn-fade var(--dur-ui) var(--ease-out) backwards;
+}
+
+/* Recall and Write: the glyph soaks in. */
+.soak {
+  animation: learn-soak 640ms var(--ease-ink) backwards;
+}
+
+@keyframes learn-soak {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(1.02);
+  }
+}
+
+/* The page behind while the layer's code loads (LearnLauncher). */
+.paper {
+  animation: learn-fade var(--dur-ui) var(--ease-out) backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .draw {
     animation: none;
     stroke-dasharray: none;
+  }
+
+  .open,
+  .leaving,
+  .leaving .sink,
+  .step,
+  .write,
+  .dashed,
+  .appear,
+  .soak,
+  .paper {
+    animation: none;
+  }
+}
+
+@media print {
+  .open,
+  .step,
+  .write,
+  .dashed,
+  .appear,
+  .soak {
+    animation: none;
   }
 }

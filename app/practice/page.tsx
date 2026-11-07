@@ -37,12 +37,12 @@ export default function LearnPage() {
 
     return (
         <div className="min-h-screen bg-black text-white pb-20 relative overflow-y-auto pt-8 custom-scrollbar">
-            <div className="px-6 max-w-7xl mx-auto mb-6">
+            <div data-enter="fade" className="px-6 max-w-7xl mx-auto mb-6">
                 <ClassicPracticeBanner />
             </div>
 
-            {/* Category Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
+            {/* Category Grid: the cards rise in, one after another */}
+            <div data-enter-group="rise" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
                 {CATEGORIES.map((category) => {
                     const categoryCheckpoints = CHECKPOINTS.filter(c => c.category === category);
                     const completedCount = categoryCheckpoints.filter(c => completedCheckpoints[c.id]).length;

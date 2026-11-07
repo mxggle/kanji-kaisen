@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
@@ -10,12 +10,15 @@ interface SectionHeaderProps {
     as?: "h2" | "h3";
     id?: string;
     className?: string;
+    style?: CSSProperties;
+    /** Motion hooks (data-enter, data-reveal…) pass through to the wrapper. */
+    [data: `data-${string}`]: string | undefined;
 }
 
 /** Every section opens with the same pair: a Japanese label in the accent, then the title. Server-safe. */
-export function SectionHeader({ jp, title, aside, as: Heading = "h2", id, className }: SectionHeaderProps) {
+export function SectionHeader({ jp, title, aside, as: Heading = "h2", id, className, ...rest }: SectionHeaderProps) {
     return (
-        <div className={cn("flex flex-wrap items-baseline gap-x-3.5 gap-y-2", className)}>
+        <div {...rest} className={cn("flex flex-wrap items-baseline gap-x-3.5 gap-y-2", className)}>
             <span lang="ja" className="font-jp text-base text-c">
                 {jp}
             </span>
@@ -28,9 +31,21 @@ export function SectionHeader({ jp, title, aside, as: Heading = "h2", id, classN
 }
 
 /** The kind line over a title: "漢字  KANJI · BODY & PEOPLE". Server-safe. */
-export function KindLabel({ jp, children, className }: { jp: string; children?: ReactNode; className?: string }) {
+export function KindLabel({
+    jp,
+    children,
+    className,
+    ...rest
+}: {
+    jp: string;
+    children?: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+    /** Motion hooks (data-enter, data-reveal…) pass through. */
+    [data: `data-${string}`]: string | undefined;
+}) {
     return (
-        <p className={cn("flex flex-wrap items-center gap-x-2.5 gap-y-1", className)}>
+        <p {...rest} className={cn("flex flex-wrap items-center gap-x-2.5 gap-y-1", className)}>
             <span lang="ja" className="font-jp text-base text-c">
                 {jp}
             </span>

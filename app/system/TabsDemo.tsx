@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Tabs, tabId, tabPanelId } from "@/components/ui/Tabs";
+import { Tabs, tabId, tabPanelId, tabPanelMotion } from "@/components/ui/Tabs";
 
 const VIEWS = [
     { value: "parts", jp: "形", label: "Parts" },
@@ -20,7 +20,7 @@ export function TabsDemo() {
     return (
         <div className="flex flex-col gap-4">
             <Tabs id={`${id}v`} label="View" items={VIEWS} value={view} onChange={setView} />
-            <p role="tabpanel" id={tabPanelId(`${id}v`, view)} aria-labelledby={tabId(`${id}v`, view)} className="text-sm text-ink-2">
+            <p key={view} role="tabpanel" id={tabPanelId(`${id}v`, view)} aria-labelledby={tabId(`${id}v`, view)} className={`text-sm text-ink-2 ${tabPanelMotion}`}>
                 Panel: {view}. Arrow keys, Home and End move between tabs.
             </p>
             <Tabs
@@ -30,7 +30,7 @@ export function TabsDemo() {
                 value={step}
                 onChange={setStep}
             />
-            <p role="tabpanel" id={tabPanelId(`${id}s`, step)} aria-labelledby={tabId(`${id}s`, step)} className="text-sm text-ink-2">
+            <p key={step} role="tabpanel" id={tabPanelId(`${id}s`, step)} aria-labelledby={tabId(`${id}s`, step)} className={`text-sm text-ink-2 ${tabPanelMotion}`}>
                 The current step is live (lit in 夜, plain in 墨).
             </p>
         </div>

@@ -1,0 +1,47 @@
+/*
+ * Tabs motion (docs/design/motion.md, "Tabs / segmented"): the ink pill slides
+ * to the new tab, and a panel's content fades in.
+ */
+
+/* The pill is one clipped layer, so it keeps its round ends while it travels. */
+.ink {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  transition: clip-path var(--dur-ui) var(--ease-out);
+}
+
+/* A live tab's glow is out while the pill travels (a glow over a moving clip smears) and fades back as it lands. */
+.relight {
+  transition: filter var(--dur-ui) var(--ease-out);
+}
+
+/* tabPanelMotion: content that changes with the tab. Plays on mount and whenever it is shown again. */
+.panel {
+  animation: tab-panel-in 200ms var(--ease-out) backwards;
+}
+
+@keyframes tab-panel-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .relight {
+    transition: none;
+  }
+
+  .panel {
+    animation: none;
+  }
+}
+
+@media print {
+  .panel {
+    animation: none;
+  }
+}

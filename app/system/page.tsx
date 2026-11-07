@@ -1,9 +1,13 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { Metadata } from "next";
 import type { CSSProperties, ReactNode } from "react";
 import { Bookmark, Ellipsis, Printer } from "lucide-react";
 import { getKanji, getKanjiByCategory, getKanjiByJlpt, getKanjiByRadical, getKanjiList } from "@/lib/atlas";
 import { CATEGORIES, THEME_SHORT, getThemeColor } from "@/lib/atlas/categories";
 import { categoryPath, kanjiPath, radicalPath } from "@/lib/atlas/paths";
+import { kanjivgFileName } from "@/lib/atlas/kanjivg-svg";
+import { extractStrokes } from "@/components/Kanji/strokes";
 import { SHADES, SHADE_JP, SHADE_NAMES } from "@/lib/ink";
 import { compareByFrequency } from "@/components/Theme/order";
 import { PageShell } from "@/components/Atlas/PageShell";
@@ -26,6 +30,7 @@ import { AtlasPath } from "@/components/Layout/AtlasPath";
 import { Plate } from "@/components/Layout/Plate";
 import { Tool } from "@/components/Layout/Tool";
 import { TabsDemo } from "./TabsDemo";
+import { MotionLab, type KindDemo } from "./MotionLab";
 
 // Kitchen sink for the One Atlas system (plan 1.5). Not indexed, not in the sitemap.
 export const metadata: Metadata = {
@@ -69,6 +74,18 @@ function Slot({ children, className }: { children: ReactNode; className?: string
     return <div className={`flex min-h-24 items-center justify-center rounded-xl border border-dashed border-line-2 p-4 text-center text-sm text-ink-3 ${className ?? ""}`}>{children}</div>;
 }
 
+/** The stroke-draw specimen: 永, the calligrapher's first character (its strokes hold the eight basic ones). */
+const DRAW_CHAR = "永";
+
+function strokesOf(char: string): string[] {
+    try {
+        const file = path.join(/* turbopackIgnore: true */ process.cwd(), "public", "kanjivg", "kanji", kanjivgFileName(char));
+        return extractStrokes(fs.readFileSync(/* turbopackIgnore: true */ file, "utf8")).map((s) => s.d);
+    } catch {
+        return [];
+    }
+}
+
 const RULES = [
     ["Colour = theme", "Only the theme colour carries colour. Buttons are ink; JLPT is a plain tag."],
     ["Line = role", "Solid carries meaning, dashed carries sound, grey is form only."],
@@ -86,6 +103,87 @@ export default function SystemPage() {
     const themeKanji = (name: string) => getKanjiByCategory(name).map((k) => k.char).join("");
     const n5 = getKanjiByJlpt("N5").map((k) => k.char).join("");
     const readings = rest?.wordsByReading.find((g) => g.kind === "on");
+    const motionKinds: KindDemo[] = [
+        {
+            kind: "rise",
+            use: "The default: fade up 18px. Cards, rows, the first things on a page.",
+            timing: "560ms · --ease-out",
+            specimen: tileMd && (
+                <div className="w-20">
+                    <KanjiTile kanji={tileMd} shade={2} />
+                </div>
+            ),
+        },
+        {
+            id: "rise-group",
+            kind: "rise",
+            group: true,
+            use: "Each child in turn, --stagger apart, top-left first. Lists and grids.",
+            timing: "+55ms each, up to 14",
+            specimen: ["一", "二", "三", "四", "五"].map((c) => (
+                <span key={c} lang="ja" className="grid size-9 place-items-center rounded-lg border border-line bg-card font-jp text-ink">
+                    {c}
+                </span>
+            )),
+        },
+        {
+            kind: "ink",
+            use: "Soaks in from a blur. Titles, glyphs and short story lines only.",
+            timing: "760ms · --ease-ink",
+            specimen: (
+                <span lang="ja" className="font-jp text-[64px] font-extrabold leading-none text-ink">
+                    海
+                </span>
+            ),
+        },
+        {
+            kind: "unroll",
+            use: "A hanging scroll unrolling from the top. Theme art and big panels.",
+            timing: "900ms · --ease-ink",
+            specimen: (
+                <span lang="ja" className="flex h-28 w-14 flex-col items-center gap-1.5 rounded-md border border-line-2 bg-card py-3 font-jp text-xl leading-none text-ink">
+                    <span>山</span>
+                    <span>水</span>
+                    <span aria-hidden className="mt-auto size-2 rounded-full bg-c" />
+                </span>
+            ),
+        },
+        {
+            kind: "stamp",
+            use: "A seal pressed onto paper. Seals, and the mark that changed on success.",
+            timing: "520ms · --ease-stamp",
+            specimen: <RadicalSeal char="木" size="md" shade={3} />,
+        },
+        {
+            kind: "fade",
+            use: "Opacity only. Labels, small print, panels that change in place.",
+            timing: "480ms · --ease-out",
+            specimen: (
+                <>
+                    <Tag>N5</Tag>
+                    <Tag>6 strokes</Tag>
+                </>
+            ),
+        },
+        {
+            kind: "brush",
+            use: "Painted left to right in one stroke. Bars and rules.",
+            timing: "700ms · --ease-in-out",
+            specimen: <span aria-hidden className="block h-1.5 w-40 rounded-full bg-c" />,
+        },
+        {
+            kind: "drift",
+            use: "In from the left 20px. Rails and side panels.",
+            timing: "560ms · --ease-out",
+            specimen: (
+                <ul className="flex flex-col gap-1.5 border-l border-line-2 pl-3 text-sm text-ink-2">
+                    <li>JLPT</li>
+                    <li>Theme</li>
+                    <li>Your ink</li>
+                </ul>
+            ),
+        },
+    ];
 
     return (
         <InkPaint>
@@ -304,6 +402,12 @@ export default function SystemPage() {
                         </svg>
                         <span className="text-xs text-ink-3">stroke 2 of 4, being drawn</span>
                     </Both>
+                </Block>
+
+                <Block jp="動き" title="Motion" aside="Ink, not bounce · docs/design/motion.md">
+                    <div style={tc(NATURE)}>
+                        <MotionLab kinds={motionKinds} strokes={strokesOf(DRAW_CHAR)} strokeChar={DRAW_CHAR} />
+                    </div>
                 </Block>
 
                 <Block jp="墨色" title="Every shade, every theme" aside="12px meaning text must stay ≥ 4.5:1 on each fill">
