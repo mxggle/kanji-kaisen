@@ -11,7 +11,7 @@ export function Logo({ size = "md", wordmarkClassName, className }: { size?: key
     const s = SIZES[size];
     return (
         <Link href="/" aria-label="Kanji Kaisen home" className={cn("flex flex-none items-center gap-3 text-ink", className)}>
-            <span lang="ja" aria-hidden className={cn("flex items-center justify-center border border-ink-2 font-jp font-extrabold leading-none", s.mark)}>
+            <span lang="ja" aria-hidden data-logo-mark="" className={cn("flex items-center justify-center border border-ink-2 font-jp font-extrabold leading-none", s.mark)}>
                 解
             </span>
             <span className={cn("whitespace-nowrap font-disp font-semibold leading-none tracking-[.04em]", s.word, wordmarkClassName)}>Kanji Kaisen</span>

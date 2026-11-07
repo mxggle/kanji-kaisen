@@ -1,0 +1,511 @@
+/*
+ * Motion (One Atlas, round 7). Spec and API: docs/design/motion.md.
+ *
+ * The language is ink, not bounce: things soak in, unroll, get stamped or get
+ * painted by a brush. Motion follows the five rules: it never adds colour,
+ * and only a live stroke glows (the `live` utility in globals.css).
+ *
+ * Four hooks, all plain data attributes so server components can use them:
+ *   data-enter="kind"          plays when the element mounts (first paint, or a client navigation)
+ *   data-enter-group="kind"    the same for each child, staggered in DOM order
+ *   data-reveal="kind"         plays when it scrolls into view (components/Motion/MotionRoot.tsx)
+ *   data-reveal-group="kind"   the same for each child, staggered by position
+ * Kinds: rise (default), ink, unroll, stamp, fade, brush, drift.
+ * Tuning on the element (inline style): --i (order), --delay, --rise, --drift, --blur.
+ *
+ * Every animation uses fill-mode `backwards`: it holds the first frame through
+ * its delay, then hands the element back to its own styles, so hover lifts and
+ * transitions keep working afterwards.
+ */
+
+:root {
+  /* The house curve (ThemeGate's hover): arrives fast, settles slow. */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  /* Expo-out: ink soaking into paper. */
+  --ease-ink: cubic-bezier(.16, 1, .3, 1);
+  /* Leaving the screen. */
+  --ease-in: cubic-bezier(.5, 0, .75, 0);
+  /* Lifts and wipes that start and stop on screen. */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  /* A seal pressed down: one small overshoot, no wobble. */
+  --ease-stamp: cubic-bezier(.34, 1.4, .64, 1);
+
+  --dur-micro: 140ms;
+  --dur-ui: 240ms;
+  --dur-enter: 560ms;
+  --dur-art: 900ms;
+  --dur-stroke: 420ms;
+  --stagger: 55ms;
+
+  /* How long page content waits for the site intro: set inline on <html> by
+     components/Motion/script.ts while the intro plays, 0 otherwise. */
+  --intro-wait: 0s;
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes kk-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise, 18px), 0);
+  }
+}
+
+/* Soaks in: from a blur, like ink spreading into paper. Keep it to small, important things (titles, glyphs). */
+@keyframes kk-ink {
+  from {
+    opacity: 0;
+    filter: blur(var(--blur, 10px));
+    transform: scale(1.02);
+  }
+}
+
+/* A hanging scroll unrolling downward (theme gates, art). */
+@keyframes kk-unroll {
+  from {
+    opacity: .35;
+    clip-path: inset(0 0 100% 0);
+    transform: translate3d(0, -6px, 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+
+/* A seal pressed onto paper (radical seals, saved marks). */
+@keyframes kk-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.22) rotate(-5deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(.96) rotate(0deg);
+  }
+}
+
+@keyframes kk-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Painted left to right by one brush stroke (bars, rules, underlines). */
+@keyframes kk-brush {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+/* From the side (rails, panels). */
+@keyframes kk-drift {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--drift, -20px), 0, 0);
+  }
+}
+
+/*
+ * A stroke drawn in order. On an SVG path with pathLength="1" and
+ * class "kk-draw"; set --i for the stroke's order. Hidden (not just offset)
+ * before it starts, so round caps don't leave a dot.
+ */
+@keyframes kk-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.kk-draw {
+  stroke-dasharray: 1 2;
+  animation: kk-draw var(--dur-stroke) var(--ease-out) backwards;
+  animation-delay: calc(var(--delay, 0ms) + var(--i, 0) * var(--stroke-gap, 90ms));
+}
+
+/* ---------- Kinds ---------- */
+
+/* Defaults first, so a bare data-enter is "rise" even inside another kind. */
+[data-enter],
+[data-reveal],
+[data-enter-group] > *,
+[data-reveal-group] > * {
+  --kk-anim: kk-rise;
+  --kk-dur: var(--dur-enter);
+  --kk-ease: var(--ease-out);
+}
+
+[data-enter="ink"],
+[data-reveal="ink"],
+[data-enter-group="ink"] > *,
+[data-reveal-group="ink"] > * {
+  --kk-anim: kk-ink;
+  --kk-dur: 760ms;
+  --kk-ease: var(--ease-ink);
+}
+
+[data-enter="unroll"],
+[data-reveal="unroll"],
+[data-enter-group="unroll"] > *,
+[data-reveal-group="unroll"] > * {
+  --kk-anim: kk-unroll;
+  --kk-dur: var(--dur-art);
+  --kk-ease: var(--ease-ink);
+}
+
+[data-enter="stamp"],
+[data-reveal="stamp"],
+[data-enter-group="stamp"] > *,
+[data-reveal-group="stamp"] > * {
+  --kk-anim: kk-stamp;
+  --kk-dur: 520ms;
+  --kk-ease: var(--ease-stamp);
+}
+
+[data-enter="fade"],
+[data-reveal="fade"],
+[data-enter-group="fade"] > *,
+[data-reveal-group="fade"] > * {
+  --kk-anim: kk-fade;
+  --kk-dur: 480ms;
+  --kk-ease: var(--ease-out);
+}
+
+[data-enter="brush"],
+[data-reveal="brush"],
+[data-enter-group="brush"] > *,
+[data-reveal-group="brush"] > * {
+  --kk-anim: kk-brush;
+  --kk-dur: 700ms;
+  --kk-ease: var(--ease-in-out);
+}
+
+[data-enter="drift"],
+[data-reveal="drift"],
+[data-enter-group="drift"] > *,
+[data-reveal-group="drift"] > * {
+  --kk-anim: kk-drift;
+  --kk-dur: var(--dur-enter);
+  --kk-ease: var(--ease-out);
+}
+
+/* ---------- On mount ---------- */
+
+[data-enter],
+[data-enter-group] > * {
+  animation: var(--kk-anim) var(--kk-dur) var(--kk-ease) backwards;
+  animation-delay: calc(var(--intro-wait) + var(--delay, 0ms) + min(var(--i, 0), 14) * var(--stagger));
+}
+
+/* Children of an enter group take their order from the DOM (an inline --i still wins). */
+[data-enter-group] > :nth-child(2) { --i: 1; }
+[data-enter-group] > :nth-child(3) { --i: 2; }
+[data-enter-group] > :nth-child(4) { --i: 3; }
+[data-enter-group] > :nth-child(5) { --i: 4; }
+[data-enter-group] > :nth-child(6) { --i: 5; }
+[data-enter-group] > :nth-child(7) { --i: 6; }
+[data-enter-group] > :nth-child(8) { --i: 7; }
+[data-enter-group] > :nth-child(9) { --i: 8; }
+[data-enter-group] > :nth-child(10) { --i: 9; }
+[data-enter-group] > :nth-child(11) { --i: 10; }
+[data-enter-group] > :nth-child(12) { --i: 11; }
+[data-enter-group] > :nth-child(13) { --i: 12; }
+[data-enter-group] > :nth-child(14) { --i: 13; }
+[data-enter-group] > :nth-child(n + 15) { --i: 14; }
+
+/* ---------- On scroll ---------- */
+
+/*
+ * Hidden only once MotionRoot is running (html[data-motion]), so without JS,
+ * with reduced motion or before hydration nothing is ever hidden. MotionRoot
+ * marks what was already on screen at hydration data-shown="instant".
+ */
+html[data-motion] [data-reveal]:not([data-shown]),
+html[data-motion] [data-reveal-group] > :not([data-shown]) {
+  opacity: 0;
+}
+
+[data-reveal][data-shown],
+[data-reveal-group] > [data-shown] {
+  animation: var(--kk-anim) var(--kk-dur) var(--kk-ease) backwards;
+  /* --ri: the element's place among what came into view together, top-left first. */
+  animation-delay: calc(var(--delay, 0ms) + min(var(--ri, 0), 14) * var(--stagger));
+}
+
+[data-reveal][data-shown="instant"],
+[data-reveal-group] > [data-shown="instant"] {
+  animation: none;
+}
+
+/* ---------- Page transitions (components/Motion/PageTransition.tsx) ---------- */
+
+::view-transition-old(.kk-page-out) {
+  animation: kk-page-out 200ms var(--ease-in) both;
+}
+
+::view-transition-new(.kk-page-in) {
+  animation: kk-page-in 520ms var(--ease-ink) 70ms both;
+}
+
+@keyframes kk-page-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+    filter: blur(2px);
+  }
+}
+
+@keyframes kk-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+}
+
+/* Header and footer stay put while the page changes under them. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+
+/* Shared elements (components/Motion/Morph.tsx): a glyph flies from the tile to the page. */
+::view-transition-group(.kk-morph) {
+  /* Above the pages' own groups, or the old/new page paints over the flight. */
+  z-index: 1;
+  animation-duration: 560ms;
+  animation-timing-function: var(--ease-ink);
+}
+
+::view-transition-old(.kk-morph) {
+  animation: kk-morph-out 260ms var(--ease-out) both;
+}
+
+::view-transition-new(.kk-morph) {
+  animation: kk-morph-in 360ms var(--ease-out) 80ms both;
+}
+
+::view-transition-old(.kk-morph),
+::view-transition-new(.kk-morph) {
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes kk-morph-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes kk-morph-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Site intro (components/Motion/SiteIntro.tsx) ---------- */
+
+/*
+ * Plays once per browser session when the visit starts on the home page
+ * (MOTION_SCRIPT sets html[data-intro]). Timeline: the frame draws, 解 is
+ * written stroke by stroke, the wordmark rises, then at 1.25s the paper lifts
+ * and the mark flies into the header logo. Any key, click or scroll skips it.
+ */
+.kk-intro {
+  display: none;
+}
+
+html[data-intro="play"] .kk-intro,
+html[data-intro="leave"] .kk-intro,
+html[data-intro="skip"] .kk-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: block;
+  pointer-events: none;
+}
+
+.kk-intro-paper {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+
+.kk-intro-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+/* The wrapper INTRO_SCRIPT measures to aim the flight (untransformed until it leaves). */
+.kk-intro-mark {
+  position: relative;
+  width: clamp(120px, 26vmin, 188px);
+  aspect-ratio: 1;
+}
+
+.kk-intro-glyph {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: var(--c);
+}
+
+/* The strokes stop being live once written: the glow goes out as the mark flies. */
+.kk-intro-ink {
+  transition: filter 360ms var(--ease-out);
+}
+
+html[data-intro="leave"] .kk-intro-ink {
+  filter: none;
+}
+
+.kk-intro-frame {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: .7;
+  stroke-dasharray: 1 2;
+  animation: kk-draw 520ms var(--ease-in-out) 60ms backwards;
+}
+
+.kk-intro-strokes path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 2;
+  animation: kk-draw 330ms var(--ease-out) backwards;
+  animation-delay: calc(220ms + var(--s, 0) * 56ms);
+}
+
+.kk-intro-word {
+  display: flex;
+  font-family: var(--font-disp), Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(22px, 4.2vmin, 30px);
+  letter-spacing: .06em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: pre;
+}
+
+.kk-intro-word > span {
+  animation: kk-rise 520ms var(--ease-ink) backwards;
+  animation-delay: calc(640ms + var(--l, 0) * 26ms);
+  --rise: 10px;
+}
+
+.kk-intro-jp {
+  font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 13px;
+  letter-spacing: .5em;
+  margin-right: -.5em;
+  color: var(--ink-3);
+  animation: kk-fade 600ms var(--ease-out) 900ms backwards;
+}
+
+/* Leaving: the paper lifts like a scroll rolled up, the mark flies to the header logo. */
+html[data-intro="leave"] .kk-intro-paper {
+  animation: kk-intro-lift 620ms var(--ease-in-out) forwards;
+}
+
+html[data-intro="leave"] .kk-intro-mark {
+  animation: kk-intro-fly 640ms var(--ease-in-out) forwards;
+}
+
+html[data-intro="leave"] .kk-intro-word,
+html[data-intro="leave"] .kk-intro-jp {
+  animation: kk-intro-out 220ms var(--ease-in) forwards;
+}
+
+html[data-intro="skip"] .kk-intro {
+  animation: kk-intro-out 240ms var(--ease-out) forwards;
+}
+
+@keyframes kk-intro-lift {
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes kk-intro-fly {
+  80% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(var(--intro-dx, 0px), var(--intro-dy, -40vh), 0) scale(var(--intro-s, .16));
+  }
+}
+
+@keyframes kk-intro-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* The header logo waits for the flying mark, then takes over. */
+html[data-intro="play"] [data-logo-mark],
+html[data-intro="leave"] [data-logo-mark] {
+  opacity: 0;
+}
+
+[data-logo-mark] {
+  transition: opacity 180ms var(--ease-out);
+}
+
+/* ---------- Opt-outs ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-enter],
+  [data-enter-group] > *,
+  [data-reveal],
+  [data-reveal-group] > *,
+  .kk-draw {
+    animation: none !important;
+  }
+
+  .kk-intro {
+    display: none !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@media print {
+  [data-enter],
+  [data-enter-group] > *,
+  [data-reveal],
+  [data-reveal-group] > *,
+  .kk-draw {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .kk-intro {
+    display: none !important;
+  }
+}

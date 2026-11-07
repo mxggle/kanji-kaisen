@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Shippori_Mincho_B1, Zen_Kaku_Gothic_New } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import "./motion.css";
 import { SiteHeader } from "@/components/Layout/SiteHeader";
 import { SiteFooter } from "@/components/Layout/SiteFooter";
 import { TabBar } from "@/components/Layout/TabBar";
 import { AuthSyncBootstrap } from "@/components/Auth/AuthSyncBootstrap";
 import { DEFAULT_SKIN, SKIN_SCRIPT } from "@/components/Skin/skin";
+import { MOTION_SCRIPT } from "@/components/Motion/script";
+import { SiteIntro } from "@/components/Motion/SiteIntro";
+import { PageTransition } from "@/components/Motion/PageTransition";
+import { MotionRoot } from "@/components/Motion/MotionRoot";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 // Japanese display (kanji, kana). Google serves CJK fonts in unicode-range
@@ -70,16 +75,20 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: SKIN_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: MOTION_SCRIPT }} />
       </head>
       {/* Phones pad the bottom by the tab bar (76px plus the home indicator). */}
       <body className="font-ui antialiased flex flex-col min-h-screen pb-[calc(76px+env(safe-area-inset-bottom))] lg:pb-0 print:pb-0">
         <AuthSyncBootstrap />
         <SiteHeader />
+        {/* After the header: its script aims the flying mark at the header logo. */}
+        <SiteIntro />
         <main className="flex-1">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
         <SiteFooter />
         <TabBar />
+        <MotionRoot />
         <Analytics />
       </body>
     </html>
