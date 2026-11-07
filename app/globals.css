@@ -36,10 +36,10 @@
   /* 濃 fill strength: 45% keeps 12px text ≥ 4.5:1 on every theme (scripts/check-ink-contrast.mjs). */
   --i3: 45%;
   --shade: 6, 7, 10;
-  /* Feedback colours. */
-  --ok: #34D399;
-  --bad: #F87171;
-  --tip: #FBBF24;
+  /* Feedback colours, from the same pigment family as the themes. */
+  --ok: #81D39F;
+  --bad: #F07F77;
+  --tip: #E8BD6D;
 
   --skin-c: initial;
   --skin-sc: initial;
@@ -275,19 +275,24 @@ a[data-tile]:hover {
   border-color: var(--ink-3);
 }
 
-/* Scrollbar in skin colours. */
-::-webkit-scrollbar {
-  width: 8px;
+/*
+ * Scrollbars in skin colours: a thin line on no track, so a scrolling panel
+ * (the Browse rail) doesn't grow a grey bar that reads as a divider.
+ */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
 }
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--line-2);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-3);
+/* A panel's own scrollbar only shows while the pointer is over it. */
+@utility scroll-quiet {
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color .2s;
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--line-2) transparent;
+  }
 }
 
 /* Keep the learning modal scrollable without showing its scrollbar. */

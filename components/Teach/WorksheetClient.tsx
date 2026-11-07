@@ -7,6 +7,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { decodeSet, encodeSet, parsePaper, setPath, type Paper, type PrintOptions } from "@/lib/teach-set";
 import { cn } from "@/lib/utils";
+import { buttonClass } from "@/components/ui/Button";
 import { useSearchIndex } from "@/components/Study/useSearchIndex";
 import { Worksheet } from "./Worksheet";
 import { useKanjiStrokes, useTeachWords } from "./useTeachData";
@@ -61,9 +62,9 @@ export function WorksheetClient({ siteHost }: { siteHost: string }) {
                         type="button"
                         onClick={() => window.print()}
                         disabled={!ready || chars.length === 0}
-                        className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-ink text-bg font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2"
+                        className={buttonClass({ variant: "primary" })}
                     >
-                        <Printer size={18} aria-hidden /> Print or save PDF
+                        <Printer aria-hidden /> Print or save PDF
                     </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MonitorPlay, Printer, Share2 } from "lucide-react";
 import { atlasMetadata } from "@/components/Atlas/metadata";
 import { PageShell } from "@/components/Atlas/PageShell";
 import { PROSE_LINK } from "@/components/Layout/Document";
@@ -18,17 +17,17 @@ export const metadata: Metadata = atlasMetadata({
 
 const FEATURES = [
     {
-        icon: Printer,
+        jp: "刷",
         title: "Printable worksheets",
         text: "A4 or Letter, always in ink. Each kanji gets its meaning and readings, a numbered stroke-order strip, tracing cells and empty 米字格 grids, then a “Read these words” exercise and an optional answer key.",
     },
     {
-        icon: MonitorPlay,
+        jp: "映",
         title: "Projector mode",
         text: "One kanji at a time in huge type. Space draws the next stroke, → moves on, and Q quizzes the class with four meanings.",
     },
     {
-        icon: Share2,
+        jp: "送",
         title: "Share links",
         text: "Students open the link or scan the QR code and study the set with flashcards or a quiz. No sign-up, nothing stored on a server.",
     },
@@ -43,10 +42,19 @@ export default function TeachPage() {
             <section aria-labelledby="teach-features" className="mt-20 flex flex-col gap-6 border-t border-line pt-12">
                 <SectionHeader jp="三つ" title="Three tools, one set" id="teach-features" aside="A free kanji worksheet generator, with no account" />
                 <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {FEATURES.map(({ icon: Icon, title, text }) => (
-                        <li key={title} className="flex flex-col gap-2 rounded-2xl border border-line bg-card px-[22px] py-5">
-                            <Icon size={20} className="text-ink-3" aria-hidden />
-                            <h3 className="text-[17px] font-bold">{title}</h3>
+                    {/* Same card as My list's study modes: a kanji in a ring, then the title. */}
+                    {FEATURES.map(({ jp, title, text }) => (
+                        <li key={title} className="flex flex-col gap-3 rounded-2xl border border-line bg-card px-[22px] py-5">
+                            <div className="flex items-center gap-3">
+                                <span
+                                    aria-hidden
+                                    lang="ja"
+                                    className="flex size-11 flex-none items-center justify-center rounded-full border border-line-2 font-jp text-[21px] font-extrabold leading-none"
+                                >
+                                    {jp}
+                                </span>
+                                <h3 className="text-[17px] font-bold leading-snug">{title}</h3>
+                            </div>
                             <p className="text-sm leading-relaxed text-ink-2">{text}</p>
                         </li>
                     ))}

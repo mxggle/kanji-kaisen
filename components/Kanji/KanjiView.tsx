@@ -56,7 +56,7 @@ export function KanjiView({ desk: deskDefault, children }: { desk: KanjiViewValu
     return <ViewContext.Provider value={{ desk, phone, isPhone, pick }}>{children}</ViewContext.Provider>;
 }
 
-const JP: Partial<Record<KanjiViewValue, string>> = { parts: "形", strokes: "筆", ancient: "古" };
+const JP: Record<KanjiViewValue, string> = { parts: "形", readings: "読", strokes: "筆", ancient: "古" };
 const LABEL: Record<KanjiViewValue, string> = { parts: "Parts", readings: "Readings", strokes: "Strokes", ancient: "Ancient" };
 
 /**

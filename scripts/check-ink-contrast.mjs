@@ -18,7 +18,8 @@ function fromOklab([L, a, b]) {
 const mix = (a, b, p) => { const A = toOklab(hex(a)), B = toOklab(hex(b)); return fromOklab(A.map((x, i) => x * p + B[i] * (1 - p))); };
 const lum = (rgb) => { const [r, g, b] = rgb.map(lin); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 const cr = (x, y) => { const [a, b] = [lum(x), lum(y)].sort((p, q) => q - p); return (a + 0.05) / (b + 0.05); };
-const T = { Nature: "#34D399", Body: "#60A5FA", Action: "#F87171", Home: "#D6CFC4", Animals: "#FBBF24", Tools: "#A5B4C8", Thought: "#C084FC", Plants: "#A3E635", States: "#F472B6", Time: "#A5B4FC" };
+// Keep in step with THEME_COLORS in lib/atlas/categories.ts.
+const T = { Nature: "#7ACBA8", Body: "#83B7E4", Action: "#E67A73", Home: "#CEBAA2", Animals: "#E0B76C", Tools: "#9DB5C2", Thought: "#B997D8", Plants: "#B1C980", States: "#DE8FB2", Time: "#ADAFE0" };
 const night = { card: "#0D0F12", ink: "#EDEAE2", ink2: "#B4AFA4", onacc: "#06070A" };
 for (const p of [0.6, 0.45, 0.35]) {
   const rows = Object.entries(T).map(([n, c]) => { const bg = mix(c, night.card, p); return `${n} ink ${cr(bg, hex(night.ink)).toFixed(2)} dark ${cr(bg, hex(night.onacc)).toFixed(2)}`; });
