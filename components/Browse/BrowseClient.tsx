@@ -9,6 +9,7 @@ import { themeVars } from "@/components/Atlas/category/themeStyles";
 import { Tool } from "@/components/Layout/Tool";
 import { Button } from "@/components/ui/Button";
 import { InkLegend, InkSwatch } from "@/components/ui/InkLegend";
+import { Select } from "@/components/ui/Select";
 import { Tag } from "@/components/ui/Tag";
 import { enterOrder } from "@/components/Motion/tokens";
 import { FilterPanel, InkFilter, JlptFilter, RadicalFilter, ReadingFilter, StrokeFilter, ThemeFilter } from "./FilterGroups";
@@ -145,17 +146,13 @@ export function BrowseClient({ items, initialFilters, radicals }: BrowseClientPr
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 sm:ml-auto">
                         <label className="flex items-center gap-2 text-sm text-ink-2">
                             Sort
-                            <select
-                                value={filters.sort}
-                                onChange={(e) => update({ sort: e.target.value as BrowseSort })}
-                                className="h-9 cursor-pointer rounded-full border border-line-2 bg-card px-2.5 text-sm text-ink"
-                            >
+                            <Select value={filters.sort} onChange={(e) => update({ sort: e.target.value as BrowseSort })}>
                                 {SORTS.map((s) => (
                                     <option key={s.id} value={s.id}>
                                         {s.label}
                                     </option>
                                 ))}
-                            </select>
+                            </Select>
                         </label>
                         <InkLegend />
                     </div>

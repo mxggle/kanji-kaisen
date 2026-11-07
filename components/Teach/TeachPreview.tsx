@@ -8,7 +8,6 @@ import { formatReading } from "@/lib/atlas/readings";
 import type { SearchIndexEntry } from "@/lib/atlas/search-index";
 import { trackEvent } from "@/lib/analytics";
 import { setPath, type Paper } from "@/lib/teach-set";
-import { cn } from "@/lib/utils";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { Tabs, tabId, tabPanelId } from "@/components/ui/Tabs";
 import { QrCode } from "./QrCode";
@@ -73,7 +72,6 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
         trackEvent("share_link_created", { count: chars.length });
     };
 
-    const off = empty ? "pointer-events-none opacity-50" : undefined;
 
     return (
         <div className="flex min-w-0 flex-col gap-[18px]">
@@ -81,12 +79,12 @@ export function TeachPreview({ chars, title, entries, themeOf, origin, siteHost 
                 <Tabs id={TABS_ID} label="Use the set" items={TABS} value={tab} onChange={setTab} />
                 <span className="flex-1" />
                 {tab === "worksheet" && (
-                    <a href={empty ? undefined : printHref} target="_blank" rel="noopener" aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)} data-enter="fade" style={NOW}>
+                    <a href={empty ? undefined : printHref} target="_blank" rel="noopener" aria-disabled={empty} className={buttonClass({ variant: "primary" })} data-enter="fade" style={NOW}>
                         <Printer aria-hidden /> Print or save PDF
                     </a>
                 )}
                 {tab === "projector" && (
-                    <Link href={empty ? "/teach" : presentHref} aria-disabled={empty} className={cn(buttonClass({ variant: "primary" }), off)} data-enter="fade" style={NOW}>
+                    <Link href={empty ? "/teach" : presentHref} aria-disabled={empty} className={buttonClass({ variant: "primary" })} data-enter="fade" style={NOW}>
                         <MonitorPlay aria-hidden /> Present full screen
                     </Link>
                 )}

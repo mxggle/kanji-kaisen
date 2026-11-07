@@ -87,18 +87,19 @@ export function QuizCard({ entry, pool, category, isLast, onAnswer, onNext }: Qu
                                 onClick={() => choose(option)}
                                 disabled={answered}
                                 aria-pressed={isPicked}
+                                // The same pill as the learn layer's Recall options.
                                 className={cn(
-                                    "flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-[color,background-color,border-color,scale] duration-300 active:scale-[.98] motion-reduce:active:scale-100",
-                                    !answered && "cursor-pointer border-line bg-card text-ink hover:border-ink-3",
+                                    "flex min-h-[52px] w-full items-center gap-3 rounded-full border py-2.5 pr-5 pl-3 text-left text-base leading-snug transition-[color,background-color,border-color,scale] duration-300 active:scale-[.98] motion-reduce:active:scale-100",
+                                    !answered && "cursor-pointer border-line-2 text-ink hover:border-ink",
                                     answered && isAnswer && "border-c bg-c/15 text-ink",
-                                    answered && isPicked && !isAnswer && "border-dashed border-ink-3 bg-card text-ink-2",
-                                    answered && !isAnswer && !isPicked && "border-line text-ink-3",
+                                    answered && isPicked && !isAnswer && "border-dashed border-ink-3 text-ink-2",
+                                    answered && !isAnswer && !isPicked && "border-line-2 text-ink-3",
                                 )}
                             >
                                 <span
                                     aria-hidden
                                     className={cn(
-                                        "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs transition-colors duration-300",
+                                        "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs transition-colors duration-300",
                                         answered && isAnswer ? "border-c bg-c text-onacc" : "border-line-2 text-ink-3",
                                     )}
                                 >

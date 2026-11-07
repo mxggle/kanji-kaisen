@@ -62,7 +62,7 @@ export function Tool({ jp, kind, title, lede, actions, rail, railLabel = "Filter
                     aria-label={railLabel}
                     data-enter="drift"
                     style={enterOrder(3)}
-                    className="flex min-w-0 flex-col gap-[26px] rounded-2xl border border-line bg-card p-[22px] lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain"
+                    className="flex min-w-0 flex-col gap-[26px] rounded-2xl border border-line bg-card p-[22px] lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain lg:scroll-quiet"
                 >
                     {rail}
                 </aside>

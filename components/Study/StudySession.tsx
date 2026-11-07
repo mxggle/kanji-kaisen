@@ -14,6 +14,7 @@ import { PaintedBar } from "@/components/ui/PaintedBar";
 import { KindLabel } from "@/components/ui/SectionHeader";
 import { Settle } from "@/components/Browse/Settle";
 import { enterOrder } from "@/components/Motion/tokens";
+import { Select } from "@/components/ui/Select";
 import { Flashcard } from "./Flashcard";
 import { QuizCard } from "./QuizCard";
 import { SessionSummary, type CardResult } from "./SessionSummary";
@@ -280,18 +281,13 @@ export function StudySession({ source, title, chars, backHref, backLabel, initia
                         <label htmlFor={rangeId} className="type-label">
                             Cards
                         </label>
-                        <select
-                            id={rangeId}
-                            value={rangeIndex}
-                            onChange={(e) => setRangeIndex(Number(e.target.value))}
-                            className="h-11 w-full rounded-xl border border-line-2 bg-card px-3 text-sm text-ink focus:border-ink"
-                        >
+                        <Select id={rangeId} size="md" value={rangeIndex} onChange={(e) => setRangeIndex(Number(e.target.value))} className="w-full">
                             {ranges.map((r, i) => (
                                 <option key={r.start} value={i}>
                                     {r.label} of {deck.length}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
                 )}
                 <Checkbox checked={shuffle} onChange={setShuffle} label="Shuffle cards" />

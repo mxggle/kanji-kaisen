@@ -6,13 +6,20 @@ export type ButtonVariant = "primary" | "secondary" | "quiet";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
-    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full border font-medium leading-none transition-[border-color,color,opacity,scale] active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-[18px] [&_svg]:flex-none";
+    "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full border font-medium leading-none transition-[border-color,background-color,color,opacity,scale] active:scale-[.97] disabled:cursor-not-allowed aria-disabled:pointer-events-none [&_svg]:size-[18px] [&_svg]:flex-none";
+
+// Faded, for the outline variants.
+const FADE = "disabled:opacity-50 aria-disabled:opacity-50";
+// A disabled primary drops its ink fill and reads as an empty outline: half-opacity
+// ink on the dark skin is a grey slab that matches nothing else on the page.
+const EMPTY =
+    "disabled:border-line-2 disabled:bg-transparent disabled:text-ink-3 aria-disabled:border-line-2 aria-disabled:bg-transparent aria-disabled:text-ink-3";
 
 const VARIANTS: Record<ButtonVariant, string> = {
     // Ink, never a theme colour (rule 1). At most one per screen.
-    primary: "border-ink bg-ink font-bold text-bg hover:opacity-90",
-    secondary: "border-line-2 bg-transparent text-ink hover:border-ink",
-    quiet: "border-transparent bg-transparent text-ink-2 hover:text-ink",
+    primary: cn("border-ink bg-ink font-bold text-bg hover:opacity-90", EMPTY),
+    secondary: cn("border-line-2 bg-transparent text-ink hover:border-ink", FADE),
+    quiet: cn("border-transparent bg-transparent text-ink-2 hover:text-ink", FADE),
 };
 
 const SIZES: Record<ButtonSize, string> = {

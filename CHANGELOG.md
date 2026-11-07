@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- The ten theme colours are now one family of mineral pigments (青磁 celadon, 縹 blue, 茜 red, 砥粉 clay, 山吹 gold, 鉛 grey, 菫 violet, 鶸 green, 撫子 pink, 藤 wisteria) in place of stock bright UI colours, so they sit with the warm ink and paper of the rest of the site. They share one lightness and a lower chroma, the hues are spread so Body, Tools, Time and Thought no longer crowd together, and Home is a clay tan, not a near-white. The success, error and hint colours follow the same family. Every theme × shade × text pair still passes 4.5:1.
+- Scrollbars are a thin line on no track. The Browse and Teach rails show theirs only while the pointer is over them, so the rail no longer grows a grey bar that reads as a divider.
+- The Sort menu on Browse and the card range on Study are pill fields with an ink chevron, not the browser's own control (new `components/ui/Select.tsx`).
+- A disabled primary button is an empty outline, not a half-faded grey fill. Teach's print buttons now use the shared button style.
+- On phones the kanji page's Readings tab carries its 読 mark, like 筆 Strokes and 古 Ancient. Teach's "Three tools, one set" cards use the same kanji-in-a-ring mark as My list's study modes (刷 · 映 · 送), not stock line icons.
+- Study: checkboxes are drawn in line and ink (an empty box, ink-filled with a tick when on) instead of the browser's grey native box, and the meaning quiz's four answers are the same pill as the learn layer's Recall options.
+- Share card: the dialog's Download, Share, Try again and Close buttons use the shared button styles (the drawing-state Download is an empty outline, not a faded grey fill). Fixed the dialog closing itself as soon as it opened in development, where Strict Mode re-runs its effect and a late "close" event shut the reopened dialog.
+
 ## [2.2.0] - 2026-11-01
 
 "One Atlas": the story atlas redrawn as one product. See `docs/superpowers/plans/2026-10-31-one-atlas.md` and the boards in `docs/design/boards/`.

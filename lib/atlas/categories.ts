@@ -27,20 +27,24 @@ export function getCategoryImage(category: string): string {
     return `/images/categories/${getCategorySlug(category)}.png`;
 }
 
-// Theme metadata from the Today board. Colours are the 夜 (night) accents; in
-// 墨 (ink) every theme uses the vermilion accent instead (see --c in globals.css).
-
+// Theme colours are the 夜 (night) accents; in 墨 (ink) every theme uses the
+// vermilion accent instead (see --c in globals.css).
+//
+// One family of mineral pigments (岩絵具), so the ten sit with the warm ink and
+// paper neutrals instead of on top of them: OKLCH lightness 0.70–0.80, chroma
+// ≤ 0.135, hues spread round the wheel and matched to each theme's art. Every one
+// passes scripts/check-ink-contrast.mjs; keep that script's table in step.
 export const THEME_COLORS: Record<CategoryName, string> = {
-    "Nature & Elements": "#34D399",
-    "Human Body & People": "#60A5FA",
-    "Action & Movement": "#F87171",
-    "Structures & Home": "#D6CFC4",
-    "Animals & Wildlife": "#FBBF24",
-    "Tools & Weapons": "#A5B4C8",
-    "Communication & Thought": "#C084FC",
-    "Textiles, Plants & Food": "#A3E635",
-    "States & Attributes": "#F472B6",
-    "Time & Sequence": "#A5B4FC",
+    "Nature & Elements": "#7ACBA8", // 青磁 celadon
+    "Human Body & People": "#83B7E4", // 縹 hanada blue
+    "Action & Movement": "#E67A73", // 茜 madder red
+    "Structures & Home": "#CEBAA2", // 砥粉 tonoko clay
+    "Animals & Wildlife": "#E0B76C", // 山吹 yamabuki gold
+    "Tools & Weapons": "#9DB5C2", // 鉛 lead grey
+    "Communication & Thought": "#B997D8", // 菫 violet
+    "Textiles, Plants & Food": "#B1C980", // 鶸 siskin green
+    "States & Attributes": "#DE8FB2", // 撫子 pink
+    "Time & Sequence": "#ADAFE0", // 藤 wisteria
 };
 
 /** One-word names for gates, scrolls and tight spaces. */
