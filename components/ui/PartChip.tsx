@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /** Rule 2, line = role: solid carries meaning, dashed carries sound, grey is form only. */
@@ -24,13 +24,16 @@ interface PartChipProps {
     /** md 44px; sm 40px for phones. */
     size?: "md" | "sm";
     className?: string;
+    style?: CSSProperties;
+    /** Motion hooks (data-enter, data-reveal…) pass through. */
+    [data: `data-${string}`]: string | undefined;
 }
 
 /**
  * A part of a kanji, drawn by its role. The colour is the page's theme (an
  * ancestor's --tc), never the part's own theme. Server-safe.
  */
-export function PartChip({ char, role, label, note, href, size = "md", className }: PartChipProps) {
+export function PartChip({ char, role, label, note, href, size = "md", className, ...rest }: PartChipProps) {
     const r = ROLE[role];
     const body = (
         <>
@@ -56,22 +59,25 @@ export function PartChip({ char, role, label, note, href, size = "md", className
         "inline-flex items-center gap-2.5 whitespace-nowrap rounded-full pr-4 pl-1.5 text-[15px] text-ink",
         size === "md" ? "h-11" : "h-10",
         r.chip,
-        href && "transition-colors hover:bg-c/15",
+        // Press: a linked chip gives under the finger (docs/design/motion.md).
+        href && "transition-[color,background-color,border-color,scale] duration-[140ms] ease-(--ease-out) hover:bg-c/15 active:scale-[.97]",
         className,
     );
     return href ? (
-        <Link href={href} className={cls}>
+        <Link href={href} className={cls} {...rest}>
             {body}
         </Link>
     ) : (
-        <span className={cls}>{body}</span>
+        <span className={cls} {...rest}>
+            {body}
+        </span>
     );
 }
 
 /** The "+" between part chips. */
-export function PartPlus() {
+export function PartPlus(props: { style?: CSSProperties; [data: `data-${string}`]: string | undefined }) {
     return (
-        <span aria-hidden className="text-lg text-ink-3">
+        <span aria-hidden className="text-lg text-ink-3" {...props}>
             +
         </span>
     );

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Tabs, tabId, tabPanelId, type TabItem } from "@/components/ui/Tabs";
+import styles from "./kanji.module.css";
 
 // One set of tabs for the plate. Desktop: Parts · Strokes · Ancient in the
 // specimen, readings in the reading column. Phones: Readings · Strokes ·
@@ -33,6 +34,8 @@ interface ViewState {
     desk: KanjiViewValue;
     phone: KanjiViewValue;
     isPhone: boolean | null;
+    /** The learner has switched tabs: from now on a panel that opens cross-fades in. */
+    switched: boolean;
     pick: (value: KanjiViewValue) => void;
 }
 
@@ -49,11 +52,14 @@ export function KanjiView({ desk: deskDefault, children }: { desk: KanjiViewValu
     const isPhone = usePhone();
     const [desk, setDesk] = useState<KanjiViewValue>(deskDefault);
     const [phone, setPhone] = useState<KanjiViewValue>("readings");
+    const [switched, setSwitched] = useState(false);
     const pick = (value: KanjiViewValue) => {
-        if (isPhone) setPhone(value === "parts" ? "readings" : value);
-        else setDesk(value === "readings" ? deskDefault : value);
+        const next = isPhone ? (value === "parts" ? "readings" : value) : value === "readings" ? deskDefault : value;
+        if (next !== (isPhone ? phone : desk)) setSwitched(true);
+        if (isPhone) setPhone(next);
+        else setDesk(next);
     };
-    return <ViewContext.Provider value={{ desk, phone, isPhone, pick }}>{children}</ViewContext.Provider>;
+    return <ViewContext.Provider value={{ desk, phone, isPhone, switched, pick }}>{children}</ViewContext.Provider>;
 }
 
 const JP: Partial<Record<KanjiViewValue, string>> = { parts: "形", strokes: "筆", ancient: "古" };
@@ -89,16 +95,20 @@ export function KanjiViewTabs({ values, className }: { values: readonly KanjiVie
 
 /** A panel of the plate's tabs. "readings" is a tab panel on phones only; on desktop it always shows. */
 export function KanjiViewPanel({ value, children, className }: { value: KanjiViewValue; children: ReactNode; className?: string }) {
-    const { desk, phone, isPhone } = useView();
+    const { desk, phone, isPhone, switched } = useView();
     const onDesk = value === "readings" || desk === value;
     const onPhone = value !== "parts" && phone === value;
     const isTabPanel = value !== "readings" || isPhone === true;
+    // A panel is display:none until picked, so its CSS fade (and any entrance
+    // inside) replays each time it opens. Not on first paint, and not on the
+    // desktop readings, which never hide. --delay is reset so the specimen's
+    // own entrance delay doesn't hold up what plays inside a panel.
     return (
         <div
             id={tabPanelId(ID, value)}
             role={isTabPanel ? "tabpanel" : undefined}
             aria-labelledby={isTabPanel ? tabId(ID, value) : undefined}
-            className={cn(!onDesk && "min-[960px]:hidden", !onPhone && "max-[959px]:hidden", className)}
+            className={cn(!onDesk && "min-[960px]:hidden", !onPhone && "max-[959px]:hidden", "[--delay:0ms]", switched && isTabPanel && styles.switched, switched && isTabPanel && value === "readings" && styles.quiet, className)}
         >
             {children}
         </div>

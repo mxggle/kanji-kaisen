@@ -114,7 +114,12 @@ export default async function KanjiPage({ params }: PageProps) {
                         hero={<KanjiHero kanji={kanji} headline={data.headline} meanings={data.meanings} parts={data.parts} />}
                         specimen={
                             deskTabs.length ? (
-                                <div className="flex flex-col gap-4 min-[960px]:rounded-2xl min-[960px]:border min-[960px]:border-line min-[960px]:bg-card min-[960px]:p-5">
+                                // Entrance: beside the hero on desktop (the parts inside then assemble);
+                                // on phones it is the tab row under the hero's parts, so it waits for them.
+                                <div
+                                    data-enter
+                                    className="flex flex-col gap-4 [--delay:60ms] [--rise:12px] max-[959px]:[--delay:340ms] min-[960px]:rounded-2xl min-[960px]:border min-[960px]:border-line min-[960px]:bg-card min-[960px]:p-5"
+                                >
                                     <KanjiViewTabs
                                         values={tabs}
                                         className={[deskTabs.length < 2 && "min-[960px]:hidden", phoneCount < 2 && "max-[959px]:hidden"].filter(Boolean).join(" ")}

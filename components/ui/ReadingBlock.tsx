@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ReadingWord {
@@ -24,6 +24,11 @@ interface ReadingBlockProps {
     /** Shown when `words` is empty. */
     empty?: ReactNode;
     className?: string;
+    /** Extra classes for the kana, e.g. to let it soak in after the card arrives. */
+    kanaClassName?: string;
+    style?: CSSProperties;
+    /** Motion hooks (data-enter, data-reveal…) pass through. */
+    [data: `data-${string}`]: string | undefined;
 }
 
 function Highlight({ word, char }: { word: string; char: string }) {
@@ -46,13 +51,13 @@ function Highlight({ word, char }: { word: string; char: string }) {
  * One reading with the words that use it: kana in Mincho, okurigana in ink-3,
  * and the kanji in --c inside each word. Server-safe.
  */
-export function ReadingBlock({ char, stem, okurigana, prefix, suffix, label, words, empty, className }: ReadingBlockProps) {
+export function ReadingBlock({ char, stem, okurigana, prefix, suffix, label, words, empty, className, kanaClassName, ...rest }: ReadingBlockProps) {
     // A long word pushes its meaning onto the next line instead of squeezing it.
     const row = "flex min-w-0 flex-wrap items-baseline gap-x-2.5 rounded-md py-[5px] text-sm text-ink-2";
     return (
-        <div className={cn("flex flex-col gap-3 rounded-2xl border border-line bg-card px-5 py-[18px]", className)}>
+        <div {...rest} className={cn("flex flex-col gap-3 rounded-2xl border border-line bg-card px-5 py-[18px]", className)}>
             <p className="flex flex-wrap items-baseline gap-3">
-                <span lang="ja" className="font-jp text-[30px] font-extrabold leading-none">
+                <span lang="ja" className={cn("font-jp text-[30px] font-extrabold leading-none", kanaClassName)}>
                     {suffix && <span className="text-ink-3">-</span>}
                     {stem}
                     {okurigana && (

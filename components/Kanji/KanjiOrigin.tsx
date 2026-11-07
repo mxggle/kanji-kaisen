@@ -44,10 +44,12 @@ export function KanjiOrigin({ etymology, memory, className }: { etymology: Etymo
     const both = Boolean(etymology && memory);
     return (
         <section aria-labelledby="origin-title" className={cn("flex flex-col gap-[22px]", className)}>
-            <SectionHeader jp="成り立ち" title="Where it comes from" id="origin-title" />
+            <SectionHeader jp="成り立ち" title="Where it comes from" id="origin-title" data-reveal="" />
             <div className={cn("grid gap-5", both ? "grid-cols-[repeat(auto-fit,minmax(min(400px,100%),1fr))]" : "max-w-2xl")}>
                 {etymology && (
+                    // The sourced record unrolls like a hanging scroll; the made-up story beside it soaks in (MemoryStory motion).
                     <OriginCard
+                        data-reveal="unroll"
                         lead={
                             (etymology.formation || etymology.parts.length > 0) && (
                                 <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
@@ -78,6 +80,7 @@ export function KanjiOrigin({ etymology, memory, className }: { etymology: Etymo
                 )}
                 {memory && (
                     <MemoryStory
+                        motion="reveal"
                         footer={
                             <Link href={memory.radical.href} className="transition-colors hover:text-ink">
                                 {memory.specific ? "From" : "More in"} the{" "}

@@ -16,6 +16,9 @@ const TryWriting = dynamic(() => import("./TryWriting").then((m) => m.TryWriting
 });
 
 const STEP_MS = 620;
+// The first play waits a beat once the player is seen, so it starts after the
+// panel has arrived rather than mid-entrance.
+const AUTO_WAIT_MS = 320;
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
@@ -40,6 +43,8 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
     const [current, setCurrent] = useState<number | null>(null);
     const [playing, setPlaying] = useState(false);
     const [mode, setMode] = useState<"view" | "write">("view");
+    // After the first switch between view and write, the new one cross-fades in.
+    const [swapped, setSwapped] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autoPlayed = useRef(false);
@@ -93,8 +98,11 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
                 autoPlayed.current = true;
                 io.disconnect();
                 if (!reducedMotion()) {
-                    setPlaying(true);
-                    tick(0);
+                    stop();
+                    timer.current = setTimeout(() => {
+                        setPlaying(true);
+                        tick(0);
+                    }, AUTO_WAIT_MS);
                 }
             },
             { threshold: 0.5 },
@@ -109,6 +117,7 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
         stop();
         setPlaying(false);
         if (mode === "view") trackEvent("trace_used", { kanji: char, action: "start" });
+        setSwapped(true);
         setMode(mode === "view" ? "write" : "view");
     };
 
@@ -122,7 +131,7 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
     return (
         <div ref={rootRef} className={cn("flex flex-col gap-3.5", className)}>
             {mode === "view" ? (
-                <div role="img" aria-label={current === null ? `${char}, all ${total} strokes, numbered` : `${char}, stroke ${current + 1} of ${total}`} className={box}>
+                <div role="img" aria-label={current === null ? `${char}, all ${total} strokes, numbered` : `${char}, stroke ${current + 1} of ${total}`} className={cn(box, swapped && styles.swap)}>
                     <svg viewBox="0 0 109 109" aria-hidden className="absolute inset-0 size-full fill-none stroke-line [stroke-dasharray:1.4_1.4] [stroke-width:.4]">
                         <path d="M54.5 0V109M0 54.5H109" />
                     </svg>
@@ -131,7 +140,7 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
                             <path
                                 key={i}
                                 d={d}
-                                className={current === null || i < current ? "stroke-ink" : i === current ? "stroke-transparent" : "stroke-line-2"}
+                                className={current === null || i < current ? "stroke-ink" : i === current ? "stroke-transparent" : cn("stroke-line-2", styles.faint)}
                             />
                         ))}
                         {numbers?.map((p, i) => (
@@ -139,7 +148,7 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
                                 key={i}
                                 x={p.x}
                                 y={p.y}
-                                className={cn("stroke-none text-[5.5px] font-bold", i === current ? "fill-c" : "fill-ink-3")}
+                                className={cn("stroke-none text-[5.5px] font-bold", i === current ? "fill-c" : "fill-ink-3", styles.num)}
                             >
                                 {i + 1}
                             </text>
@@ -152,29 +161,29 @@ export function StrokePlayer({ char, paths, numbers, autoPlay = true, className 
                     )}
                 </div>
             ) : (
-                <TryWriting char={char} />
+                <TryWriting char={char} className={styles.swap} />
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {mode === "view" ? (
                     <div className="flex items-center gap-1.5">
-                        <Button size="sm" iconOnly aria-label="Previous stroke" onClick={() => step(-1)} disabled={current === 0}>
+                        <Button size="sm" iconOnly aria-label="Previous stroke" onClick={() => step(-1)} disabled={current === 0} className={styles.press}>
                             <ChevronLeft aria-hidden />
                         </Button>
                         <span aria-live={playing ? "off" : "polite"} className="min-w-24 text-center text-sm text-ink-2">
                             {status}
                         </span>
-                        <Button size="sm" iconOnly aria-label="Next stroke" onClick={() => step(1)} disabled={current === null}>
+                        <Button size="sm" iconOnly aria-label="Next stroke" onClick={() => step(1)} disabled={current === null} className={styles.press}>
                             <ChevronRight aria-hidden />
                         </Button>
-                        <Button size="sm" variant="quiet" iconOnly aria-label={playing ? "Restart the stroke order" : "Play the stroke order"} onClick={play}>
+                        <Button size="sm" variant="quiet" iconOnly aria-label={playing ? "Restart the stroke order" : "Play the stroke order"} onClick={play} className={styles.press}>
                             <RotateCcw aria-hidden />
                         </Button>
                     </div>
                 ) : (
                     <span />
                 )}
-                <Button size="sm" onClick={write} aria-pressed={mode === "write"}>
+                <Button size="sm" onClick={write} aria-pressed={mode === "write"} className={styles.press}>
                     {mode === "view" ? "Try writing it" : "Back to the strokes"}
                 </Button>
             </div>

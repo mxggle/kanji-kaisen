@@ -4,6 +4,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/Button";
+import styles from "./kanji.module.css";
 
 const INTEREST_KEY = "kanji-zh-interest";
 
@@ -43,7 +44,9 @@ export function ZhNote({ char, relation, summary, children, className }: { char:
     };
 
     return (
-        <details onToggle={onToggle} className={cn("group border-y border-line", className)}>
+        // Its rules are painted in as it scrolls in (brush follows the existing lines);
+        // it opens and closes to its height (styles.zh).
+        <details onToggle={onToggle} data-reveal="brush" className={cn("group border-y border-line", styles.zh, className)}>
             <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-3.5 gap-y-1 py-3 text-[15px] text-ink [&::-webkit-details-marker]:hidden">
                 <span lang="ja" aria-hidden className="font-jp text-lg font-extrabold">
                     中
@@ -59,12 +62,12 @@ export function ZhNote({ char, relation, summary, children, className }: { char:
                 {children}
                 <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
                     {asked ? (
-                        <p role="status" className="text-ink">
+                        <p role="status" className={cn("text-ink", styles.fadeIn)}>
                             Thanks, noted. Interest like yours decides whether a Chinese edition gets built.
                         </p>
                     ) : (
                         <>
-                            <Button size="sm" onClick={ask}>
+                            <Button size="sm" onClick={ask} className={styles.press}>
                                 Want a Chinese edition?
                             </Button>
                             <span className="text-xs text-ink-3">One click tells us. No sign-up.</span>
