@@ -6,6 +6,7 @@ import { Chip } from "@/components/ui/Chip";
 import { RadicalSeal } from "@/components/ui/RadicalSeal";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import type { HomeSeal } from "./data";
+import styles from "./home.module.css";
 
 interface OtherWaysInProps {
     jlpt: { level: JlptLevel; count: number }[];
@@ -26,14 +27,19 @@ function Way({ title, children, note }: { title: string; children: ReactNode; no
     );
 }
 
-/** Home: JLPT levels, common radicals and stroke counts as ways into Browse and the atlas. Server-safe. */
+/**
+ * Home: JLPT levels, common radicals and stroke counts as ways into Browse and
+ * the atlas. The cards rise in as they scroll into view, then their seals are
+ * pressed and their chips settle (home.module.css). Each seal flies to its
+ * radical page (the page mounts <MorphLanding /> for the way back). Server-safe.
+ */
 export function OtherWaysIn({ jlpt, seals, radicalCount, strokes, className }: OtherWaysInProps) {
     return (
         <section aria-labelledby="ways-title" className={className}>
-            <SectionHeader id="ways-title" jp="索引" title="Other ways in" />
-            <div className="mt-[22px] grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-5">
+            <SectionHeader id="ways-title" jp="索引" title="Other ways in" data-reveal="rise" />
+            <div data-reveal-group="rise" className={`${styles.ways} mt-[22px] grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-5`}>
                 <Way title="By JLPT level" note={<p className="text-xs text-ink-3">Levels follow the community lists most learners use.</p>}>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className={`${styles.chips} flex flex-wrap items-center gap-2`}>
                         {jlpt.map(({ level, count }) => (
                             <Chip key={level} href={browsePath({ jlpt: level })} count={count.toLocaleString("en")}>
                                 {level}
@@ -49,7 +55,7 @@ export function OtherWaysIn({ jlpt, seals, radicalCount, strokes, className }: O
                         </Link>
                     }
                 >
-                    <div className="flex flex-wrap gap-2">
+                    <div className={`${styles.seals} flex flex-wrap gap-2`}>
                         {seals.map((s) => (
                             <RadicalSeal
                                 key={s.key}
@@ -59,12 +65,13 @@ export function OtherWaysIn({ jlpt, seals, radicalCount, strokes, className }: O
                                 category={s.category}
                                 href={radicalPath(s.key)}
                                 label={`${s.char} ${s.name}, ${s.count} kanji`}
+                                morph={s.key}
                             />
                         ))}
                     </div>
                 </Way>
                 <Way title="By stroke count" note={<p className="text-xs text-ink-3">For when you can count the strokes but can&apos;t read it yet.</p>}>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className={`${styles.chips} flex flex-wrap items-center gap-2`}>
                         {strokes.map((band) => (
                             <Chip key={band.label} href={`/browse?min=${band.min}&max=${band.max}&sort=strokes`} aria-label={`${band.label} strokes`}>
                                 {band.label}

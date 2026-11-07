@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SearchBox } from "@/components/Search/SearchBox";
@@ -10,9 +10,10 @@ import { SkinToggle } from "@/components/Skin/SkinToggle";
 import { HEADER_PATH_ID } from "./HeaderPath";
 import { Logo } from "./Logo";
 import { PLACES, isAtlasPage, placeFor } from "./places";
+import { usePlaceMarker } from "./usePlaceMarker";
 
 const ICON_BUTTON =
-    "inline-flex size-10 flex-none items-center justify-center rounded-full border border-transparent text-ink-2 transition-colors hover:border-line-2 hover:text-ink [&_svg]:size-[18px]";
+    "inline-flex size-10 flex-none items-center justify-center rounded-full border border-transparent text-ink-2 transition-[color,border-color,scale] duration-(--dur-ui) ease-(--ease-out) hover:border-line-2 hover:text-ink active:scale-[.94] active:duration-(--dur-micro) motion-reduce:transition-none [&_svg]:size-[18px]";
 
 /** "/" focuses the header search, unless the learner is typing somewhere. */
 function useSlashToSearch() {
@@ -42,7 +43,9 @@ export function SiteHeader() {
     const place = placeFor(pathname);
     const atlas = isAtlasPage(pathname);
     const home = pathname === "/";
+    const nav = useRef<HTMLElement>(null);
     useSlashToSearch();
+    usePlaceMarker(nav, place);
 
     return (
         <header data-chrome className="relative z-30 border-b border-line bg-bg print:hidden">
@@ -50,15 +53,22 @@ export function SiteHeader() {
                 {/* Phones keep only the mark on atlas pages, to make room for the path. */}
                 <Logo wordmarkClassName={atlas ? "max-lg:hidden" : "max-[359px]:hidden"} />
 
-                <nav aria-label="Main" className="hidden gap-0.5 self-stretch lg:flex">
+                {/* The underline on the current place slides to the next one (usePlaceMarker). */}
+                <nav ref={nav} aria-label="Main" className="hidden gap-0.5 self-stretch lg:flex">
                     {PLACES.map((item) => (
                         <Link
                             key={item.place}
                             href={item.href}
+                            data-place={item.place}
                             aria-current={item.place === place ? "page" : undefined}
-                            className="-mb-px flex items-center whitespace-nowrap border-b-2 border-transparent px-3 text-[15px] text-ink-2 transition-colors hover:text-ink aria-[current=page]:border-ink aria-[current=page]:text-ink"
+                            className="group relative -mb-px flex items-center whitespace-nowrap border-b-2 border-transparent px-3 text-[15px] text-ink-2 transition-colors duration-(--dur-ui) hover:text-ink aria-[current=page]:text-ink"
                         >
                             {item.label}
+                            <span
+                                aria-hidden
+                                data-place-marker=""
+                                className="pointer-events-none absolute inset-x-0 -bottom-0.5 h-0.5 origin-left bg-ink opacity-0 group-aria-[current=page]:opacity-100"
+                            />
                         </Link>
                     ))}
                 </nav>

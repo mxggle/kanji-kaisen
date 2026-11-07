@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAncientFormCredits } from "@/lib/story";
 import { DocumentPage, PROSE_LINK } from "@/components/Layout/Document";
+import { enterOrder } from "@/components/Motion/tokens";
 
 export const metadata: Metadata = {
     title: "Ancient form credits",
@@ -58,11 +59,12 @@ export default function AncientFormCreditsPage() {
             </p>
             }
         >
-            <p className="-mt-8 text-sm text-ink-3">
+            <p data-enter="rise" style={enterOrder(5)} className="-mt-8 text-sm text-ink-3">
                 <Link href="/about" className={LINK}>All data sources and licences</Link>
             </p>
 
-            <div className="overflow-x-auto rounded-2xl border border-line">
+            {/* A long table: it fades in as one (no transform on a big layer). */}
+            <div data-enter="fade" style={enterOrder(7)} className="overflow-x-auto rounded-2xl border border-line">
                 <table className="w-full text-sm">
                     <thead className="bg-card text-left">
                         <tr>

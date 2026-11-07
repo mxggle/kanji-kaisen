@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ThemeGate } from "@/components/ui/ThemeGate";
+import { enterOrder } from "@/components/Motion/tokens";
 
 export interface GateTheme {
     /** Theme name, e.g. "Nature & Elements". */
@@ -17,6 +18,8 @@ interface CategoryGatesProps {
      * rail: a swipeable row of small gates on phones, a grid from 640px (home).
      */
     layout?: "grid" | "rail";
+    /** When the gates start to unroll (ms), so they follow the page's title. */
+    enterDelay?: number;
     className?: string;
 }
 
@@ -35,14 +38,20 @@ const LAYOUT = {
     },
 } as const;
 
-/** The ten themes as gates, each with its painted bar (painted by the page's <InkPaint>). Server-safe. */
-export function CategoryGates({ themes, source, layout = "grid", className }: CategoryGatesProps) {
+/**
+ * The ten themes as gates, each with its painted bar (painted by the page's
+ * <InkPaint>). They unroll one after another like hanging scrolls, and each
+ * gate's art flies into its theme page (each theme appears once per page).
+ * The entrance is on the <li>, an ancestor of the art, so a page using this
+ * mounts <MorphLanding /> to settle it when art flies back in. Server-safe.
+ */
+export function CategoryGates({ themes, source, layout = "grid", enterDelay = 0, className }: CategoryGatesProps) {
     const l = LAYOUT[layout];
     return (
-        <ul className={cn(l.list, className)}>
+        <ul data-enter-group="unroll" style={enterOrder(0, enterDelay)} className={cn(l.list, className)}>
             {themes.map((theme) => (
                 <li key={theme.name} className={l.item}>
-                    <ThemeGate category={theme.name} chars={theme.chars} source={source} sizes={l.sizes} />
+                    <ThemeGate category={theme.name} chars={theme.chars} source={source} sizes={l.sizes} morph />
                 </li>
             ))}
         </ul>

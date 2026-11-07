@@ -4,13 +4,14 @@ import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import { Logo } from "./Logo";
 
-const LINK = "transition-colors hover:text-ink";
+const LINK = "transition-colors duration-(--dur-ui) hover:text-ink";
 
 /** One row: logo, About & credits, Settings, Send feedback, GitHub, and the data credits. */
 export function SiteFooter() {
     return (
         <footer data-chrome className="mx-auto mt-12 w-full max-w-[1200px] px-4 sm:px-10 print:hidden">
-            <div className="flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-line pt-8 pb-12 text-sm text-ink-3">
+            {/* Fades in quietly the first time it scrolls into view; it stays across page changes. */}
+            <div data-reveal="fade" className="flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-line pt-8 pb-12 text-sm text-ink-3">
                 <Logo size="sm" />
                 <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-7 gap-y-3">
                     <Link href="/about" className={LINK}>

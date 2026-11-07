@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { InkLegend } from "@/components/ui/InkLegend";
 import { KanjiTile } from "@/components/ui/KanjiTile";
 import { KindLabel } from "@/components/ui/SectionHeader";
+import { enterOrder } from "@/components/Motion/tokens";
 import { agoLabel, continueCard, shadeCounts, STEP_NAMES, type ContinuePick } from "./continue";
 
 interface ContinueCardProps {
@@ -20,6 +21,14 @@ interface ContinueCardProps {
     themes: { name: string; chars: string }[];
     /** Kanji in the atlas, for the 白 count. */
     total: number;
+    /** When the card rises in (ms), after the hero's search box. */
+    enterDelay?: number;
+}
+
+/** The card's entrance hook: data-enter and its timing. */
+interface Enter {
+    "data-enter": string;
+    style: CSSProperties;
 }
 
 // From 640px every state is as tall as the continue card, so the swap after hydration doesn't move the page.
@@ -34,7 +43,7 @@ const NEUTRAL = { "--tc": "var(--ink)" } as CSSProperties;
  * server render matches). Phones get the three headings only, so the card is
  * about as tall as the continue card that may replace it.
  */
-function Method() {
+function Method({ enter }: { enter: Enter }) {
     const points = [
         {
             mark: "部",
@@ -58,7 +67,7 @@ function Method() {
         },
     ];
     return (
-        <aside aria-label="How it works" className="min-w-0 flex-[5_1_380px]">
+        <aside aria-label="How it works" {...enter} className="min-w-0 flex-[5_1_380px]">
             <div className={CARD}>
                 <KindLabel jp="学び方">How it works</KindLabel>
                 <ul className="flex flex-col gap-3 sm:my-auto sm:gap-5">
@@ -128,7 +137,7 @@ function useIndexEntry(char: string | undefined): SearchIndexEntry | null {
     return entry && entry.c === char ? entry : null;
 }
 
-function Continue({ pick, category, counts }: { pick: ContinuePick; category: string | null; counts: Record<number, number> }) {
+function Continue({ pick, category, counts, enter }: { pick: ContinuePick; category: string | null; counts: Record<number, number>; enter: Enter }) {
     const entry = useIndexEntry(pick.char);
     const theme = category && isCategoryName(category) ? THEME_SHORT[category] : null;
     const ago = agoLabel(pick.updatedAt);
@@ -141,14 +150,16 @@ function Continue({ pick, category, counts }: { pick: ContinuePick; category: st
     );
 
     return (
-        <aside aria-label="Where you left off" className="min-w-0 flex-[5_1_380px]" style={themeVars(category)}>
+        // The big tile's glyph flies to the kanji page; the home page's <MorphLanding /> settles this entrance when it flies back.
+        <aside aria-label="Where you left off" {...enter} style={{ ...enter.style, ...themeVars(category) }} className="min-w-0 flex-[5_1_380px]">
             <div className={CARD}>
                 <KindLabel jp="続き" className="hidden sm:flex">
                     Where you left off
                 </KindLabel>
                 <div className="flex items-center gap-3.5 sm:gap-[18px]">
                     <KanjiTile kanji={kanji} shade={pick.shade} className="w-[72px] flex-none sm:hidden" />
-                    <KanjiTile kanji={kanji} shade={pick.shade} size="lg" className="hidden min-h-[154px] w-[116px] flex-none sm:flex" />
+                    {/* Only this one flies: a name may be on one element per page, and phones show the small tile. */}
+                    <KanjiTile kanji={kanji} shade={pick.shade} size="lg" morph className="hidden min-h-[154px] w-[116px] flex-none sm:flex" />
                     <div className="flex min-w-0 flex-col gap-1 sm:gap-2">
                         <p className="type-label sm:hidden">Where you left off</p>
                         <p className={H3}>{STEP_NAMES[pick.step]} is next</p>
@@ -170,9 +181,9 @@ function Continue({ pick, category, counts }: { pick: ContinuePick; category: st
 }
 
 /** Every inked kanji is through the four steps (濃 or 印): nothing to continue. */
-function Done({ counts }: { counts: Record<number, number> }) {
+function Done({ counts, enter }: { counts: Record<number, number>; enter: Enter }) {
     return (
-        <aside aria-label="Where you left off" className="min-w-0 flex-[5_1_380px]">
+        <aside aria-label="Where you left off" {...enter} className="min-w-0 flex-[5_1_380px]">
             <div className={CARD}>
                 <KindLabel jp="続き">Where you left off</KindLabel>
                 <div className="flex flex-col gap-2">
@@ -195,8 +206,9 @@ function Done({ counts }: { counts: Record<number, number> }) {
  * and the first client render show the method; the learner's card replaces
  * it once the ink store hydrates.
  */
-export function ContinueCard({ themes, total }: ContinueCardProps) {
+export function ContinueCard({ themes, total, enterDelay = 0 }: ContinueCardProps) {
     const hydrated = useInkHydrated();
+    const [startedCold] = useState(!hydrated);
     const entries = useInkStore((state) => state.entries);
     const card = continueCard(hydrated ? entries : null);
     const themeOf = useMemo(() => {
@@ -206,7 +218,13 @@ export function ContinueCard({ themes, total }: ContinueCardProps) {
     }, [themes]);
     const counts = useMemo(() => shadeCounts(hydrated ? entries : {}, total), [hydrated, entries, total]);
 
-    if (card.kind === "first") return <Method />;
-    if (card.kind === "done") return <Done counts={counts} />;
-    return <Continue pick={card.pick} category={themeOf.get(card.pick.char) ?? null} counts={counts} />;
+    // The card rises in after the search box. When the learner's card replaces
+    // the method after hydration (the page is already on screen), it fades in
+    // in place instead, so the swap reads as one card turning into the other.
+    const swapped = startedCold && card.kind !== "first";
+    const enter: Enter = swapped ? { "data-enter": "fade", style: {} } : { "data-enter": "rise", style: enterOrder(0, enterDelay) };
+
+    if (card.kind === "first") return <Method enter={enter} />;
+    if (card.kind === "done") return <Done counts={counts} enter={enter} />;
+    return <Continue pick={card.pick} category={themeOf.get(card.pick.char) ?? null} counts={counts} enter={enter} />;
 }

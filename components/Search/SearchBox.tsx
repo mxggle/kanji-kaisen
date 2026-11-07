@@ -143,11 +143,16 @@ export function SearchBox({
             }}
         >
             <label htmlFor={`${id}-input`} className="sr-only">Search kanji</label>
+            {/*
+              Focus: the ring closes in from a wider offset as it inks, the border
+              darkens, the magnifier comes forward and the "/" hint steps back.
+              Only existing lines move (rule 2); no colour is added.
+            */}
             <div className="relative group">
                 <Search
                     aria-hidden
                     className={cn(
-                        "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-ink transition-colors pointer-events-none",
+                        "absolute top-1/2 -translate-y-1/2 text-ink-3 group-focus-within:text-ink group-focus-within:scale-[1.08] transition-[color,scale] duration-(--dur-ui) ease-(--ease-out) motion-reduce:transition-none pointer-events-none",
                         hero ? "left-4 size-[18px] lg:left-[22px] lg:size-[22px]" : "left-3.5 size-[18px]",
                     )}
                 />
@@ -182,7 +187,9 @@ export function SearchBox({
                     }}
                     onKeyDown={onKeyDown}
                     className={cn(
-                        "w-full bg-card border border-line-2 rounded-full text-ink placeholder:text-ink-3 focus:border-ink transition-colors [&::-webkit-search-cancel-button]:hidden",
+                        "w-full bg-card border border-line-2 rounded-full text-ink placeholder:text-ink-3 focus:border-ink [&::-webkit-search-cancel-button]:hidden",
+                        "outline-2 outline-offset-[7px] outline-transparent focus-visible:outline-offset-[3px] focus-visible:outline-ink",
+                        "transition-[border-color,outline-color,outline-offset] duration-(--dur-ui) ease-(--ease-out) motion-reduce:transition-none",
                         hero ? "h-13 pl-11 pr-4 text-base lg:h-15 lg:pl-[54px] lg:pr-12 lg:text-lg" : "h-10 pl-10 pr-10 text-sm",
                     )}
                 />
@@ -191,6 +198,7 @@ export function SearchBox({
                         aria-hidden
                         className={cn(
                             "pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-[5px] border border-line-2 px-1.5 font-ui text-[11px] leading-[18px] text-ink-3",
+                            "transition-opacity duration-(--dur-micro) group-focus-within:opacity-0",
                             hero ? "right-4 max-lg:hidden" : "right-2.5",
                         )}
                     >
@@ -199,10 +207,14 @@ export function SearchBox({
                 )}
             </div>
 
+            {/* Opens from just under the box (scale and fade, --dur-ui); closes in half the time. */}
             <div
                 className={cn(
                     "absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-line-2 bg-card overflow-hidden",
-                    !showDropdown && "hidden",
+                    "origin-top transition-[opacity,scale,translate,display] transition-discrete motion-reduce:transition-none",
+                    showDropdown
+                        ? "duration-(--dur-ui) ease-(--ease-out) starting:opacity-0 starting:scale-[.97] starting:-translate-y-1"
+                        : "hidden opacity-0 scale-[.98] duration-[120ms] ease-(--ease-in)",
                 )}
                 // Keep focus in the input while clicking inside the dropdown.
                 onMouseDown={(e) => e.preventDefault()}
@@ -221,7 +233,7 @@ export function SearchBox({
                                 onMouseEnter={() => setActive(i)}
                                 onClick={() => go(kanjiPath(e.c))}
                                 className={cn(
-                                    "flex items-center gap-3 px-3 py-2 cursor-pointer",
+                                    "flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors duration-(--dur-micro)",
                                     i === active ? "bg-ink/10" : "hover:bg-ink/5",
                                 )}
                             >
