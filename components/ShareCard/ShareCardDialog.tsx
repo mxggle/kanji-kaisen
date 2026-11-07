@@ -8,6 +8,7 @@ import { trackEvent } from "@/lib/analytics";
 import { buildCardModel, type ShareCardInput } from "@/lib/share-card";
 import { useSkin } from "@/components/Skin/useSkin";
 import { SKIN_LABELS } from "@/components/Skin/skin";
+import { buttonClass } from "@/components/ui/Button";
 import { renderShareCard } from "./drawCard";
 
 type CardState =
@@ -16,9 +17,6 @@ type CardState =
     | { status: "error" };
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-const buttonClass =
-    "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export interface ShareCardDialogProps {
     input: ShareCardInput;
@@ -43,9 +41,15 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
         const dialog = dialogRef.current;
         if (!dialog) return;
         if (!dialog.open) dialog.showModal();
-        dialog.addEventListener("close", onClose);
+        // "close" fires a task after close(). When an effect re-runs (Strict Mode
+        // in development), the cleanup's close() lands after showModal() has
+        // reopened the dialog; that late event must not shut it again.
+        const handleClose = () => {
+            if (!dialog.open) onClose();
+        };
+        dialog.addEventListener("close", handleClose);
         return () => {
-            dialog.removeEventListener("close", onClose);
+            dialog.removeEventListener("close", handleClose);
             if (dialog.open) dialog.close();
         };
     }, [onClose]);
@@ -142,13 +146,8 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
                             A 1080×1350 picture to save or post, in the {SKIN_LABELS[skin].jp} {SKIN_LABELS[skin].name} skin.
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={close}
-                        aria-label="Close"
-                        className="shrink-0 rounded-full p-2 text-ink-2 transition-colors hover:bg-bg hover:text-ink focus-visible:outline-2 focus-visible:outline-ink"
-                    >
-                        <X size={18} aria-hidden />
+                    <button type="button" onClick={close} aria-label="Close" className={buttonClass({ variant: "quiet", size: "sm", iconOnly: true })}>
+                        <X aria-hidden />
                     </button>
                 </div>
 
@@ -172,21 +171,21 @@ export function ShareCardDialog({ input, origin, onClose }: ShareCardDialogProps
 
                 <div className="flex flex-wrap gap-2">
                     {card.status === "error" ? (
-                        <button type="button" onClick={retry} className={`${buttonClass} bg-ink text-bg hover:opacity-90`}>
-                            <RefreshCw size={16} aria-hidden /> Try again
+                        <button type="button" onClick={retry} className={buttonClass({ variant: "primary" })}>
+                            <RefreshCw aria-hidden /> Try again
                         </button>
                     ) : card.status === "ready" ? (
-                        <a href={card.url} download={model.fileName} onClick={onDownload} className={`${buttonClass} bg-ink text-bg hover:opacity-90`}>
-                            <Download size={16} aria-hidden /> Download PNG
+                        <a href={card.url} download={model.fileName} onClick={onDownload} className={buttonClass({ variant: "primary" })}>
+                            <Download aria-hidden /> Download PNG
                         </a>
                     ) : (
-                        <button type="button" disabled className={`${buttonClass} bg-ink text-bg opacity-50`}>
-                            <Download size={16} aria-hidden /> Download PNG
+                        <button type="button" disabled className={buttonClass({ variant: "primary" })}>
+                            <Download aria-hidden /> Download PNG
                         </button>
                     )}
                     {card.status === "ready" && card.file && (
-                        <button type="button" onClick={share} className={`${buttonClass} border border-line-2 text-ink hover:border-ink`}>
-                            <Share2 size={16} aria-hidden /> Share…
+                        <button type="button" onClick={share} className={buttonClass()}>
+                            <Share2 aria-hidden /> Share…
                         </button>
                     )}
                 </div>
