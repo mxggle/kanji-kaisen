@@ -214,7 +214,8 @@ export function MotionLab({ kinds, strokes, strokeChar }: { kinds: KindDemo[]; s
                                 <Code>{token}</Code>
                                 <span className="text-sm text-ink-2">{use}</span>
                             </div>
-                            <div className="relative h-3 min-w-0">
+                            {/* Clipped: the travelling layer is track-wide, so its translated box would widen the page. */}
+                            <div className="relative h-3 min-w-0 overflow-hidden">
                                 <span aria-hidden className="absolute inset-x-0 top-1/2 h-px bg-line-2" />
                                 {seen && (
                                     <span
