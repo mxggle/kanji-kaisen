@@ -19,5 +19,5 @@ export function HeaderPath({ children }: { children: ReactNode }) {
         () => document.getElementById(HEADER_PATH_ID),
         () => null,
     );
-    return slot ? createPortal(<InkPaint>{children}</InkPaint>, slot) : null;
+    return slot ? createPortal(<InkPaint className="contents">{children}</InkPaint>, slot) : null;
 }

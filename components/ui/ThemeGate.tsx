@@ -5,6 +5,7 @@ import { categoryPath } from "@/lib/atlas/paths";
 import { getCategoryImage, getCategorySlug, getThemeColor, isCategoryName, THEME_JP, THEME_SHORT } from "@/lib/atlas/categories";
 import { PaintedBar } from "./PaintedBar";
 import { TrackedLink } from "./TrackedLink";
+import { Morph, morphName } from "@/components/Motion/Morph";
 
 interface ThemeGateProps {
     /** Theme name, e.g. "Nature & Elements". */
@@ -21,6 +22,11 @@ interface ThemeGateProps {
     /** next/image sizes for the art. */
     sizes?: string;
     preload?: boolean;
+    /**
+     * The art flies into the theme page on navigation (components/Motion/Morph).
+     * Only where this theme's gate appears once per page.
+     */
+    morph?: boolean;
     className?: string;
 }
 
@@ -28,7 +34,7 @@ interface ThemeGateProps {
  * The one way a theme appears: an arch with its art (ink wash in 墨), Japanese
  * name, name, kanji count and one painted bar. Server-safe.
  */
-export function ThemeGate({ category, chars, count, longName, source = "gate", href, sizes = "(min-width: 1024px) 220px, 45vw", preload, className }: ThemeGateProps) {
+export function ThemeGate({ category, chars, count, longName, source = "gate", href, sizes = "(min-width: 1024px) 220px, 45vw", preload, morph, className }: ThemeGateProps) {
     const known = isCategoryName(category);
     const name = known && !longName ? THEME_SHORT[category] : category;
     const kanjiCount = count ?? (chars === undefined ? undefined : new Set(Array.from(chars)).size);
@@ -45,7 +51,11 @@ export function ThemeGate({ category, chars, count, longName, source = "gate", h
                 className,
             )}
         >
-            <Image src={getCategoryImage(category)} alt="" fill sizes={sizes} preload={preload} className="ink-art object-cover" />
+            <Morph name={morph && known && morphName.theme(getCategorySlug(category))}>
+                <span aria-hidden className="absolute inset-0">
+                    <Image src={getCategoryImage(category)} alt="" fill sizes={sizes} preload={preload} className="ink-art object-cover" />
+                </span>
+            </Morph>
             {/* The fade is solid enough behind the text for the small Japanese name to stay readable on busy art. */}
             <span aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--shade),0)_28%,rgba(var(--shade),.88)_62%,rgba(var(--shade),.97)_82%)]" />
             {/* The text sits on its own near-solid backing, so the names stay ≥ 4.5:1 on any art at any gate size. */}

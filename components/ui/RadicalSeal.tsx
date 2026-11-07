@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { getThemeColor } from "@/lib/atlas/categories";
 import { SEAL_KANJI } from "@/lib/ink-paint";
 import type { Shade } from "@/lib/ink";
+import { Morph, morphName } from "@/components/Motion/Morph";
 
 export type SealSize = "sm" | "md" | "default" | "lg";
 
@@ -42,6 +43,11 @@ interface RadicalSealProps {
     className?: string;
     /** Extra classes for the circle. */
     orbClassName?: string;
+    /**
+     * Radical key: the seal flies to (or from) the radical page's seal on
+     * navigation (components/Motion/Morph). At most one per key per page.
+     */
+    morph?: string;
 }
 
 /**
@@ -62,23 +68,29 @@ export function RadicalSeal({
     label,
     className,
     orbClassName,
+    morph,
 }: RadicalSealProps) {
     const common = chars === undefined ? undefined : Array.from(chars).slice(0, SEAL_KANJI).join("");
     const orb = (
-        <span
-            lang="ja"
-            data-radical-chars={shade === undefined ? common : undefined}
-            data-ink={shade ?? (common !== undefined ? 0 : undefined)}
-            className={cn(
-                "flex flex-none items-center justify-center rounded-full border border-line-2 bg-card font-jp font-extrabold leading-none text-ink",
-                "transition-shadow duration-200 group-hover:shadow-[0_0_0_1px_var(--ink-3)] motion-reduce:transition-none",
-                "group-aria-pressed:shadow-[0_0_0_3px_var(--bg),0_0_0_5px_var(--c)]",
-                ORB[size],
-                orbClassName,
-            )}
-        >
-            {char}
-        </span>
+        <Morph name={morph && morphName.radical(morph)}>
+            <span
+                lang="ja"
+                data-radical-chars={shade === undefined ? common : undefined}
+                data-ink={shade ?? (common !== undefined ? 0 : undefined)}
+                className={cn(
+                    "flex flex-none items-center justify-center rounded-full border border-line-2 bg-card font-jp font-extrabold leading-none text-ink",
+                    // The hover ring answers fast; the learner's ink (data-ink, painted after
+                    // hydration) soaks in slowly instead of snapping, like KanjiTile.
+                    "[transition:box-shadow_200ms_var(--ease-out),background-color_700ms_var(--ease-ink),border-color_700ms_var(--ease-ink),color_700ms_var(--ease-ink)]",
+                    "group-hover:shadow-[0_0_0_1px_var(--ink-3)] motion-reduce:transition-none",
+                    "group-aria-pressed:shadow-[0_0_0_3px_var(--bg),0_0_0_5px_var(--c)]",
+                    ORB[size],
+                    orbClassName,
+                )}
+            >
+                {char}
+            </span>
+        </Morph>
     );
     const body = (
         <>

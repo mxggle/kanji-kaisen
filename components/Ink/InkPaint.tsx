@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { getShade, paintedPercent, themeProgress, type InkEntries } from "@/lib/ink";
 import { useInkHydrated, useInkStore } from "@/lib/ink-store";
 import { paintCaption, sealShade } from "@/lib/ink-paint";
@@ -56,8 +55,12 @@ export function InkPaint({ children, className }: { children: ReactNode; classNa
         };
     }, [hydrated, entries]);
 
+    // A real block, not display:contents: as a page's first element it must
+    // have a box, or Next skips it and doesn't scroll to the top on navigation
+    // (and a shared-element flight then lands off screen). Pass "contents"
+    // where it must not box its children (the phone header slot).
     return (
-        <div ref={ref} className={cn("contents", className)}>
+        <div ref={ref} className={className}>
             {children}
         </div>
     );
