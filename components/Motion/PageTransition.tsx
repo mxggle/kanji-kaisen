@@ -1,6 +1,6 @@
 "use client";
 
-import { ViewTransition, type ReactNode } from "react";
+import { ViewTransition, useLayoutEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 /**
@@ -14,6 +14,13 @@ import { usePathname } from "next/navigation";
  */
 export function PageTransition({ children }: { children: ReactNode }) {
     const pathname = usePathname();
+    const firstPath = useRef(pathname);
+    // The site intro's --intro-wait holds only the first page's entrance (see
+    // components/Motion/script.ts). A page opened during or just after the
+    // intro must not wait behind it, so drop it before that page paints.
+    useLayoutEffect(() => {
+        if (pathname !== firstPath.current) document.documentElement.style.removeProperty("--intro-wait");
+    }, [pathname]);
     return (
         <ViewTransition key={pathname} enter="kk-page-in" exit="kk-page-out" update="none" default="none">
             <div data-page="">{children}</div>

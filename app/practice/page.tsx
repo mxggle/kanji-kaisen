@@ -41,8 +41,8 @@ export default function LearnPage() {
                 <ClassicPracticeBanner />
             </div>
 
-            {/* Category Grid: the cards rise in, one after another */}
-            <div data-enter-group="rise" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
+            {/* Category Grid (no entrance group: each card renders its story modal as a sibling) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-7xl mx-auto pb-20">
                 {CATEGORIES.map((category) => {
                     const categoryCheckpoints = CHECKPOINTS.filter(c => c.category === category);
                     const completedCount = categoryCheckpoints.filter(c => completedCheckpoints[c.id]).length;

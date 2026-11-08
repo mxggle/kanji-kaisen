@@ -63,8 +63,10 @@ export function MotionRoot() {
                     show(e.target, "", i);
                 });
             },
-            // Starts a little before the bottom edge so it is seen arriving.
-            { rootMargin: "0px 0px -6% 0px", threshold: 0 },
+            // Starts a little before the bottom edge so it is seen arriving. A fixed
+            // 40px, not a percentage: on a very tall window 6% outgrew the footer,
+            // so the last row of a page never counted as on screen.
+            { rootMargin: "0px 0px -40px 0px", threshold: 0 },
         );
 
         const watch = (el: Element) => {

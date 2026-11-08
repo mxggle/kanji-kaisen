@@ -106,8 +106,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 </button>
             </div>
 
-            {/* Path: each checkpoint rises in as it scrolls into view */}
-            <div data-reveal-group="rise" className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
+            {/* Path (no reveal group: each card renders its story modal as a sibling) */}
+            <div className="flex flex-col items-center gap-4 max-w-2xl mx-auto px-4 pb-20 w-full">
                 {categoryCheckpoints.map((checkpoint) => {
                     const isCompleted = !!completedCheckpoints[checkpoint.id];
 

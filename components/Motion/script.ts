@@ -11,7 +11,8 @@
 // while those entrances are waiting or running: a shorter delay would finish
 // them at once, under the paper. So it stays through "leave" and "done", is
 // set to the time already elapsed on a skip (the entrance plays from then),
-// and is removed 2s after the end, when every entrance has finished.
+// and is removed 2s after the end, when every entrance has finished. A client
+// navigation removes it at once (PageTransition): only the first page waits.
 
 export const INTRO_SESSION_KEY = "kk-intro";
 
