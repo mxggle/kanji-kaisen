@@ -12,7 +12,7 @@ A pictograph representing the left half of a crossroad (行). It shows one side 
 
 ## Story
 
-Take the first step on your journey! These two quick strokes show the left side of a bustling street or a person taking a brisk step forward. It is the radical of public paths, travel, and the steady, rhythmic movements of people going about their daily lives.
+Take the first step on your journey! These three quick strokes show the left side of a bustling street or a person taking a brisk step forward. It is the radical of public paths, travel, and the steady, rhythmic movements of people going about their daily lives.
 
 ## Position
 

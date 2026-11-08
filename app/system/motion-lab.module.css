@@ -1,0 +1,43 @@
+/*
+ * /system, Motion: demos for the eases and durations. The kinds themselves
+ * use the real hooks (app/motion.css), so they are what the site does.
+ */
+
+/* A dot crossing its track on one ease (--lab-ease), all in the same time so they compare. */
+.travel {
+  animation: lab-travel var(--dur-art) var(--lab-ease, var(--ease-out)) both;
+  animation-delay: var(--lab-wait, 0ms);
+}
+
+@keyframes lab-travel {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(100% - 12px), 0, 0);
+  }
+}
+
+/* A bar filled in exactly its token's time (--lab-dur), at a constant pace. */
+.fill {
+  transform-origin: left center;
+  animation: lab-fill var(--lab-dur, var(--dur-ui)) linear both;
+  animation-delay: var(--lab-wait, 0ms);
+}
+
+@keyframes lab-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel,
+  .fill {
+    animation: none;
+  }
+
+  .travel {
+    transform: translate3d(calc(100% - 12px), 0, 0);
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kanji-kaisen-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "-p", "3000"],
+      "port": 3000
+    },
+    {
+      "name": "kanji-kaisen-start",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start", "-p", "3600"],
+      "port": 3600
+    }
+  ]
+}

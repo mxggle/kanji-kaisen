@@ -49,10 +49,10 @@ export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps)
                     </span>
                     <div className="flex items-center gap-2 font-japanese text-zinc-300 truncate">
                         {data.onyomi[0] && (
-                            <span className="group-hover:text-[var(--n5)] transition-colors flex-shrink-0">{data.onyomi[0]}</span>
+                            <span className="group-hover:text-[var(--classic-ok)] transition-colors flex-shrink-0">{data.onyomi[0]}</span>
                         )}
                         {data.kunyomi[0] && (
-                            <span className="text-[var(--accent)] group-hover:opacity-100 opacity-90 transition-opacity flex-shrink-0">{data.kunyomi[0]}</span>
+                            <span className="text-[var(--classic-accent)] group-hover:opacity-100 opacity-90 transition-opacity flex-shrink-0">{data.kunyomi[0]}</span>
                         )}
                         {(data.onyomi.length > 1 || data.kunyomi.length > 1) && (
                             <span className="text-zinc-600 text-xs flex-shrink-0">...</span>
@@ -94,7 +94,7 @@ export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps)
                             <div className="flex flex-col gap-1">
                                 {data.onyomi.map((r, i) => (
                                     <div key={i} className="flex justify-between items-baseline gap-4 group/item hover:bg-white/5 p-1 rounded transition-colors">
-                                        <span className="text-[var(--n5)] font-japanese text-lg">{r}</span>
+                                        <span className="text-[var(--classic-ok)] font-japanese text-lg">{r}</span>
                                         <span className="text-zinc-500 text-sm font-mono group-hover/item:text-zinc-300">{toRomaji(r)}</span>
                                     </div>
                                 ))}
@@ -110,7 +110,7 @@ export function KanjiReadingHeader({ data, className }: KanjiReadingHeaderProps)
                             <div className="flex flex-col gap-1">
                                 {data.kunyomi.map((r, i) => (
                                     <div key={i} className="flex justify-between items-baseline gap-4 group/item hover:bg-white/5 p-1 rounded transition-colors">
-                                        <span className="text-[var(--accent)] font-japanese text-lg">{r}</span>
+                                        <span className="text-[var(--classic-accent)] font-japanese text-lg">{r}</span>
                                         <span className="text-zinc-500 text-sm font-mono group-hover/item:text-zinc-300">{toRomaji(r)}</span>
                                     </div>
                                 ))}

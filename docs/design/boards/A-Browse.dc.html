@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Browse kanji</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}">
+
+  <header class="hdr">
+    <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+    <nav class="nav" aria-label="Main"><a href="A-Home.dc.html">Learn</a><a href="A-Browse.dc.html" aria-current="page">Browse</a><a href="A-Mine.dc.html">My list</a><a href="A-Teach.dc.html">Teach</a></nav>
+    <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+    <a href="#" class="ib" aria-label="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></a>
+  </header>
+
+  <main class="wrap">
+    <!-- Tool title -->
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px;padding:40px 0 32px">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <p class="kind"><span class="k">探す</span><span class="t-lab">Browse</span></p>
+        <h1 class="t-h1">Browse 2,384 kanji</h1>
+        <p class="t-body">Filter by what you know about a kanji. Everything combines, and the address keeps your filters so you can share them.</p>
+      </div>
+      <div class="acts" style="margin-left:auto"><a href="A-Teach.dc.html" class="btn q">Make a worksheet</a><a href="A-Mine.dc.html" class="btn pri">Study these {{count}}</a></div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+      <!-- Rail -->
+      <aside aria-label="Filters" style="flex:0 1 288px;min-width:0;display:flex;flex-direction:column;gap:26px;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--card)">
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">JLPT level</legend>
+          <div class="meta">
+            <sc-for list="{{lv}}" as="l" hint-placeholder-count="6"><button type="button" class="chip" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for>
+          </div>
+        </fieldset>
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">Theme</legend>
+          <div class="meta">
+            <sc-for list="{{themes}}" as="t" hint-placeholder-count="10"><button type="button" class="chip" aria-pressed="{{t.on}}" onClick="{{t.pick}}" style="--tc:{{t.c}}"><span class="d"></span>{{t.name}}</button></sc-for>
+          </div>
+        </fieldset>
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">Your ink</legend>
+          <div style="--tc:#EDEAE2;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
+            <sc-for list="{{inks}}" as="i" hint-placeholder-count="5"><button type="button" aria-pressed="{{i.on}}" aria-label="{{i.label}}" onClick="{{i.pick}}" style="{{i.st}}"><span class="{{i.cls}}" lang="ja" style="width:100%;height:38px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-family:var(--jp);font-weight:800;font-size:16px">{{i.g}}</span></button></sc-for>
+          </div>
+        </fieldset>
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">Strokes</legend>
+          <div style="display:flex;align-items:center;gap:10px">
+            <label class="srch" style="margin:0;max-width:none;height:40px;padding:0 12px"><span class="t-cap">from</span><input type="number" value="1" aria-label="Fewest strokes"></label>
+            <label class="srch" style="margin:0;max-width:none;height:40px;padding:0 12px"><span class="t-cap">to</span><input type="number" value="30" aria-label="Most strokes"></label>
+          </div>
+        </fieldset>
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">Radical</legend>
+          <label class="srch" style="margin:0;max-width:none;height:40px"><input type="text" aria-label="Radical" placeholder="木, tree or ki"></label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <a href="#" class="so md" lang="ja" aria-label="water">氵</a><a href="#" class="so md" lang="ja" aria-label="tree">木</a><a href="#" class="so md" lang="ja" aria-label="person">亻</a><a href="#" class="so md" lang="ja" aria-label="mouth">口</a><a href="#" class="so md" lang="ja" aria-label="speech">言</a>
+          </div>
+        </fieldset>
+        <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend class="t-lab" style="padding:0;margin-bottom:10px">Reading</legend>
+          <label class="srch" style="margin:0;max-width:none;height:40px"><input type="text" aria-label="Reading" placeholder="セイ, sei or やす"></label>
+        </fieldset>
+        <button type="button" class="btn q sm" onClick="{{reset}}" style="align-self:flex-start;padding:0">Clear all filters</button>
+      </aside>
+
+      <!-- Result -->
+      <section aria-label="Results" style="flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px">
+          <p class="t-h3">{{count}} kanji</p>
+          <span class="tag solid">{{lvLabel}}</span>
+          <sc-for list="{{activeThemes}}" as="a" hint-placeholder-count="0"><span class="tag" style="--tc:{{a.c}}"><i style="width:8px;height:8px;border-radius:50%;background:var(--c)"></i>{{a.name}}</span></sc-for>
+          <label style="margin-left:auto;display:flex;align-items:center;gap:8px" class="t-sm">Sort
+            <select style="height:36px;padding:0 10px;border:1px solid var(--line-2);border-radius:999px;background:var(--card);color:var(--ink);font:14px var(--ui)"><option>Most used first</option><option>Fewest strokes</option><option>JLPT level</option></select>
+          </label>
+          <span class="ink-legend"><i class="i0"></i><i class="i1"></i><i class="i2"></i><i class="i3"></i><i class="i4"></i></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px">
+          <sc-for list="{{tiles}}" as="t" hint-placeholder-count="48"><a href="A-Kanji.dc.html" class="{{t.cls}}" style="--tc:{{t.c}}"><span class="g" lang="ja">{{t.g}}</span><span class="m">{{t.m}}</span><span class="r" lang="ja">{{t.r}}</span></a></sc-for>
+        </div>
+        <sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><p class="card t-sm">No kanji match all of these. Remove a filter to see more.</p></sc-if>
+        <button type="button" class="btn" style="align-self:center">Show more</button>
+      </section>
+    </div>
+
+    <footer class="ftr" style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center">
+      <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:26px;height:26px;font-size:15px">解</span><span class="w" style="font-size:18px">Kanji Kaisen</span></a>
+      <a href="#">About &amp; credits</a><a href="#">Settings</a><a href="#">Send feedback</a><a href="#">GitHub</a>
+      <span style="margin-left:auto">JLPT levels follow community lists; there is no official list.</span>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const lvSel = st.lv || "N5";
+    const th = st.th || {};
+    const ink = st.ink || {};
+    const TH = [["Nature", "#34D399"], ["Body", "#60A5FA"], ["Action", "#F87171"], ["Home", "#D6CFC4"], ["Animals", "#FBBF24"], ["Tools", "#A5B4C8"], ["Thought", "#C084FC"], ["Plants", "#A3E635"], ["States", "#F472B6"], ["Time", "#A5B4FC"]];
+    const D = [["日","day","ニチ","#34D399",4],["一","one","イチ","#A5B4FC",4],["国","country","コク","#D6CFC4",2],["人","person","ジン","#60A5FA",4],["年","year","ネン","#A5B4C8",3],["大","large","ダイ","#F472B6",4],["十","ten","ジュウ","#A5B4FC",3],["二","two","ニ","#A5B4FC",4],["本","book","ホン","#34D399",4],["中","in","チュウ","#A5B4C8",3],["長","long","チョウ","#F472B6",1],["出","exit","シュツ","#D6CFC4",2],["三","three","サン","#A5B4FC",4],["時","time","ジ","#34D399",3],["行","going","コウ","#F87171",2],["見","see","ケン","#F87171",2],["月","month","ゲツ","#34D399",3],["分","part","ブン","#A5B4C8",1],["後","behind","ゴ","#34D399",1],["前","in front","ゼン","#A5B4C8",1],["生","life","セイ","#F87171",2],["五","five","ゴ","#A5B4FC",3],["間","interval","カン","#D6CFC4",0],["上","above","ジョウ","#A5B4FC",3],["東","east","トウ","#34D399",3],["四","four","シ","#D6CFC4",3],["今","now","コン","#60A5FA",1],["金","gold","キン","#60A5FA",1],["九","nine","キュウ","#A5B4FC",3],["入","enter","ニュウ","#F87171",2],["学","study","ガク","#60A5FA",2],["高","tall","コウ","#F472B6",1],["円","circle","エン","#D6CFC4",2],["子","child","シ","#60A5FA",2],["外","outside","ガイ","#A5B4FC",0],["八","eight","ハチ","#A5B4FC",2],["六","six","ロク","#A5B4FC",2],["下","below","カ","#A5B4FC",3],["来","come","ライ","#34D399",3],["気","spirit","キ","#34D399",1],["小","little","ショウ","#F472B6",2],["七","seven","シチ","#A5B4FC",2],["山","mountain","サン","#34D399",4],["話","tale","ワ","#F87171",0],["女","woman","ジョ","#60A5FA",1],["北","north","ホク","#A5B4C8",0],["午","noon","ゴ","#A5B4FC",0],["百","hundred","ヒャク","#F472B6",1]];
+    const anyTh = TH.some((t) => th[t[0]]);
+    const anyInk = [0, 1, 2, 3, 4].some((k) => ink[k]);
+    const colorOf = (n) => (TH.find((t) => t[0] === n) || [n, ""])[1];
+    const tiles = D.filter((d) => (!anyTh || TH.some((t) => th[t[0]] && t[1] === d[3])) && (!anyInk || ink[d[4]]))
+      .map((d) => ({ g: d[0], m: d[1], r: d[2], c: d[3], cls: "tile i" + d[4] }));
+    const LV = ["All", "N5", "N4", "N3", "N2", "N1"];
+    const INK = [["白", "Not met"], ["淡", "Met"], ["中", "Learning"], ["濃", "Familiar"], ["印", "Mastered"]];
+    const base = { All: "2,384", N5: 80, N4: 167, N3: 374, N2: 369, N1: "1,394" }[lvSel];
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      lv: LV.map((l) => ({ label: l, on: l === lvSel ? "true" : "false", pick: () => this.setState({ lv: l }) })),
+      lvLabel: lvSel === "All" ? "All levels" : lvSel,
+      themes: TH.map((t) => ({ name: t[0], c: t[1], on: th[t[0]] ? "true" : "false", pick: () => { const n = Object.assign({}, th); n[t[0]] = !n[t[0]]; this.setState({ th: n }); } })),
+      activeThemes: TH.filter((t) => th[t[0]]).map((t) => ({ name: t[0], c: colorOf(t[0]) })),
+      inks: INK.map((x, k) => ({ g: x[0], label: x[1], cls: "i" + k, on: ink[k] ? "true" : "false",
+        st: "padding:3px;border-radius:11px;background:transparent;cursor:pointer;border:2px solid " + (ink[k] ? "var(--ink)" : "transparent"),
+        pick: () => { const n = Object.assign({}, ink); n[k] = !n[k]; this.setState({ ink: n }); } })),
+      tiles: tiles, empty: tiles.length === 0,
+      count: anyTh || anyInk ? tiles.length : (base || tiles.length),
+      reset: () => this.setState({ th: {}, ink: {}, lv: "N5" })
+    };
+  }
+}
+</script>
+</body>
+</html>

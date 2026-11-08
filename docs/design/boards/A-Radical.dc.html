@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>木 tree · radical page</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="--tc:#34D399">
+
+  <header class="hdr">
+    <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+    <nav class="nav" aria-label="Main"><a href="A-Home.dc.html" aria-current="page">Learn</a><a href="A-Browse.dc.html">Browse</a><a href="A-Mine.dc.html">My list</a><a href="A-Teach.dc.html">Teach</a></nav>
+    <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+    <a href="#" class="ib" aria-label="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></a>
+  </header>
+
+  <main class="wrap">
+    <nav class="path" aria-label="Atlas path">
+      <a href="A-Home.dc.html">Learn</a><span class="sep">›</span>
+      <a href="A-Theme.dc.html"><span class="dot"></span>Nature &amp; Elements</a><span class="sep">›</span>
+      <span class="here" aria-current="page"><span class="so sm i2" lang="ja">木</span>tree</span>
+      <span class="pn"><a href="#" aria-label="Previous radical: water">‹ <span class="g" lang="ja">氵</span></a><a href="#" aria-label="Next radical: sun"><span class="g" lang="ja">日</span> ›</a></span>
+    </nav>
+
+    <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;padding-top:8px">
+
+      <!-- Specimen: the journey -->
+      <section aria-label="The journey of 木" style="flex:5 1 380px;min-width:0;display:flex;flex-direction:column;gap:14px">
+        <div class="spec" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <p class="kind"><span class="k">字の旅</span><span class="t-lab">3,000 years in four forms</span></p>
+            <button type="button" class="btn sm" onClick="{{play}}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z"></path></svg>Play</button>
+          </div>
+          <div style="position:relative;width:100%;aspect-ratio:1/1;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center">
+            <sc-if value="{{isImg}}" hint-placeholder-val="{{true}}">
+              <img class="anc" src="{{stageSrc}}" alt="{{stageAlt}}" style="width:auto;height:72%">
+            </sc-if>
+            <sc-if value="{{isToday}}" hint-placeholder-val="{{false}}">
+              <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes live" style="width:76%;height:76%;stroke:var(--c);stroke-width:4.4"><path d="M19.5,39.86c2.45,0.57,5.23,0.8,8.04,0.57C40.75,39.38,63,36.5,79.78,36.15c2.8-0.06,4.54,0.1,7.34,0.5"></path><path d="M51.75,10.5c1.19,1.19,2,3,2,5c0,8.65,0,55.15-0.14,74.75c-0.03,4.19-0.07,7.15-0.11,8.25"></path><path d="M50.75,39.5c0,1.12-0.61,2.44-1.42,3.95C41.75,57.5,26.7,73.93,15.75,80.25"></path><path d="M54.5,39c4.62,6,23,25.75,31.76,34.61c2.27,2.29,4.61,4.39,7.49,5.64"></path></svg>
+            </sc-if>
+            <p style="position:absolute;left:18px;bottom:14px;right:18px;display:flex;justify-content:space-between;gap:12px" class="t-cap"><span><b style="color:var(--ink)">{{stageName}}</b> · {{stageWhen}}</span><span>{{stageRef}}</span></p>
+          </div>
+          <div role="tablist" aria-label="Stages" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <button type="button" role="tab" aria-selected="{{a0}}" onClick="{{go0}}" style="{{b0}}"><img class="anc" src="/_blob/580dbc248edf01a25f6e29c739a74228" alt="" style="height:44px;width:auto"><span>Oracle bone</span></button>
+            <button type="button" role="tab" aria-selected="{{a1}}" onClick="{{go1}}" style="{{b1}}"><img class="anc" src="/_blob/51577df80dfc249bf2ba925674850e03" alt="" style="height:44px;width:auto"><span>Bronze</span></button>
+            <button type="button" role="tab" aria-selected="{{a2}}" onClick="{{go2}}" style="{{b2}}"><img class="anc" src="/_blob/04c4dd6180e6621ecd0fee79d901b01d" alt="" style="height:44px;width:auto"><span>Small seal</span></button>
+            <button type="button" role="tab" aria-selected="{{a3}}" onClick="{{go3}}" style="{{b3}}"><span class="g" lang="ja" style="height:44px;font-size:36px;line-height:44px">木</span><span>Today</span></button>
+          </div>
+          <p class="src">Ancient forms: Academia Sinica 小學堂, CC0. Today's form: KanjiVG, CC BY-SA 3.0.</p>
+        </div>
+      </section>
+
+      <!-- Reading -->
+      <section aria-label="Reading" style="flex:7 1 520px;min-width:0;display:flex;flex-direction:column;gap:22px">
+        <p class="kind"><span class="k">部首</span><span class="t-lab">Radical · in Nature &amp; Elements</span></p>
+        <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+          <span class="so lg i2" lang="ja" style="width:120px;height:120px;font-size:64px">木</span>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <h1 class="t-h1">tree, wood</h1>
+            <p class="t-sm"><span lang="ja">き</span> ki · as a side part <span lang="ja">木偏 きへん</span> kihen</p>
+          </div>
+        </div>
+        <div class="meta"><span class="tag">4 strokes</span><span class="tag">Radical of 112 kanji</span><span class="tag">Inside 125</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>Your ink in <span lang="ja">木</span></span><span style="color:var(--ink-3)">18% painted · 9 of 112 familiar</span></div>
+          <div class="bar"><i style="width:18%"></i></div>
+        </div>
+
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <p class="t-lab">Origin · sourced</p>
+          <p style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="tag">Pictogram <span lang="ja">象形</span></span></p>
+          <p style="font-size:18px;line-height:1.5">A tree: branches on top, roots on the bottom, clearer in the earlier forms.</p>
+          <p class="src">Source: <a href="#">Wiktionary, 木</a> (rev. 94507188), CC BY-SA 4.0</p>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <p class="t-lab">Memory story · made up to help you remember</p>
+          <p class="story">“Stand under an old tree. The trunk runs straight down, the branches reach up and the roots grip the earth.”</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <p class="t-lab">Where it sits in a kanji</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <span class="card" style="padding:12px 16px;display:flex;align-items:center;gap:12px"><span class="g" lang="ja" style="font-size:30px"><span class="acc">木</span>寸</span><span class="t-sm">left · <span lang="ja">村</span> village</span></span>
+            <span class="card" style="padding:12px 16px;display:flex;align-items:center;gap:12px"><span class="g" lang="ja" style="font-size:30px">案</span><span class="t-sm">foot · plan</span></span>
+            <span class="card" style="padding:12px 16px;display:flex;align-items:center;gap:12px"><span class="g" lang="ja" style="font-size:30px">森</span><span class="t-sm">repeated · forest</span></span>
+          </div>
+        </div>
+
+        <div class="acts">
+          <a href="A-Kanji.dc.html" class="btn pri lg">Start with <span class="g" lang="ja">本</span></a>
+          <a href="A-Mine.dc.html" class="btn lg">Study all 112</a>
+          <span style="flex:1"></span>
+          <a href="A-Teach.dc.html" class="btn q">Print sheet</a>
+          <a href="#" class="btn q">Make a card</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Grows into -->
+    <section style="margin-top:96px;display:flex;flex-direction:column;gap:22px">
+      <div class="sh"><span class="k">育つ</span><h2>What it grows into</h2><span class="aside">Built from 木 alone, with sourced origins</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:20px">
+        <a href="#" class="card" style="display:flex;gap:20px;align-items:center"><span class="tile big i2" style="width:120px;flex:none"><span class="g" lang="ja">林</span><span class="m">grove</span><span class="r">リン</span></span><span style="display:flex;flex-direction:column;gap:6px"><span class="t-h3"><span class="g acc" lang="ja">木</span> + <span class="g acc" lang="ja">木</span></span><span class="t-sm">Two trees: a grove.</span><span class="src">Ideogrammic compound · Wiktionary</span></span></a>
+        <a href="#" class="card" style="display:flex;gap:20px;align-items:center"><span class="tile big i1" style="width:120px;flex:none"><span class="g" lang="ja">森</span><span class="m">forest</span><span class="r">シン</span></span><span style="display:flex;flex-direction:column;gap:6px"><span class="t-h3"><span class="g acc" lang="ja">木</span> × 3</span><span class="t-sm">Three trees: a forest.</span><span class="src">Ideogrammic compound · Wiktionary</span></span></a>
+        <a href="A-Kanji.dc.html" class="card" style="display:flex;gap:20px;align-items:center"><span class="tile big i4" style="width:120px;flex:none"><span class="g" lang="ja">本</span><span class="m">book, origin</span><span class="r">ホン</span></span><span style="display:flex;flex-direction:column;gap:6px"><span class="t-h3"><span class="g acc" lang="ja">木</span> + a mark</span><span class="t-sm">A stroke marks the root: origin, base.</span><span class="src">Indicative · Wiktionary</span></span></a>
+      </div>
+    </section>
+
+    <!-- All kanji -->
+    <section style="margin-top:96px;display:flex;flex-direction:column;gap:22px">
+      <div class="sh"><span class="k">一覧</span><h2>Every kanji with <span class="g" lang="ja">木</span> as its radical</h2><span class="aside">Most used first</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <div class="meta">
+          <sc-for list="{{lv}}" as="l" hint-placeholder-count="6"><button type="button" class="chip" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}} <span class="n">{{l.n}}</span></button></sc-for>
+        </div>
+        <span class="ink-legend" style="margin-left:auto"><span>Not met</span><i class="i0"></i><i class="i1"></i><i class="i2"></i><i class="i3"></i><i class="i4"></i><span>Mastered</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="30"><a href="A-Kanji.dc.html" class="{{t.cls}}"><span class="g" lang="ja">{{t.g}}</span><span class="m">{{t.m}}</span><span class="r" lang="ja">{{t.r}}</span></a></sc-for>
+      </div>
+      <a href="A-Browse.dc.html" class="btn" style="align-self:center">Show all 112 in Browse</a>
+    </section>
+
+    <nav aria-label="Neighbours" style="margin-top:64px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+      <a href="#" class="card" style="display:flex;align-items:center;gap:16px"><span class="t-sm">‹</span><span class="so md i1" lang="ja">氵</span><span style="display:flex;flex-direction:column"><span class="t-cap">Previous in Nature</span><span>water · 123 kanji</span></span></a>
+      <a href="#" class="card" style="display:flex;align-items:center;justify-content:flex-end;gap:16px;text-align:right"><span style="display:flex;flex-direction:column"><span class="t-cap">Next in Nature</span><span>sun, day · 58 kanji</span></span><span class="so md i0" lang="ja">日</span><span class="t-sm">›</span></a>
+    </nav>
+
+    <footer class="ftr" style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center">
+      <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:26px;height:26px;font-size:15px">解</span><span class="w" style="font-size:18px">Kanji Kaisen</span></a>
+      <a href="#">About &amp; credits</a><a href="#">Settings</a><a href="#">Send feedback</a><a href="#">GitHub</a>
+      <span style="margin-left:auto">Ancient forms: Academia Sinica 小學堂, CC0 · Strokes: KanjiVG, CC BY-SA 3.0</span>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  componentWillUnmount() { clearInterval(this.timer); }
+  play() {
+    clearInterval(this.timer);
+    let s = 0;
+    this.setState({ stage: 0 });
+    this.timer = setInterval(() => {
+      s += 1;
+      this.setState({ stage: s });
+      if (s >= 3) clearInterval(this.timer);
+    }, 1400);
+  }
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const stage = st.stage === undefined ? 0 : st.stage;
+    const lvSel = st.lv || "All";
+    const S = [
+      { src: "/_blob/580dbc248edf01a25f6e29c739a74228", name: "Oracle bone", when: "Shang, before 1046 BCE", ref: "甲600" },
+      { src: "/_blob/51577df80dfc249bf2ba925674850e03", name: "Bronze", when: "late Shang", ref: "木父丁爵" },
+      { src: "/_blob/04c4dd6180e6621ecd0fee79d901b01d", name: "Small seal", when: "Shuowen", ref: "說文‧木部" },
+      { src: "", name: "Today", when: "standard form", ref: "KanjiVG" }
+    ];
+    const cur = S[stage];
+    const tabStyle = (k) => "display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:" + (k === stage ? "var(--bg)" : "transparent") + ";border:1px solid " + (k === stage ? "var(--c)" : "var(--line)") + ";color:" + (k === stage ? "var(--ink)" : "var(--ink-3)") + ";font:500 12px var(--ui);cursor:pointer";
+    const D = [
+      ["本", "book", "ホン", 4], ["東", "east", "トウ", 3], ["業", "business", "ギョウ", 1], ["相", "inter-", "ソウ", 1], ["来", "come", "ライ", 3], ["機", "loom", "キ", 1],
+      ["権", "authority", "ケン", 0], ["査", "investigate", "サ", 0], ["案", "plan", "アン", 0], ["村", "village", "ソン", 2], ["果", "fruit", "カ", 1], ["格", "status", "カク", 0],
+      ["検", "examination", "ケン", 0], ["校", "school", "コウ", 3], ["構", "posture", "コウ", 0], ["木", "tree", "ボク", 4], ["条", "article", "ジョウ", 0], ["楽", "music", "ガク", 2],
+      ["株", "stocks", "シュ", 0], ["末", "end", "マツ", 1], ["極", "extreme", "キョク", 0], ["松", "pine tree", "ショウ", 0], ["核", "nucleus", "カク", 0], ["横", "sideways", "オウ", 0],
+      ["様", "Esq.", "ヨウ", 0], ["橋", "bridge", "キョウ", 1], ["材", "lumber", "ザイ", 0], ["森", "forest", "シン", 1], ["根", "root", "コン", 0], ["未", "un-", "ミ", 0]
+    ];
+    const L = [["All", 112], ["N5", 5], ["N4", 2], ["N3", 12], ["N2", 20], ["N1", 73]];
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      play: () => this.play(),
+      isImg: stage < 3, isToday: stage === 3,
+      stageSrc: cur.src, stageAlt: "木 as " + cur.name, stageName: cur.name, stageWhen: cur.when, stageRef: cur.ref,
+      a0: stage === 0 ? "true" : "false", a1: stage === 1 ? "true" : "false", a2: stage === 2 ? "true" : "false", a3: stage === 3 ? "true" : "false",
+      b0: tabStyle(0), b1: tabStyle(1), b2: tabStyle(2), b3: tabStyle(3),
+      go0: () => { clearInterval(this.timer); this.setState({ stage: 0 }); }, go1: () => { clearInterval(this.timer); this.setState({ stage: 1 }); },
+      go2: () => { clearInterval(this.timer); this.setState({ stage: 2 }); }, go3: () => { clearInterval(this.timer); this.setState({ stage: 3 }); },
+      lv: L.map((l) => ({ label: l[0], n: l[1], on: l[0] === lvSel ? "true" : "false", pick: () => this.setState({ lv: l[0] }) })),
+      tiles: D.map((d) => ({ g: d[0], m: d[1], r: d[2], cls: "tile i" + d[3] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

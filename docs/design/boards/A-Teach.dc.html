@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Teach</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}">
+
+  <header class="hdr">
+    <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+    <nav class="nav" aria-label="Main"><a href="A-Home.dc.html">Learn</a><a href="A-Browse.dc.html">Browse</a><a href="A-Mine.dc.html">My list</a><a href="A-Teach.dc.html" aria-current="page">Teach</a></nav>
+    <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+  </header>
+
+  <main class="wrap">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px;padding:40px 0 32px">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <p class="kind"><span class="k">教</span><span class="t-lab">Teach</span></p>
+        <h1 class="t-h1">Build a set, then print, project or share it</h1>
+        <p class="t-body">Students open a share link without an account. Paper always prints in 墨.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+      <aside aria-label="Build a set" style="flex:0 1 320px;min-width:0;display:flex;flex-direction:column;gap:22px;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--card)">
+        <label style="display:flex;flex-direction:column;gap:8px"><span class="t-lab">Set name</span><span class="srch" style="margin:0;max-width:none"><input type="text" value="Lesson 3 · Trees and rest" aria-label="Set name"></span></label>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <p class="t-lab">Add from</p>
+          <div class="meta"><button type="button" class="chip" aria-pressed="false">Theme</button><button type="button" class="chip" aria-pressed="true">Radical</button><button type="button" class="chip" aria-pressed="false">JLPT</button><button type="button" class="chip" aria-pressed="false">My list</button><button type="button" class="chip" aria-pressed="false">Paste</button></div>
+          <div style="--tc:#34D399;display:flex;gap:8px;flex-wrap:wrap"><a href="#" class="so md i2" lang="ja" aria-label="tree">木</a><a href="#" class="so md" lang="ja" aria-label="water">氵</a><a href="#" class="so md" lang="ja" aria-label="sun">日</a><a href="#" class="so md" lang="ja" aria-label="person" style="--tc:#60A5FA">亻</a></div>
+        </div>
+        <hr class="hr">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <p style="display:flex;justify-content:space-between"><span class="t-lab">In this set</span><span class="t-cap">8 kanji</span></p>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+            <sc-for list="{{set}}" as="k" hint-placeholder-count="8"><span class="tile sq" style="position:relative"><span class="g" lang="ja" style="font-size:24px">{{k}}</span></span></sc-for>
+          </div>
+        </div>
+      </aside>
+
+      <section aria-label="Output" style="flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+          <div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="{{w}}" onClick="{{toW}}">Worksheet</button><button type="button" role="tab" aria-selected="{{p}}" onClick="{{toP}}">Projector</button><button type="button" role="tab" aria-selected="{{s}}" onClick="{{toS}}">Share link</button></div>
+          <span style="flex:1"></span>
+          <sc-if value="{{isW}}" hint-placeholder-val="{{true}}"><a href="#" class="btn pri">Print or save PDF</a></sc-if>
+          <sc-if value="{{isP}}" hint-placeholder-val="{{false}}"><a href="#" class="btn pri">Present full screen</a></sc-if>
+          <sc-if value="{{isS}}" hint-placeholder-val="{{false}}"><a href="#" class="btn pri">Copy link</a></sc-if>
+        </div>
+
+        <sc-if value="{{isW}}" hint-placeholder-val="{{true}}">
+          <div class="kk sk-ink" style="min-height:0;padding:40px;border-radius:12px;background:#E3DDD1">
+            <div style="max-width:620px;margin:0 auto;background:var(--paper);padding:40px 44px;display:flex;flex-direction:column;gap:18px;box-shadow:0 1px 0 rgba(27,25,21,.15)">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line-2);padding-bottom:10px"><b style="font-family:var(--disp);font-size:22px">Lesson 3 · Trees and rest</b><span class="t-cap">Name ________ Date ______</span></div>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:64px repeat(7,minmax(0,1fr));gap:4px;align-items:center">
+                  <span style="display:flex;flex-direction:column;align-items:center"><span class="g" lang="ja" style="font-size:40px;line-height:1">{{r.g}}</span><span class="t-cap">{{r.m}}</span></span>
+                  <span class="g" lang="ja" style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border:1px solid var(--line-2);font-size:34px;color:rgba(27,25,21,.28)">{{r.g}}</span>
+                  <span class="g" lang="ja" style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border:1px solid var(--line-2);font-size:34px;color:rgba(27,25,21,.28)">{{r.g}}</span>
+                  <span class="g" lang="ja" style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;border:1px solid var(--line-2);font-size:34px;color:rgba(27,25,21,.16)">{{r.g}}</span>
+                  <span style="aspect-ratio:1/1;border:1px solid var(--line-2)"></span><span style="aspect-ratio:1/1;border:1px solid var(--line-2)"></span><span style="aspect-ratio:1/1;border:1px solid var(--line-2)"></span><span style="aspect-ratio:1/1;border:1px solid var(--line-2)"></span>
+                </div>
+              </sc-for>
+              <p class="src">Readings and words: Kanji alive, CC BY 4.0 · Strokes: KanjiVG, CC BY-SA 3.0</p>
+            </div>
+          </div>
+          <div class="meta"><button type="button" class="chip" aria-pressed="true">A4</button><button type="button" class="chip" aria-pressed="false">Letter</button><button type="button" class="chip" aria-pressed="true">Readings</button><button type="button" class="chip" aria-pressed="false">Answer key</button></div>
+        </sc-if>
+
+        <sc-if value="{{isP}}" hint-placeholder-val="{{false}}">
+          <div class="kk sk-night" style="--tc:#34D399;min-height:0;aspect-ratio:16/9;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:48px;border:1px solid var(--line)">
+            <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes live" style="width:40%;height:auto;stroke:var(--c);stroke-width:4.4"><path d="M19.5,39.86c2.45,0.57,5.23,0.8,8.04,0.57C40.75,39.38,63,36.5,79.78,36.15c2.8-0.06,4.54,0.1,7.34,0.5"></path><path d="M51.75,10.5c1.19,1.19,2,3,2,5c0,8.65,0,55.15-0.14,74.75c-0.03,4.19-0.07,7.15-0.11,8.25"></path></svg>
+            <p class="t-sm">Space: next stroke · → next kanji · Q: quiz the room</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isS}}" hint-placeholder-val="{{false}}">
+          <div class="card" style="display:flex;flex-direction:column;gap:12px">
+            <p class="t-h3">Anyone with this link can open the set. No account needed.</p>
+            <span class="srch" style="margin:0;max-width:none"><input type="text" readonly value="[your site]/set?k=木休本林森体村校&amp;t=Lesson%203" aria-label="Share link"></span>
+            <p class="t-cap">The set lives in the address itself, so nothing is stored on a server.</p>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+
+    <footer class="ftr" style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center">
+      <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:26px;height:26px;font-size:15px">解</span><span class="w" style="font-size:18px">Kanji Kaisen</span></a>
+      <a href="#">About &amp; credits</a><a href="#">Settings</a><a href="#">Send feedback</a><a href="#">GitHub</a>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const tab = st.tab || "w";
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      isW: tab === "w", isP: tab === "p", isS: tab === "s",
+      w: tab === "w" ? "true" : "false", p: tab === "p" ? "true" : "false", s: tab === "s" ? "true" : "false",
+      toW: () => this.setState({ tab: "w" }), toP: () => this.setState({ tab: "p" }), toS: () => this.setState({ tab: "s" }),
+      set: ["木", "休", "本", "林", "森", "体", "村", "校"],
+      rows: [{ g: "木", m: "tree" }, { g: "休", m: "rest" }, { g: "本", m: "book" }, { g: "林", m: "grove" }]
+    };
+  }
+}
+</script>
+</body>
+</html>

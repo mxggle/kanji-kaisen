@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone · 休 kanji page</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="--tc:#60A5FA;width:390px;height:844px;min-height:0;position:relative;overflow:hidden;display:flex;flex-direction:column">
+
+  <header class="mhdr">
+    <a href="A-M-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:28px;height:28px;font-size:16px">解</span></a>
+    <nav aria-label="Atlas path" style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;font-size:13px;color:var(--ink-3)">
+      <a href="A-Theme.dc.html" style="display:inline-flex;align-items:center;gap:5px"><i style="width:8px;height:8px;border-radius:50%;background:var(--c)"></i>Body</a><span aria-hidden="true">›</span>
+      <a href="A-M-Radical.dc.html" style="display:inline-flex;align-items:center;gap:5px"><span class="so sm i2" lang="ja" style="width:22px;height:22px;font-size:12px">亻</span>person</a><span aria-hidden="true">›</span>
+      <span aria-current="page" class="g" lang="ja" style="color:var(--ink)">休</span>
+    </nav>
+    <a href="#" class="ib" aria-label="Search"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></a>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night" style="width:34px;height:30px">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink" style="width:34px;height:30px">墨</button></div>
+  </header>
+
+  <main style="flex:1;min-height:0;overflow:hidden;padding:20px 16px 160px;display:flex;flex-direction:column;gap:16px">
+    <p class="kind"><span class="k">漢字</span><span class="t-lab">Kanji · Body &amp; People</span></p>
+    <div style="display:flex;align-items:flex-end;gap:14px">
+      <span class="g" lang="ja" style="font-size:92px;line-height:.85">休</span>
+      <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+        <h1 class="t-h1" style="font-size:34px">rest, day off</h1>
+        <p class="t-cap">Also: retire, sleep</p>
+      </div>
+    </div>
+    <div class="meta"><span class="tag">N5</span><span class="tag">6 strokes</span><span class="tag"><i class="i1" style="width:12px;height:12px;border-radius:3px"></i>淡 Met</span></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <a href="A-M-Radical.dc.html" class="part mean" style="height:40px"><span class="o" lang="ja" style="width:28px;height:28px;font-size:17px">亻</span>person<span class="r">meaning</span></a>
+      <span class="plus" aria-hidden="true">+</span>
+      <a href="A-M-Radical.dc.html" class="part form" style="height:40px"><span class="o" lang="ja" style="width:28px;height:28px;font-size:17px">木</span>tree<span class="r">form</span></a>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="View" style="align-self:stretch;justify-content:space-between">
+      <button type="button" role="tab" aria-selected="{{selR}}" onClick="{{toR}}" style="flex:1;justify-content:center">Readings</button>
+      <button type="button" role="tab" aria-selected="{{selS}}" onClick="{{toS}}" style="flex:1;justify-content:center"><span class="jp">筆</span>Strokes</button>
+      <button type="button" role="tab" aria-selected="{{selA}}" onClick="{{toA}}" style="flex:1;justify-content:center"><span class="jp">古</span>Ancient</button>
+    </div>
+
+    <sc-if value="{{isR}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="rd" style="padding:14px 16px;gap:8px">
+          <div class="hd"><span class="kana" lang="ja" style="font-size:26px">キュウ</span><span class="ty">on'yomi · in compounds</span></div>
+          <div class="wd" style="grid-template-columns:1fr">
+            <a href="#"><span class="w" lang="ja"><b>休</b>日</span><span class="y" lang="ja">きゅうじつ</span>holiday</a>
+            <a href="#"><span class="w" lang="ja"><b>休</b>暇</span><span class="y" lang="ja">きゅうか</span>vacation</a>
+          </div>
+        </div>
+        <div class="rd" style="padding:14px 16px;gap:8px">
+          <div class="hd"><span class="kana" lang="ja" style="font-size:26px">やす<span class="ok">・む</span></span><span class="ty">kun'yomi · on its own</span></div>
+          <div class="wd" style="grid-template-columns:1fr">
+            <a href="#"><span class="w" lang="ja"><b>休</b>み</span><span class="y" lang="ja">やすみ</span>rest, break</a>
+            <a href="#"><span class="w" lang="ja"><b>休</b>む</span><span class="y" lang="ja">やすむ</span>to rest</a>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isS}}" hint-placeholder-val="{{false}}">
+      <div style="position:relative;width:100%;aspect-ratio:1/1;border:1px solid var(--line);border-radius:14px;background:var(--card)">
+        <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes" style="position:absolute;inset:8%;width:84%;height:84%;stroke-width:4.2">
+          <g style="stroke:var(--ink)"><path d="M35,16.5c0.25,1.75,0.25,4.25-0.88,6.8C28.91,35.01,22.37,46.02,10.5,60.29"></path><path d="M26.28,42.5c0.72,1.25,1.26,3.48,1.26,4.75c0,12.75-0.07,29.88-0.26,42.25c-0.02,1.54-0.04,2.97-0.04,4.25"></path><path d="M37.65,38.83c2.45,0.97,5.18,0.75,7.73,0.54c11.76-0.97,24.94-3.35,37.49-4.01c2.65-0.14,5.39-0.22,7.99,0.39"></path></g>
+          <g style="stroke:var(--line-2)"><path d="M62.43,38.32c0,2.18-1.1,4.31-1.9,6.04C54.57,57.4,44.96,71.84,35,78.75"></path><path d="M64.12,38.08c4.45,8.37,16.21,25.33,24.99,33.19c1.96,1.76,4.35,4.18,6.9,5"></path></g>
+        </svg>
+        <svg viewBox="0 0 109 109" aria-hidden="true" class="strokes live" style="position:absolute;inset:8%;width:84%;height:84%;stroke:var(--c);stroke-width:4.2"><path pathLength="1" class="draw" d="M61.43,14c0.82,0.75,1.87,2.12,1.87,3.7c0,8.8,0.05,53.72-0.12,72.05c-0.03,2.88-0.06,4.91-0.08,5.75"></path></svg>
+        <p class="t-cap" style="position:absolute;left:14px;bottom:10px">Stroke 4 of 6 · tap to step</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isA}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+          <figure style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:var(--card);border:1px solid var(--line)"><img class="anc" src="/_blob/28d19b24c7e2598c6f58614d48958094" alt="休 on oracle bone" style="width:100%;aspect-ratio:1/1"><figcaption class="t-cap">Oracle</figcaption></figure>
+          <figure style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:var(--card);border:1px solid var(--line)"><img class="anc" src="/_blob/84468b297eeb96a326d7cf70ebeebdcb" alt="休 in bronze script" style="width:100%;aspect-ratio:1/1"><figcaption class="t-cap">Bronze</figcaption></figure>
+          <figure style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:var(--card);border:1px solid var(--line)"><img class="anc" src="/_blob/1c1e616ad23863c6b6eae00ed6ff814e" alt="休 in small seal script" style="width:100%;aspect-ratio:1/1"><figcaption class="t-cap">Seal</figcaption></figure>
+          <figure style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:12px;background:var(--card);border:1px solid var(--line)"><span class="g" lang="ja" style="width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:52px;line-height:1">休</span><figcaption class="t-cap">Today</figcaption></figure>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px"><p class="t-lab">Origin · sourced</p><p style="font-size:15px">A man leaning against a tree, resting.</p><p class="src">Wiktionary, CC BY-SA 4.0 · forms: Wikimedia Commons, PD</p></div>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- Sticky actions sit above the tab bar -->
+  <div style="position:absolute;left:0;right:0;bottom:76px;display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:rgba(var(--shade),.94);backdrop-filter:blur(10px)">
+    <a href="A-Learn.dc.html" class="btn pri" style="flex:1">Learn it · 4 steps</a>
+    <a href="#" class="btn" aria-label="Save to My list" style="width:44px;padding:0"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"></path></svg></a>
+    <a href="#" class="btn" aria-label="More: card, print, present" style="width:44px;padding:0"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></a>
+  </div>
+
+  <nav class="tabbar" aria-label="Main">
+    <a href="A-M-Home.dc.html" aria-current="page"><span class="gi" lang="ja" aria-hidden="true">学</span>Learn</a>
+    <a href="A-Browse.dc.html"><span class="gi" lang="ja" aria-hidden="true">探</span>Browse</a>
+    <a href="A-Mine.dc.html"><span class="gi" lang="ja" aria-hidden="true">墨</span>My list</a>
+    <a href="A-Teach.dc.html"><span class="gi" lang="ja" aria-hidden="true">教</span>Teach</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const tab = st.tab || "r";
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      isR: tab === "r", isS: tab === "s", isA: tab === "a",
+      selR: tab === "r" ? "true" : "false", selS: tab === "s" ? "true" : "false", selA: tab === "a" ? "true" : "false",
+      toR: () => this.setState({ tab: "r" }), toS: () => this.setState({ tab: "s" }), toA: () => this.setState({ tab: "a" })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+// Study deck/session helpers: query params <-> deck request, session slicing,
+// shuffling and quiz candidates. Pure and client-safe (used by the server page
+// and the client session).
+
+import type { JlptLevel } from "../../lib/atlas/types.ts";
+import type { QuizCandidate } from "../../lib/atlas/quiz.ts";
+import type { SearchIndexEntry } from "../../lib/atlas/search.ts";
+import { cleanTitle, extractKanji, type KnownChars } from "../../lib/teach-set.ts";
+
+/** Cards per session. Larger decks are studied in consecutive chunks of this size. */
+export const SESSION_SIZE = 20;
+
+export type StudyMode = "flashcards" | "quiz";
+
+export type DeckRequest =
+    | { kind: "list" }
+    | { kind: "learning" }
+    | { kind: "jlpt"; level: JlptLevel }
+    | { kind: "radical"; key: string }
+    | { kind: "theme"; slug: string }
+    // A shared teacher set: exactly these kanji (validated on the server), with an optional title.
+    | { kind: "chars"; chars: string[]; title?: string }
+    // My list's "Worth a revisit" suggestion: these kanji, leading back to My list.
+    | { kind: "revisit"; chars: string[] };
+
+export type StudyParams = Record<string, string | string[] | undefined>;
+
+const first = (value: string | string[] | undefined): string => (Array.isArray(value) ? value[0] ?? "" : value ?? "").trim();
+
+export function parseMode(value: string | string[] | undefined): StudyMode | null {
+    const mode = first(value).toLowerCase();
+    return mode === "flashcards" || mode === "quiz" ? mode : null;
+}
+
+/** "N5", "n5" and "5" all mean N5. */
+export function parseJlpt(value: string): JlptLevel | null {
+    const match = /^n?([1-5])$/i.exec(value.trim());
+    return match ? (`N${match[1]}` as JlptLevel) : null;
+}
+
+export interface ParsedStudyParams {
+    request: DeckRequest | null;
+    /** True when a deck param was given but can't be understood (e.g. `?jlpt=N9`, `?deck=foo`). */
+    invalid: boolean;
+    mode: StudyMode | null;
+}
+
+/** First matching param wins: deck, then jlpt, radical, theme, chars, revisit. */
+/** `known` filters `chars=` and `revisit=` before the 60-kanji cap (the page passes the atlas lookup). */
+export function parseStudyParams(params: StudyParams, known?: KnownChars): ParsedStudyParams {
+    const mode = parseMode(params.mode);
+    const deck = first(params.deck).toLowerCase();
+    const jlpt = first(params.jlpt);
+    const radical = first(params.radical);
+    const theme = first(params.theme);
+    const chars = first(params.chars);
+    const revisit = first(params.revisit);
+
+    if (deck) {
+        if (deck === "list" || deck === "learning") return { request: { kind: deck }, invalid: false, mode };
+        return { request: null, invalid: true, mode };
+    }
+    if (jlpt) {
+        const level = parseJlpt(jlpt);
+        return level ? { request: { kind: "jlpt", level }, invalid: false, mode } : { request: null, invalid: true, mode };
+    }
+    if (radical) return { request: { kind: "radical", key: radical }, invalid: false, mode };
+    if (theme) return { request: { kind: "theme", slug: theme.toLowerCase() }, invalid: false, mode };
+    if (chars) {
+        // Kanji only, unique, known, at most 60 (the teacher set contract).
+        const kanji = extractKanji(chars, known);
+        if (kanji.length === 0) return { request: null, invalid: true, mode };
+        const title = cleanTitle(first(params.t));
+        return { request: { kind: "chars", chars: kanji, ...(title ? { title } : {}) }, invalid: false, mode };
+    }
+    if (revisit) {
+        const kanji = extractKanji(revisit, known);
+        return kanji.length ? { request: { kind: "revisit", chars: kanji }, invalid: false, mode } : { request: null, invalid: true, mode };
+    }
+    return { request: null, invalid: false, mode };
+}
+
+/** `/study?...` for a deck, keeping the mode when given. */
+export function studyPath(request: DeckRequest | null, mode?: StudyMode | null): string {
+    const params = new URLSearchParams();
+    if (request) {
+        if (request.kind === "list" || request.kind === "learning") params.set("deck", request.kind);
+        else if (request.kind === "jlpt") params.set("jlpt", request.level);
+        else if (request.kind === "radical") params.set("radical", request.key);
+        else if (request.kind === "theme") params.set("theme", request.slug);
+        else if (request.kind === "revisit") params.set("revisit", request.chars.join(""));
+        else {
+            params.set("chars", request.chars.join(""));
+            if (request.title) params.set("t", request.title);
+        }
+    }
+    if (mode) params.set("mode", mode);
+    const query = params.toString();
+    return query ? `/study?${query}` : "/study";
+}
+
+export interface SessionRange {
+    start: number;
+    end: number;
+    label: string;
+}
+
+/** Consecutive chunks of `size` cards: 1–20, 21–40, … */
+export function sessionRanges(total: number, size = SESSION_SIZE): SessionRange[] {
+    const ranges: SessionRange[] = [];
+    for (let start = 0; start < total; start += size) {
+        const end = Math.min(start + size, total);
+        ranges.push({ start, end, label: end - start === 1 ? `${start + 1}` : `${start + 1}–${end}` });
+    }
+    return ranges;
+}
+
+/** Small seeded PRNG (mulberry32) so shuffles are reproducible in tests. */
+function mulberry32(seed: number): () => number {
+    let a = seed >>> 0;
+    return () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+/** Fisher–Yates shuffle into a new array. */
+export function shuffled<T>(items: readonly T[], seed: number): T[] {
+    const random = mulberry32(seed);
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+export const jlptLevelOf = (j: number): JlptLevel => `N${Math.min(5, Math.max(1, Math.round(j) || 1))}` as JlptLevel;
+
+/** Short meaning label used as a quiz option: up to three meanings. */
+export function meaningLabel(meanings: readonly string[]): string {
+    return meanings.slice(0, 3).join(", ");
+}
+
+export function toQuizCandidate(entry: SearchIndexEntry, category: string | null): QuizCandidate {
+    return {
+        char: entry.c,
+        meaning: meaningLabel(entry.m),
+        jlpt: jlptLevelOf(entry.j),
+        strokeCount: entry.s,
+        category,
+    };
+}
+
+/** Distinct characters, in order. */
+export function uniqueChars(chars: readonly string[]): string[] {
+    return [...new Set(chars)];
+}

@@ -1,0 +1,253 @@
+/*
+ * Stroke animations for the kanji page's specimen (BuildPlayer, StrokePlayer).
+ * Colours come from the components (rule 2: line = role); nothing here lights up.
+ */
+
+/* Dash drawing: paths need pathLength="1". Hidden (not just offset) before
+   their delay, so round caps don't leave a dot. Its own delay variable: a
+   motion hook's --delay on an ancestor must not hold up a stroke. */
+.draw {
+  stroke-dasharray: 1 2;
+  animation: kk-draw var(--dur, 0.55s) ease-out var(--draw-delay, 0s) both;
+}
+
+@keyframes kk-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Parts sliding apart and together in the build animation. */
+.move {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* A part fading in while the build replays. */
+.appear {
+  animation: kk-appear 0.45s ease-out var(--delay, 0s) both;
+}
+
+@keyframes kk-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ======================================================================
+ * Motion on the kanji page (round 7, docs/design/motion.md).
+ * Ink, not bounce. Colours stay the components' own tokens; nothing here
+ * adds one, and nothing that arrives glows (rule 5).
+ * ==================================================================== */
+
+/* ---------- Specimen ---------- */
+
+/* First arrival of "How it was built": each part slides in from a little
+   apart, in stroke order, and settles into the kanji. Once per page. */
+.arrive {
+  animation: kk-part-arrive 760ms var(--ease-ink) backwards;
+  animation-delay: calc(var(--intro-wait, 0s) + var(--arrive-delay, 0ms));
+}
+
+@keyframes kk-part-arrive {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--ax, 0) * 0.45px), calc(var(--ay, 0) * 0.45px)) scale(0.94);
+  }
+}
+
+/* Stroke order: the resting strokes dim softly when a play starts (only the
+   change to faint eases; a stroke that has been drawn lands at once). */
+.faint {
+  transition: stroke var(--dur-ui) var(--ease-out);
+}
+
+.num {
+  transition: fill var(--dur-ui) var(--ease-out);
+}
+
+/* A tab panel or player mode the learner switched to cross-fades in. */
+.switched,
+.swap {
+  animation: kk-cross 200ms var(--ease-out) backwards;
+}
+
+@keyframes kk-cross {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The phone's Readings panel: its entrance played on first paint, so coming
+   back to it only fades. (Specimen panels replay theirs, e.g. the ancient forms.) */
+.quiet.quiet :is([data-enter], [data-enter-group] > *, [data-reveal], [data-reveal-group] > *),
+.quiet.quiet .kana {
+  animation: none;
+}
+
+@keyframes kk-soak {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(1.03);
+  }
+}
+
+/* ---------- Readings ---------- */
+
+/* A reading block arriving: the card rises, then its kana soaks in. */
+[data-enter] > p > .kana {
+  animation: kk-soak 640ms var(--ease-ink) backwards;
+  animation-delay: calc(var(--intro-wait, 0s) + var(--delay, 0ms) + min(var(--i, 0), 14) * var(--stagger) + 140ms);
+}
+
+[data-reveal][data-shown=""] > p > .kana {
+  animation: kk-soak 640ms var(--ease-ink) backwards;
+  animation-delay: calc(var(--delay, 0ms) + min(var(--ri, 0), 14) * var(--stagger) + 140ms);
+}
+
+/* ---------- Easy to confuse ---------- */
+
+/* When the comparison scrolls in, the strokes that differ are drawn in ink. */
+[data-reveal][data-shown=""] .diff {
+  stroke-dasharray: 1 2;
+  animation: kk-draw var(--dur-stroke) var(--ease-out) backwards;
+  animation-delay: calc(var(--delay, 0ms) + min(var(--ri, 0), 14) * var(--stagger) + 240ms + min(var(--n, 0), 12) * 80ms);
+}
+
+/* ---------- Connections ---------- */
+
+/* A seal in a row that scrolls in is pressed in, not raised (radical seals, the 音 mark). */
+[data-reveal-group] > [data-shown=""].seal {
+  animation-name: kk-seal;
+  animation-duration: 520ms;
+  animation-timing-function: var(--ease-stamp);
+}
+
+/* ---------- Interactions ---------- */
+
+/* Press: buttons, chips and cards give under the finger. The list keeps the
+   colour transitions controls already have. */
+.press {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, scale;
+  transition-duration: var(--dur-micro);
+  transition-timing-function: var(--ease-out);
+}
+
+.press:active:not(:disabled, [aria-disabled="true"]) {
+  scale: 0.97;
+}
+
+/* Saved, or your ink changed: the mark is pressed like a seal. */
+.stamp {
+  animation: kk-seal 520ms var(--ease-stamp) backwards;
+}
+
+@keyframes kk-seal {
+  0% {
+    opacity: 0;
+    transform: scale(1.22) rotate(-5deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.96) rotate(0deg);
+  }
+}
+
+.fadeIn {
+  animation: kk-cross var(--dur-micro) var(--ease-out) backwards;
+}
+
+/* "More" in the phone action bar: a popover from its anchor corner. The
+   <details> content stays rendered while it closes. */
+.more::details-content {
+  transition: content-visibility var(--dur-ui) allow-discrete;
+}
+
+.menu {
+  transform-origin: bottom right;
+  transition: opacity var(--dur-ui) var(--ease-out), scale var(--dur-ui) var(--ease-out);
+}
+
+.more:not([open]) .menu {
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.96;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-in);
+}
+
+@starting-style {
+  .more[open] .menu {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+/* "In Chinese": the row opens and closes to its height, the text fading with it. */
+.zh {
+  interpolate-size: allow-keywords;
+}
+
+.zh::details-content {
+  height: 0;
+  overflow: clip;
+  opacity: 0;
+  transition: height var(--dur-ui) var(--ease-in-out), opacity var(--dur-ui) var(--ease-out), content-visibility var(--dur-ui) allow-discrete;
+}
+
+.zh[open]::details-content {
+  height: auto;
+  opacity: 1;
+  transition-duration: 360ms, var(--dur-ui), 360ms;
+}
+
+/* ---------- Opt-outs ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .arrive,
+  .switched,
+  .swap,
+  .kana,
+  .diff,
+  .stamp,
+  .fadeIn {
+    animation: none !important;
+  }
+
+  .faint,
+  .num,
+  .menu,
+  .more::details-content,
+  .zh::details-content {
+    transition: none !important;
+  }
+
+  .press:active:not(:disabled, [aria-disabled="true"]) {
+    scale: none;
+  }
+}
+
+@media print {
+  .arrive,
+  .switched,
+  .swap,
+  .kana,
+  .diff,
+  .stamp,
+  .fadeIn {
+    animation: none !important;
+  }
+}

@@ -51,7 +51,7 @@ function compileStories() {
 
     categories.forEach(category => {
         try {
-            const fileName = category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-');
+            const fileName = category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-').replace(/,/g, '');
             const filePath = path.join(__dirname, '../lib/stories/categories', `${fileName}.md`);
 
             if (fs.existsSync(filePath)) {

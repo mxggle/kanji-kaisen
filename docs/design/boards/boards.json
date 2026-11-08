@@ -1,0 +1,139 @@
+{
+  "source": "https://claude.ai/artifact/HuvZ2NqRWoBnhPaRWykyC9",
+  "boards": {
+    "A-System.dc.html": {
+      "x": 0,
+      "y": -11720,
+      "w": 1440,
+      "h": 3300,
+      "title": "规范 System · 五条规则 + 组件",
+      "is_interactive": true
+    },
+    "A-Structure.dc.html": {
+      "x": 1520,
+      "y": -11720,
+      "w": 1440,
+      "h": 2500,
+      "title": "结构 Structure · 导航、路径、两种页面模板"
+    },
+    "A-Kanji.dc.html": {
+      "x": 4560,
+      "y": -7880,
+      "w": 1440,
+      "h": 2900,
+      "title": "汉字页 休 · 读音优先（Body 主题色）",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Radical.dc.html": {
+      "x": 3040,
+      "y": -7880,
+      "w": 1440,
+      "h": 2500,
+      "title": "部首页 木 · 字的旅程（Nature 主题色）",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Theme.dc.html": {
+      "x": 1520,
+      "y": -7880,
+      "w": 1440,
+      "h": 2150,
+      "title": "主题页 Nature · 部首印章 + 预览",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Home.dc.html": {
+      "x": 0,
+      "y": -7880,
+      "w": 1440,
+      "h": 2400,
+      "title": "首页 Learn · 搜索 + 继续 + 十个主题 + 方法",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Learn.dc.html": {
+      "x": 0,
+      "y": -4440,
+      "w": 1440,
+      "h": 900,
+      "title": "学字层 海 · 会 想 描 書（全屏）",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Browse.dc.html": {
+      "x": 1520,
+      "y": -4440,
+      "w": 1440,
+      "h": 1500,
+      "title": "浏览 Browse · 工具模板（筛选可用）",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Mine.dc.html": {
+      "x": 3040,
+      "y": -4440,
+      "w": 1440,
+      "h": 1900,
+      "title": "我的列表 My list · 墨色进度 + 收藏 + 学习",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-Teach.dc.html": {
+      "x": 4560,
+      "y": -4440,
+      "w": 1440,
+      "h": 1400,
+      "title": "教学 Teach · 练习纸 / 投影 / 分享链接",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A-M-Home.dc.html": {
+      "x": 3040,
+      "y": -11720,
+      "w": 390,
+      "h": 844,
+      "title": "手机 · 首页 Learn",
+      "is_interactive": true
+    },
+    "A-M-Kanji.dc.html": {
+      "x": 3510,
+      "y": -11720,
+      "w": 390,
+      "h": 844,
+      "title": "手机 · 汉字页 休",
+      "is_interactive": true
+    },
+    "A-M-Radical.dc.html": {
+      "x": 3980,
+      "y": -11720,
+      "w": 390,
+      "h": 844,
+      "title": "手机 · 部首页 木",
+      "is_interactive": true
+    }
+  },
+  "notes": {
+    "rowR6a": {
+      "x": 0,
+      "y": -12040,
+      "text": "第六轮 · 统一设计 One atlas — 规范、结构与手机",
+      "kind": "title1",
+      "maxW": 4400
+    },
+    "rowR6b": {
+      "x": 0,
+      "y": -8200,
+      "text": "第六轮 · 图鉴页 Atlas plates：首页 → 主题 → 部首 → 汉字",
+      "kind": "title1",
+      "maxW": 6000
+    },
+    "rowR6c": {
+      "x": 0,
+      "y": -4760,
+      "text": "第六轮 · 工具页 Tools：学字层 · 浏览 · 我的列表 · 教学",
+      "kind": "title1",
+      "maxW": 6000
+    }
+  }
+}

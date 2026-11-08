@@ -16,7 +16,7 @@ Flex your arm and feel the power! That's 力, representing the raw muscle and ef
 
 ## Position
 
-Appears as a standalone kanji or on the right side of compounds
+Appears as a standalone kanji, on the right side (助, 動), at the bottom (努, 労), or occasionally on the left (加)
 
 ## Transforms Meaning
 

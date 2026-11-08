@@ -1,0 +1,62 @@
+/*
+ * The share-card dialog (docs/design/motion.md, "Dialog / sheet open"): the
+ * backdrop fades in, the panel rises 12px and soaks in; closing takes about
+ * half the time. Colours stay on the dialog's own utilities.
+ */
+
+.dialog {
+  transition:
+    opacity var(--dur-ui) var(--ease-ink),
+    translate var(--dur-enter) var(--ease-ink);
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+.dialog::backdrop {
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+@starting-style {
+  .dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/*
+ * Closing: only where the closed dialog can stay in the top layer while it
+ * fades (overlay). Elsewhere it would drop back into the page, so it just goes.
+ * ShareCardDialog waits CLOSE_MS before unmounting.
+ */
+@supports (overlay: auto) {
+  .dialog:not([open]) {
+    opacity: 0;
+    translate: 0 8px;
+    transition:
+      opacity 180ms var(--ease-in),
+      translate 180ms var(--ease-in),
+      overlay 180ms var(--ease-in) allow-discrete,
+      display 180ms var(--ease-in) allow-discrete;
+  }
+
+  .dialog:not([open])::backdrop {
+    opacity: 0;
+    transition:
+      opacity 180ms var(--ease-in),
+      overlay 180ms var(--ease-in) allow-discrete,
+      display 180ms var(--ease-in) allow-discrete;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog::backdrop,
+  .dialog:not([open]),
+  .dialog:not([open])::backdrop {
+    transition: none;
+  }
+}

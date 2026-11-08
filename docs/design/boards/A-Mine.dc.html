@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My list</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}">
+
+  <header class="hdr">
+    <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true">解</span><span class="w">Kanji Kaisen</span></a>
+    <nav class="nav" aria-label="Main"><a href="A-Home.dc.html">Learn</a><a href="A-Browse.dc.html">Browse</a><a href="A-Mine.dc.html" aria-current="page">My list</a><a href="A-Teach.dc.html">Teach</a></nav>
+    <label class="srch"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input type="search" aria-label="Search kanji" placeholder="water, みず, mizu or 水"><span class="kbd">/</span></label>
+    <div class="skin" role="group" aria-label="Skin"><button type="button" aria-pressed="{{pN}}" onClick="{{toN}}" title="Night">夜</button><button type="button" aria-pressed="{{pI}}" onClick="{{toI}}" title="Ink">墨</button></div>
+    <a href="#" class="ib" aria-label="Settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg></a>
+  </header>
+
+  <main class="wrap">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px;padding:40px 0 32px">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <p class="kind"><span class="k">墨</span><span class="t-lab">My list</span></p>
+        <h1 class="t-h1">Your ink</h1>
+        <p class="t-body">What you've saved, how dark each kanji is, and what you can study. Kept in this browser. Nothing comes due.</p>
+      </div>
+      <div class="acts" style="margin-left:auto"><a href="#" class="btn q">Back up or sync</a><a href="A-Learn.dc.html" class="btn pri">Study saved · 24</a></div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+      <!-- Rail: the only progress view -->
+      <aside aria-label="Your ink" style="flex:0 1 300px;min-width:0;display:flex;flex-direction:column;gap:26px;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--card)">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <p class="t-lab">All 2,384 kanji</p>
+          <div style="--tc:#EDEAE2;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{shades}}" as="s" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px"><span class="{{s.cls}}" lang="ja" style="width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:8px;font-family:var(--jp);font-weight:800;font-size:16px">{{s.g}}</span><span style="flex:1;font-size:14px">{{s.name}}</span><span class="t-sm">{{s.n}}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <hr class="hr">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <p class="t-lab">By theme</p>
+          <sc-for list="{{themes}}" as="t" hint-placeholder-count="10">
+            <a href="A-Theme.dc.html" style="--tc:{{t.c}};display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;font-size:13px"><span>{{t.name}}</span><span style="color:var(--ink-3)">{{t.w}}</span></span><span class="bar"><i style="width:{{t.w}}"></i></span></a>
+          </sc-for>
+        </div>
+      </aside>
+
+      <div style="flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:64px">
+        <!-- Saved -->
+        <section style="display:flex;flex-direction:column;gap:18px">
+          <div class="sh"><span class="k">保存</span><h2>Saved</h2><span class="aside">Save from any kanji page</span></div>
+          <div class="meta">
+            <sc-for list="{{filters}}" as="f" hint-placeholder-count="6"><button type="button" class="chip" aria-pressed="{{f.on}}" onClick="{{f.pick}}">{{f.label}} <span class="n">{{f.n}}</span></button></sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px">
+            <sc-for list="{{saved}}" as="t" hint-placeholder-count="24"><a href="A-Kanji.dc.html" class="{{t.cls}}" style="--tc:{{t.c}}"><span class="g" lang="ja">{{t.g}}</span><span class="m">{{t.m}}</span><span class="r" lang="ja">{{t.r}}</span></a></sc-for>
+          </div>
+        </section>
+
+        <!-- Revisit -->
+        <section style="--tc:#34D399;display:flex;flex-direction:column;gap:18px">
+          <div class="sh"><span class="k">再訪</span><h2>Worth a revisit</h2><span class="aside">A suggestion, not a queue</span></div>
+          <div class="card" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{revisit}}" as="t" hint-placeholder-count="8"><a href="A-Kanji.dc.html" class="{{t.cls}}" style="width:64px"><span class="g" lang="ja" style="font-size:26px">{{t.g}}</span></a></sc-for>
+            </div>
+            <p class="t-sm" style="flex:1 1 220px">Kanji you've met but haven't practised lately, oldest first. Skip them as long as you like; nothing piles up.</p>
+            <a href="A-Learn.dc.html" class="btn">Practise these</a>
+          </div>
+        </section>
+
+        <!-- Study -->
+        <section style="display:flex;flex-direction:column;gap:18px">
+          <div class="sh"><span class="k">学習</span><h2>Study</h2><span class="aside">Pick a deck, then a way to study it</span></div>
+          <div class="meta"><span class="t-sm">Deck</span>
+            <sc-for list="{{decks}}" as="d" hint-placeholder-count="5"><button type="button" class="chip" aria-pressed="{{d.on}}" onClick="{{d.pick}}">{{d.label}}</button></sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px">
+            <div class="card" style="display:flex;flex-direction:column;gap:12px"><p style="display:flex;align-items:center;gap:12px"><span class="so md" lang="ja">札</span><span class="t-h3">Flashcards</span></p><p class="t-sm">Kanji on the front. Meaning, readings and a word on the back.</p><a href="#" class="btn sm" style="align-self:flex-start">Start</a></div>
+            <div class="card" style="display:flex;flex-direction:column;gap:12px"><p style="display:flex;align-items:center;gap:12px"><span class="so md" lang="ja">問</span><span class="t-h3">Meaning quiz</span></p><p class="t-sm">Pick the meaning from four. A wrong answer costs nothing.</p><a href="#" class="btn sm" style="align-self:flex-start">Start</a></div>
+            <div class="card" style="display:flex;flex-direction:column;gap:12px"><p style="display:flex;align-items:center;gap:12px"><span class="so md" lang="ja">書</span><span class="t-h3">Four steps</span></p><p class="t-sm">Meet, recall, trace and write each one. This is what darkens the ink.</p><a href="A-Learn.dc.html" class="btn sm" style="align-self:flex-start">Start</a></div>
+          </div>
+        </section>
+
+        <p class="t-sm">Prefer the old checkpoint path? <a href="#" style="text-decoration:underline;text-underline-offset:3px">Classic practice</a> is still here, unchanged.</p>
+      </div>
+    </div>
+
+    <footer class="ftr" style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center">
+      <a href="A-Home.dc.html" class="logo"><span class="m" lang="ja" aria-hidden="true" style="width:26px;height:26px;font-size:15px">解</span><span class="w" style="font-size:18px">Kanji Kaisen</span></a>
+      <a href="#">About &amp; credits</a><a href="#">Settings</a><a href="#">Send feedback</a><a href="#">GitHub</a>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    const f = st.f === undefined ? -1 : st.f;
+    const deck = st.deck || "Saved";
+    const N = "#34D399", B = "#60A5FA";
+    const S = [["休","rest","キュウ",B,1],["海","sea","カイ",N,2],["木","tree","ボク",N,4],["本","book","ホン",N,4],["森","forest","シン",N,1],["林","grove","リン",N,2],["体","body","タイ",B,3],["作","make","サク",B,2],
+      ["住","dwell","ジュウ",B,2],["何","what","カ",B,4],["東","east","トウ",N,3],["校","school","コウ",N,3],["村","village","ソン",N,2],["日","day","ニチ",N,4],["時","time","ジ",N,3],["明","bright","メイ",N,3],
+      ["書","write","ショ",N,3],["早","early","ソウ",N,2],["山","mountain","サン",N,4],["川","stream","セン",N,4],["水","water","スイ",N,3],["池","pond","チ",N,1],["泳","swim","エイ",N,1],["港","harbor","コウ",N,1]];
+    const SH = [["白", "Not met", "2,301"], ["淡", "Met", "41"], ["中", "Learning", "18"], ["濃", "Familiar", "20"], ["印", "Mastered", "4"]];
+    const F = [["All", -1], ["淡 Met", 1], ["中 Learning", 2], ["濃 Familiar", 3], ["印 Mastered", 4]];
+    const TH = [["Nature", "#34D399", "9%"], ["Body", "#60A5FA", "4%"], ["Action", "#F87171", "2%"], ["Home", "#D6CFC4", "0%"], ["Animals", "#FBBF24", "0%"], ["Tools", "#A5B4C8", "0%"], ["Thought", "#C084FC", "0%"], ["Plants", "#A3E635", "1%"], ["States", "#F472B6", "0%"], ["Time", "#A5B4FC", "6%"]];
+    const count = (k) => k < 0 ? S.length : S.filter((s) => s[4] === k).length;
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night",
+      pN: skin === "night" ? "true" : "false", pI: skin === "ink" ? "true" : "false",
+      toN: () => this.setState({ skin: "night" }), toI: () => this.setState({ skin: "ink" }),
+      shades: SH.map((s, k) => ({ g: s[0], name: s[1], n: s[2], cls: "i" + k })),
+      themes: TH.map((t) => ({ name: t[0], c: t[1], w: t[2] })),
+      filters: F.map((x) => ({ label: x[0], n: count(x[1]), on: x[1] === f ? "true" : "false", pick: () => this.setState({ f: x[1] }) })),
+      saved: S.filter((s) => f < 0 || s[4] === f).map((s) => ({ g: s[0], m: s[1], r: s[2], c: s[3], cls: "tile i" + s[4] })),
+      revisit: [["休",1],["森",1],["池",1],["泳",1],["港",1],["海",2],["林",2],["早",2]].map((r) => ({ g: r[0], cls: "tile sq i" + r[1] })),
+      decks: ["Saved", "Worth a revisit", "N5", "Nature", "Paste kanji"].map((d) => ({ label: d, on: d === deck ? "true" : "false", pick: () => this.setState({ deck: d }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

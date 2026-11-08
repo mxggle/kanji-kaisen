@@ -1,63 +1,298 @@
 @import "tailwindcss";
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-  
-  /* Heatmap Gradient Colors */
-  --heat-min: #1e1b4b; /* Deep Indigo */
-  --heat-max: #D81B60; /* Pink */
-  
-  /* JLPT Level Colors (Borders) */
-  --n1: #ef4444; /* Red */
-  --n2: #f472b6; /* Pink */
-  --n3: #3b82f6; /* Blue */
-  --n4: #eab308; /* Yellow */
-  --n5: #22c55e; /* Green */
-  
-  --accent: #2effff; /* Cyan */
+/*
+ * One Atlas tokens (round 6). Values come from docs/design/one-atlas.css.
+ * Five rules: colour = theme, line = role, fill = your ink, story type = memory
+ * story only, light = live. Only --c and --sc carry colour.
+ *
+ * Skins. <html data-skin="night|ink"> is set before paint by the inline script
+ * in app/layout.tsx (localStorage "kanji-skin", default night). Any subtree can
+ * force a skin with its own data-skin attribute. Contrast on --bg: --ink-2 is
+ * 9.22:1 (夜) and 7.47:1 (墨); --ink-3 is 5.64:1 and 4.68:1.
+ *
+ * Skin-dependent effects read "switch" variables instead of nesting selectors,
+ * so a forced subtree (e.g. classic practice in 夜 inside a 墨 page) still gets
+ * the right ones by plain inheritance:
+ *   --skin-c    initial in 夜 (use the theme colour), vermilion in 墨
+ *   --skin-sc   initial in 夜 (shades mix from the theme colour), black ink in 墨
+ *   --live-off  initial in 夜 (the live stroke is lit), none in 墨
+ *   --art-*     filters and blend modes for theme art
+ */
+:root,
+[data-skin="night"] {
+  color-scheme: dark;
+  --bg: #06070A;
+  --card: #0D0F12;
+  --raise: #14171B;
+  --paper: #0D0F12;
+  --ink: #EDEAE2;
+  --ink-2: #B4AFA4;
+  --ink-3: #8C877D;
+  --line: rgba(237, 234, 226, .12);
+  --line-2: rgba(237, 234, 226, .28);
+  --onacc: #06070A;
+  /* Text on a 濃 fill. */
+  --on3: #EDEAE2;
+  /* 濃 fill strength: 45% keeps 12px text ≥ 4.5:1 on every theme (scripts/check-ink-contrast.mjs). */
+  --i3: 45%;
+  --shade: 6, 7, 10;
+  /* Feedback colours, from the same pigment family as the themes. */
+  --ok: #81D39F;
+  --bad: #F07F77;
+  --tip: #E8BD6D;
+
+  --skin-c: initial;
+  --skin-sc: initial;
+  --live-off: initial;
+  --art-filter: none;
+  --art-blend: normal;
+  --art-overlay: overlay;
+  --scroll-base: grayscale(1) brightness(.55);
+}
+
+[data-skin="ink"] {
+  color-scheme: light;
+  --bg: #EEE9DF;
+  --card: #F7F3EA;
+  --raise: #FBF8F1;
+  --paper: #FBF8F1;
+  --ink: #1B1915;
+  --ink-2: #4E4840;
+  --ink-3: #6D665C;
+  --line: rgba(27, 25, 21, .13);
+  --line-2: rgba(27, 25, 21, .3);
+  --onacc: #F7F3EA;
+  --on3: #F7F3EA;
+  --i3: 60%;
+  --shade: 238, 233, 223;
+  --ok: #166534;
+  --bad: #B91C1C;
+  --tip: #854D0E;
+
+  --skin-c: #B5341E;
+  --skin-sc: #1B1915;
+  --live-off: none;
+  --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
+  --art-blend: multiply;
+  --art-overlay: multiply;
+  --scroll-base: grayscale(1) contrast(1.45) brightness(1.18) opacity(.35);
+}
+
+/*
+ * Classic practice keeps its original look (product decision): its own mint
+ * and green, scoped to the practice subtree (app/practice/layout.tsx).
+ */
+[data-classic] {
+  --classic-accent: rgb(59 224 166);
+  --classic-ok: rgb(34 197 94);
+}
+
+/*
+ * Theme colour: set --tc (the theme's hex, via themeVars()) on a container.
+ *   --c   the accent: the theme colour in 夜, vermilion in 墨, ink with no theme.
+ *   --sc  what ink shades are mixed from: the theme colour in 夜, black ink in 墨.
+ * Declared on every element so they resolve against the nearest --tc.
+ */
+*,
+::before,
+::after {
+  --c: var(--skin-c, var(--tc, var(--ink)));
+  --sc: var(--skin-sc, var(--tc, var(--ink)));
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-heat-min: var(--heat-min);
-  --color-heat-max: var(--heat-max);
-  
-  --color-n1: var(--n1);
-  --color-n2: var(--n2);
-  --color-n3: var(--n3);
-  --color-n4: var(--n4);
-  --color-n5: var(--n5);
-  
-  --color-accent: var(--accent);
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-raise: var(--raise);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-onacc: var(--onacc);
+  --color-on3: var(--on3);
+  --color-shade: rgb(var(--shade));
+  --color-c: var(--c);
+  --color-sc: var(--sc);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-tip: var(--tip);
+
+  --font-sans: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
-  overflow-y: scroll; /* Prevent layout shift */
+/* Fonts (variables come from next/font in app/layout.tsx). */
+@utility font-jp {
+  font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+@utility font-disp {
+  font-family: var(--font-disp), Georgia, serif;
+}
+@utility font-ui {
+  font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
 }
 
+/* Legacy name used by components that predate the skins. */
 .font-japanese {
-  font-family: var(--font-jp), sans-serif;
+  font-family: var(--font-jp), "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
 
-/* Custom scrollbar to match the dark theme */
-::-webkit-scrollbar {
-  width: 8px;
+/*
+ * Rule 5: only what is live lights up — a stroke being drawn, the current learn
+ * step. Put it on the <svg> that holds the live stroke. Nothing in 墨.
+ */
+@utility live {
+  filter: var(--live-off, drop-shadow(0 0 4px var(--c)) drop-shadow(0 0 16px color-mix(in oklab, var(--c) 55%, transparent)));
 }
-::-webkit-scrollbar-track {
-  background: #0a0a0a; 
+
+/* Type roles: the only display styles. Body text stays on Tailwind sizes (16 / 14 / 12). */
+@utility type-title {
+  font-family: var(--font-disp), Georgia, serif;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.02;
+  letter-spacing: -.005em;
+  @media (width >= 40rem) {
+    font-size: 56px;
+    line-height: 1;
+  }
 }
-::-webkit-scrollbar-thumb {
-  background: #333; 
-  border-radius: 4px;
+@utility type-section {
+  font-family: var(--font-disp), Georgia, serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.1;
+  @media (width >= 40rem) {
+    font-size: 30px;
+  }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+@utility type-label {
+  font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+@utility type-story {
+  font-family: var(--font-disp), Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* Theme art: full colour in 夜, ink wash on paper in 墨. */
+@utility ink-art {
+  filter: var(--art-filter);
+  mix-blend-mode: var(--art-blend);
+}
+/* A wrapper that lays faint art over a card: overlay in 夜, multiply in 墨. */
+@utility art-blend {
+  mix-blend-mode: var(--art-overlay);
+}
+/* The unpainted (grey) layer of a theme scroll. */
+@utility scroll-base {
+  filter: var(--scroll-base);
+  mix-blend-mode: var(--art-blend);
+}
+
+/* Base layer, so page utilities (e.g. classic practice's own colours) still win. */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui), "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll; /* Prevent layout shift */
+    transition: background-color .4s, color .4s;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--ink) 30%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+}
+
+/*
+ * Rule 3: fill = your ink. A kanji tile or radical seal takes one of five fills,
+ * by class (ink-0 … ink-4) or by data-ink, which <InkPaint> sets after
+ * hydration (the server renders data-ink="0"). Unlayered, so a shade wins over
+ * the object's own utilities. Children read --fg-2 / --fg-3 for their secondary
+ * text on the fill. Values: docs/design/one-atlas.css (.i0 … .i4), except that
+ * small text on 淡 and 中 uses ink-2, not ink-3, to stay ≥ 4.5:1 (11px ink-3
+ * fell to 2.88:1 on 中 in 墨; see scripts/check-ink-contrast.mjs).
+ */
+.ink-0,
+[data-ink="0"] {
+  border: 1px dashed var(--line-2);
+  background: transparent;
+  color: var(--ink-3);
+  --fg-2: var(--ink-3);
+  --fg-3: var(--ink-3);
+}
+.ink-1,
+[data-ink="1"] {
+  border-color: color-mix(in oklab, var(--sc) 22%, transparent);
+  background: color-mix(in oklab, var(--sc) 9%, var(--card));
+  color: var(--ink);
+  --fg-2: var(--ink-2);
+  --fg-3: var(--ink-2);
+}
+.ink-2,
+[data-ink="2"] {
+  border-color: color-mix(in oklab, var(--sc) 38%, transparent);
+  background: color-mix(in oklab, var(--sc) 24%, var(--card));
+  color: var(--ink);
+  --fg-2: var(--ink-2);
+  --fg-3: var(--ink-2);
+}
+.ink-3,
+[data-ink="3"] {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--sc) var(--i3), var(--card));
+  color: var(--on3);
+  --fg-2: var(--on3);
+  --fg-3: var(--on3);
+}
+.ink-4,
+[data-ink="4"] {
+  border-color: transparent;
+  background: var(--c);
+  color: var(--onacc);
+  --fg-2: var(--onacc);
+  --fg-3: var(--onacc);
+}
+/* A tile that links somewhere still shows its hover line over any fill. */
+a[data-tile]:hover {
+  border-color: var(--ink-3);
+}
+
+/*
+ * Scrollbars in skin colours: a thin line on no track, so a scrolling panel
+ * (the Browse rail) doesn't grow a grey bar that reads as a divider.
+ */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
+}
+/* A panel's own scrollbar only shows while the pointer is over it. */
+@utility scroll-quiet {
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color .2s;
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--line-2) transparent;
+  }
 }
 
 /* Keep the learning modal scrollable without showing its scrollbar. */
@@ -70,4 +305,57 @@ body {
   display: none;
   width: 0;
   height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print: always 墨 on white paper, without the site chrome. */
+@media print {
+  :root,
+  [data-skin] {
+    color-scheme: light;
+    --bg: #FFFFFF;
+    --card: #FFFFFF;
+    --raise: #FFFFFF;
+    --paper: #FFFFFF;
+    --ink: #1B1915;
+    --ink-2: #4E4840;
+    --ink-3: #6D665C;
+    --line: rgba(27, 25, 21, .13);
+    --line-2: rgba(27, 25, 21, .3);
+    --onacc: #F7F3EA;
+    --on3: #F7F3EA;
+    --i3: 60%;
+    --shade: 255, 255, 255;
+      --ok: #166534;
+    --bad: #B91C1C;
+    --tip: #854D0E;
+    --skin-c: #B5341E;
+    --skin-sc: #1B1915;
+    --live-off: none;
+    --art-filter: grayscale(1) contrast(1.45) brightness(1.18);
+    --art-blend: multiply;
+    --art-overlay: multiply;
+    --scroll-base: grayscale(1) contrast(1.45) brightness(1.18) opacity(.35);
+  }
+
+  html,
+  body {
+    background: #FFFFFF !important;
+    color: #1B1915;
+  }
+
+  [data-chrome],
+  nav {
+    display: none !important;
+  }
 }

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One Atlas structure</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/f1526c183b6c7c01b13b950d2b0b0c4c">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&amp;family=Shippori+Mincho+B1:wght@500;600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap">
+<style>body{margin:0;background:#06070A}</style>
+</helmet>
+<div class="{{skinCls}}" style="width:1440px;padding:72px 80px 96px;display:flex;flex-direction:column;gap:80px">
+
+  <header style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:64px;align-items:end">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <p class="kind"><span class="k">構造</span><span class="t-lab">Structure</span></p>
+      <h1 style="font-family:var(--disp);font-weight:700;font-size:72px;line-height:.95">Four places,<br>one path.</h1>
+    </div>
+    <p class="t-body" style="font-size:18px">The four names stay: Learn, Browse, My list and Teach. What changes is what they own. Today the footer lists twelve destinations, and theme and radical pages light up “Learn” while kanji pages light up “Browse”. Below, every route belongs to exactly one of the four, and every atlas page shows where it sits on the same path.</p>
+  </header>
+
+  <!-- Four places -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">四処</span><h2>Navigation</h2><span class="aside">Same four on the desktop header and the phone tab bar</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px">
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p style="display:flex;align-items:center;gap:14px"><span class="so md" lang="ja">学</span><span class="t-h2" style="font-size:28px">Learn</span></p>
+        <p class="t-sm">Read the atlas: start from a theme, open a radical, land on a kanji. The home page is its contents page.</p>
+        <ul style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace">
+          <li>/</li><li>/category/[theme]</li><li>/radical/[key]</li><li>/kanji/[char]  ·  #learn</li><li>/categories · /radicals (index)</li>
+        </ul>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p style="display:flex;align-items:center;gap:14px"><span class="so md" lang="ja">探</span><span class="t-h2" style="font-size:28px">Browse</span></p>
+        <p class="t-sm">Find kanji by what you know about them: JLPT, strokes, theme, radical, reading, ink. One filter panel, one tile grid.</p>
+        <ul style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace">
+          <li>/browse?jlpt=&amp;theme=…</li><li>/search?q= (same grid)</li>
+        </ul>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p style="display:flex;align-items:center;gap:14px"><span class="so md" lang="ja">墨</span><span class="t-h2" style="font-size:28px">My list</span></p>
+        <p class="t-sm">Your ink: what you've saved, how dark each kanji is, and the decks you can study. Study is optional and nothing comes due.</p>
+        <ul style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace">
+          <li>/my-list</li><li>/study?chars= (deck)</li><li>/practice (classic path, linked here only)</li>
+        </ul>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p style="display:flex;align-items:center;gap:14px"><span class="so md" lang="ja">教</span><span class="t-h2" style="font-size:28px">Teach</span></p>
+        <p class="t-sm">Build a set, then print it, project it or share a link. Paper output is always 墨.</p>
+        <ul style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace">
+          <li>/teach</li><li>/teach/print · /teach/present</li><li>/set?k=&amp;t= (student link)</li>
+        </ul>
+      </div>
+    </div>
+    <p class="t-sm">Footer only: About &amp; credits, Settings, Feedback, GitHub. The extra links to Themes, Radicals, Study and Practice go away; they are reached from Learn and My list. The feedback card shrinks to a single line in the footer.</p>
+  </section>
+
+  <!-- Spine -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">背骨</span><h2>The atlas path</h2><span class="aside">The path bar on every atlas page shows this line; side links never replace it</span></div>
+    <div style="display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr 64px 1fr;align-items:center">
+      <div style="--tc:#60A5FA;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <span class="gate" style="width:120px"><img src="/_blob/2f5312f053f1417e7a003470bcf58887" alt=""><span class="sc"></span><span class="tx"><span class="nm" style="font-size:18px">Body</span><span class="bar"><i style="width:4%"></i></span></span></span>
+        <span class="t-h3">Theme</span><span class="t-cap">10 · gate · art regains colour</span>
+      </div>
+      <span aria-hidden="true" style="font-size:28px;color:var(--ink-3);text-align:center">→</span>
+      <div style="--tc:#60A5FA;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <span class="so lg i2" lang="ja">亻</span>
+        <span class="t-h3">Radical</span><span class="t-cap">230 · seal · ancient forms</span>
+      </div>
+      <span aria-hidden="true" style="font-size:28px;color:var(--ink-3);text-align:center">→</span>
+      <div style="--tc:#60A5FA;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <span class="tile big i1" style="width:130px"><span class="g" lang="ja">休</span><span class="m">rest</span><span class="r">キュウ</span></span>
+        <span class="t-h3">Kanji</span><span class="t-cap">2,384 · tile · readings first</span>
+      </div>
+      <span aria-hidden="true" style="font-size:28px;color:var(--ink-3);text-align:center">→</span>
+      <div style="--tc:#60A5FA;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <span class="card" style="padding:16px 20px;display:flex;flex-direction:column;align-items:center;gap:4px"><span class="g" lang="ja" style="font-size:30px"><span class="acc">休</span>日</span><span class="t-cap">きゅうじつ · holiday</span></span>
+        <span class="t-h3">Word</span><span class="t-cap">grouped under the reading it uses</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:12px"><p class="t-lab">Side link · same part</p><p style="display:flex;gap:8px;align-items:center"><span class="part form"><span class="o" lang="ja">木</span>tree</span><span class="t-sm">→ 林 森 本 村</span></p><p class="t-sm">Solid or grey line, depending on the part's role. Opens that radical page.</p></div>
+      <div class="card" style="--tc:#34D399;display:flex;flex-direction:column;gap:12px"><p class="t-lab">Side link · same sound</p><p style="display:flex;gap:8px;align-items:center"><span class="part snd"><span class="o" lang="ja">毎</span>カイ</span><span class="t-sm">→ 海 梅 悔 侮</span></p><p class="t-sm">Dashed line. Lists the phonetic series and other kanji read キュウ.</p></div>
+      <div class="card" style="display:flex;flex-direction:column;gap:12px"><p class="t-lab">Side link · look-alike</p><p style="display:flex;gap:10px;align-items:center"><span class="g" lang="ja" style="font-size:28px">休</span><span class="t-cap">vs</span><span class="g" lang="ja" style="font-size:28px">体</span><span class="t-sm">one stroke apart</span></p><p class="t-sm">A side-by-side compare that highlights the stroke that differs.</p></div>
+    </div>
+  </section>
+
+  <!-- Templates -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">型</span><h2>Two page templates</h2><span class="aside">Seven layouts today → two</span></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
+
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p class="t-h3">Plate · Theme, Radical, Kanji</p>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line-2);border-radius:12px;background:var(--bg)">
+          <div style="height:30px;border-radius:6px;border:1px solid var(--line-2);display:flex;align-items:center;padding:0 10px" class="t-cap">Header · Learn / Browse / My list / Teach · search · 夜墨</div>
+          <div style="height:26px;border-radius:6px;background:var(--line);display:flex;align-items:center;padding:0 10px" class="t-cap">Path · Learn › theme › radical › kanji · ‹ neighbours ›</div>
+          <div style="display:grid;grid-template-columns:5fr 7fr;gap:8px">
+            <div style="height:170px;border-radius:8px;border:1px solid var(--line-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center" class="t-cap"><b style="color:var(--ink-2)">Specimen</b>art · ancient forms · glyph<br>with one set of tabs</div>
+            <div style="height:170px;border-radius:8px;border:1px solid var(--line-2);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:14px" class="t-cap"><b style="color:var(--ink-2)">Reading</b>kind label · title · meta tags<br>the facts that matter most<br>one primary action + secondary</div>
+          </div>
+          <div style="height:44px;border-radius:8px;border:1px dashed var(--line-2);display:flex;align-items:center;padding:0 10px" class="t-cap">Section · 成り立ち Where it comes from</div>
+          <div style="height:44px;border-radius:8px;border:1px dashed var(--line-2);display:flex;align-items:center;padding:0 10px" class="t-cap">Section · 繋がり Connections — tiles only</div>
+          <div style="height:26px;border-radius:6px;background:var(--line);display:flex;align-items:center;padding:0 10px" class="t-cap">Neighbours · previous / next in the same parent</div>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;padding:24px">
+        <p class="t-h3">Tool · Browse, My list, Teach</p>
+        <div style="display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line-2);border-radius:12px;background:var(--bg)">
+          <div style="height:30px;border-radius:6px;border:1px solid var(--line-2);display:flex;align-items:center;padding:0 10px" class="t-cap">Header</div>
+          <div style="height:60px;border-radius:8px;border:1px solid var(--line-2);display:flex;flex-direction:column;justify-content:center;padding:0 12px" class="t-cap"><b style="color:var(--ink-2)">Tool title</b>Japanese label · title · one line on what it does · primary action at right</div>
+          <div style="display:grid;grid-template-columns:3fr 9fr;gap:8px">
+            <div style="height:206px;border-radius:8px;border:1px solid var(--line-2);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:12px" class="t-cap"><b style="color:var(--ink-2)">Rail</b>filters or sources<br>chips, seals<br>sticky</div>
+            <div style="height:206px;border-radius:8px;border:1px solid var(--line-2);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:12px" class="t-cap"><b style="color:var(--ink-2)">Result</b>count · sort · ink legend<br>tile grid (or paper preview in Teach)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kanji page order -->
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <div class="sh"><span class="k">順</span><h2>What the kanji page says first</h2><span class="aside">Readings are the top pain for N5–N2 learners, so they lead</span></div>
+    <ol style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px">
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">1</span><span class="t-h3">Meaning + parts</span><span class="t-sm">In the reading panel, before anything scrolls</span></li>
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">2</span><span class="t-h3">Readings with words</span><span class="t-sm">Each reading next to the words that use it</span></li>
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">3</span><span class="t-h3">Learn · Save</span><span class="t-sm">One primary action. Card, print and present go in a “More” row</span></li>
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">4</span><span class="t-h3">Origin · story</span><span class="t-sm">Fact and mnemonic side by side, never mixed</span></li>
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">5</span><span class="t-h3">Connections</span><span class="t-sm">Same part, same sound, look-alikes, all as tiles</span></li>
+      <li class="card" style="display:flex;flex-direction:column;gap:8px;padding:18px"><span class="t-lab">6</span><span class="t-h3">In Chinese</span><span class="t-sm">One collapsed row at the end</span></li>
+    </ol>
+    <p class="t-sm">Stroke order appears once, as a tab in the specimen (Parts · Strokes · Ancient), not a second time further down. The specimen stays pinned while the reading column scrolls.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"skin":{"editor":"enum","options":["night","ink"],"default":"night","section":"Theme"},"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const skin = st.skin || this.props.skin || "night";
+    return {
+      skinCls: skin === "ink" ? "kk sk-ink" : "kk sk-night"
+    };
+  }
+}
+</script>
+</body>
+</html>

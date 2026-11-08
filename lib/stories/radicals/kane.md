@@ -16,7 +16,7 @@ Dig deep for treasure! This radical represents the metals that form the backbone
 
 ## Position
 
-Often appears as a standalone kanji or at the bottom of complex characters.
+Standalone kanji, or most often on the left side (kanehen 釒), and occasionally at the bottom (釜).
 
 ## Transforms Meaning
 

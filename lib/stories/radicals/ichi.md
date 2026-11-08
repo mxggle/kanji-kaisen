@@ -8,7 +8,7 @@ category: "Time & Sequence"
 
 ## Origin
 
-The ichi radical is a simple, single horizontal stroke. It is a pictograph representing a single finger or an object held up to count. In philosophical terms, it represents the primal unity and the horizon from which all other things emerge.
+The ichi radical is a simple, single horizontal stroke. It is not a picture of a thing but a simple indicator: one counting stroke (often explained as one finger or one counting rod). In philosophical terms, it represents the primal unity and the horizon from which all other things emerge.
 
 ## Story
 

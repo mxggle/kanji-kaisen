@@ -1,0 +1,428 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, MessageCircleQuestion, X } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
+import { CATEGORIES, getThemeColor } from "@/lib/atlas/categories";
+import { buildMeaningOptions } from "@/lib/atlas/quiz";
+import { formatReading } from "@/lib/atlas/readings";
+import type { SearchIndexEntry } from "@/lib/atlas/search-index";
+import { decodeSet, encodeSet } from "@/lib/teach-set";
+import { cn } from "@/lib/utils";
+import { meaningLabel, toQuizCandidate } from "@/components/Study/session";
+import { Settle } from "@/components/Browse/Settle";
+import { enterOrder } from "@/components/Motion/tokens";
+import { useSearchIndex } from "@/components/Study/useSearchIndex";
+import { INITIAL_PROJECTOR, keyDirection, projectorKey, projectorReducer } from "./projector-state";
+import { StrokeGlyph } from "./StrokeGlyph";
+import { radicalStrokes } from "./strokes";
+import type { TeachRadical } from "./types";
+import { useKanjiStrokes } from "./useTeachData";
+
+const EMPTY: string[] = [];
+const LETTERS = ["A", "B", "C", "D"];
+
+const subscribeFullscreen = (onChange: () => void) => {
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+};
+
+/** Calls a Fullscreen API method that may be missing or (in old browsers) return nothing. */
+const quietly = (call: (() => Promise<void> | void) | undefined) => {
+    try {
+        Promise.resolve(call?.()).catch(() => {});
+    } catch {
+        // Not allowed here (e.g. no user gesture): ignore.
+    }
+};
+
+const projectorReadings = (entry: SearchIndexEntry | undefined) =>
+    entry ? [...entry.on.slice(0, 2), ...entry.kun.slice(0, 2).map(formatReading)].join(" · ") : "";
+
+const CONTROL =
+    "inline-flex items-center gap-2 h-11 px-4 rounded-full border border-line-2 text-ink-2 hover:text-ink hover:border-ink-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+
+/**
+ * One step of a slide's entrance: drifts in from the side the class is moving
+ * towards (from the right going forward, from the left going back), in order.
+ * Big, plain and quick enough for a projector: no blur, nothing longer than
+ * the house entrance.
+ */
+const slideIn = (i: number, dir: number) => enterOrder(i, 0, { "--drift": `${dir * 28}px` } as React.CSSProperties);
+
+/** /teach/present: one kanji at a time, full screen, a stroke per key press, and a quiz for the room. */
+export function ProjectorClient({ radicals }: { radicals: TeachRadical[] }) {
+    const params = useSearchParams();
+    const router = useRouter();
+    const rootRef = useRef<HTMLDivElement>(null);
+    const openedRef = useRef(false);
+    const { entries, byChar, error, retry } = useSearchIndex();
+
+    const set = useMemo(() => decodeSet(params, byChar ? (c) => byChar.has(c) : undefined), [params, byChar]);
+    const chars = byChar ? set.chars : EMPTY;
+    const count = chars.length;
+    const strokes = useKanjiStrokes(chars);
+    const [state, dispatch] = useReducer(projectorReducer, INITIAL_PROJECTOR);
+    // Which way the last change of kanji went (+1 forward, -1 back): the next slide drifts in from that side.
+    const [slide, setSlide] = useState({ index: state.index, dir: 1 });
+    if (slide.index !== state.index) setSlide({ index: state.index, dir: state.index > slide.index ? 1 : -1 });
+    const dir = slide.dir;
+
+    const radicalOf = useMemo(() => {
+        const map = new Map<string, TeachRadical>();
+        for (const r of radicals) for (const c of r.chars) map.set(c, r);
+        return map;
+    }, [radicals]);
+    const themeOf = useCallback((char: string) => {
+        const theme = radicalOf.get(char)?.theme ?? -1;
+        return theme >= 0 ? CATEGORIES[theme] : null;
+    }, [radicalOf]);
+
+    const char = chars[Math.min(state.index, Math.max(0, count - 1))] as string | undefined;
+    const entry = char ? byChar?.get(char) : undefined;
+    const glyph = char ? strokes.data.get(char) ?? null : null;
+    const total = strokes.ready ? glyph?.strokes.length ?? 0 : null;
+    const radical = char ? radicalOf.get(char) ?? null : null;
+
+    const pool = useMemo(() => (entries ? entries.map((e) => toQuizCandidate(e, themeOf(e.c))) : []), [entries, themeOf]);
+    const options = useMemo(() => {
+        if (!entry || state.quiz === "off") return [];
+        return buildMeaningOptions(toQuizCandidate(entry, themeOf(entry.c)), pool);
+    }, [entry, pool, themeOf, state.quiz]);
+    const answer = entry ? meaningLabel(entry.m) : "";
+
+    const fullscreen = useSyncExternalStore(subscribeFullscreen, () => document.fullscreenElement !== null, () => false);
+    // iPhone Safari has no Fullscreen API for pages: hide the button there.
+    const canFullscreen = useSyncExternalStore(subscribeFullscreen, () => document.fullscreenEnabled === true, () => true);
+
+    useEffect(() => {
+        if (count === 0 || openedRef.current) return;
+        openedRef.current = true;
+        trackEvent("projector_opened", { count });
+    }, [count]);
+
+    // The overlay owns the screen: no page scrolling underneath.
+    useEffect(() => {
+        const root = document.documentElement;
+        const previous = root.style.overflow;
+        root.style.overflow = "hidden";
+        rootRef.current?.focus();
+        return () => {
+            root.style.overflow = previous;
+        };
+    }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        const root = rootRef.current;
+        if (document.fullscreenElement) quietly(document.exitFullscreen?.bind(document));
+        else quietly(root?.requestFullscreen?.bind(root));
+    }, []);
+
+    const exit = useCallback(() => {
+        if (document.fullscreenElement) quietly(document.exitFullscreen?.bind(document));
+        const cameFromSite = document.referrer.startsWith(window.location.origin) && window.history.length > 1;
+        if (cameFromSite) router.back();
+        else router.push(set.chars.length ? `/teach?${encodeSet(set)}` : "/teach");
+    }, [router, set]);
+
+    // The projector covers the page but renders inside the layout's <main>, so
+    // everything outside it (siblings of each ancestor up to <body>) goes inert:
+    // Tab can't reach the hidden header and footer.
+    useEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+        const made: Element[] = [];
+        for (let node: Element = root; node.parentElement && node !== document.body; node = node.parentElement) {
+            for (const el of Array.from(node.parentElement.children)) {
+                if (el === node || el.hasAttribute("inert") || el.tagName === "SCRIPT") continue;
+                el.setAttribute("inert", "");
+                made.push(el);
+            }
+        }
+        return () => made.forEach((el) => el.removeAttribute("inert"));
+    }, []);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            const target = e.target as HTMLElement | null;
+            // Typing in a field never triggers projector commands.
+            if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+            // Let focused buttons and links handle their own activation keys.
+            if ((e.key === " " || e.key === "Enter") && target?.closest("button, a")) return;
+            const command = projectorKey(e.key, state.quiz);
+            if (!command) return;
+            e.preventDefault();
+            switch (command) {
+                case "exit":
+                    exit();
+                    break;
+                case "fullscreen":
+                    toggleFullscreen();
+                    break;
+                case "advance":
+                    dispatch({ type: "advance", total, count });
+                    break;
+                case "go":
+                    dispatch({ type: "go", delta: keyDirection(e.key), count });
+                    break;
+                case "show-all":
+                    dispatch({ type: "show-all", total });
+                    break;
+                default:
+                    dispatch({ type: command });
+            }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [state.quiz, total, count, exit, toggleFullscreen]);
+
+    /** Mouse clicks hand focus back to the stage, so Space keeps drawing strokes. */
+    const refocus = (e: React.MouseEvent) => {
+        if (e.detail > 0) rootRef.current?.focus();
+    };
+
+    const color = getThemeColor(char ? themeOf(char) : null);
+    const highlight = state.quiz === "revealed" ? radicalStrokes(glyph, radical?.char) : null;
+    const position = count > 0 ? `${state.index + 1} / ${count}` : "";
+
+    let status = "";
+    if (char) {
+        if (state.quiz === "asking") status = `Question ${state.index + 1} of ${count}. What does it mean?`;
+        else if (state.quiz === "revealed") status = `Answer: ${answer}`;
+        else if (total !== null) status = state.drawn === 0 ? `${char}, kanji ${position}` : `Stroke ${state.drawn} of ${total}`;
+    }
+
+    return (
+        <div
+            ref={rootRef}
+            tabIndex={-1}
+            aria-label="Projector"
+            role="region"
+            className="fixed inset-0 z-[70] flex flex-col bg-bg text-ink outline-none overflow-hidden"
+            style={{ "--tc": color } as React.CSSProperties}
+        >
+            <header className="flex items-center gap-2 sm:gap-3 px-[3vw] pt-[2.5vh]" data-enter="fade">
+                <p className="flex-1 min-w-0 truncate font-disp text-[clamp(1.1rem,1.8vw,1.9rem)] font-semibold text-ink-2">
+                    {set.title || "Kanji set"}
+                </p>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        dispatch({ type: "toggle-quiz" });
+                        refocus(e);
+                    }}
+                    aria-pressed={state.quiz !== "off"}
+                    aria-keyshortcuts="Q"
+                    aria-label="Quiz the class"
+                    disabled={count === 0}
+                    className={cn(CONTROL, "aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:border-ink disabled:opacity-40")}
+                >
+                    <MessageCircleQuestion size={18} aria-hidden /> <span className="hidden sm:inline" aria-hidden>Quiz</span>
+                </button>
+                {canFullscreen && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            toggleFullscreen();
+                            refocus(e);
+                        }}
+                        aria-keyshortcuts="F"
+                        aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+                        className={CONTROL}
+                    >
+                        {fullscreen ? <Minimize size={18} aria-hidden /> : <Maximize size={18} aria-hidden />}
+                        <span className="hidden sm:inline" aria-hidden>{fullscreen ? "Exit full screen" : "Full screen"}</span>
+                    </button>
+                )}
+                <button type="button" onClick={exit} aria-keyshortcuts="Escape" aria-label="Exit" className={CONTROL}>
+                    <X size={18} aria-hidden /> <span className="hidden sm:inline" aria-hidden>Exit</span>
+                </button>
+            </header>
+
+            {error ? (
+                <div role="alert" className="flex-1 flex flex-col items-center justify-center gap-3 text-ink-2">
+                    <p className="text-xl text-ink">Couldn’t load kanji details.</p>
+                    <button type="button" onClick={retry} className={CONTROL}>Try again</button>
+                </div>
+            ) : !byChar ? (
+                <p className="flex-1 flex items-center justify-center text-ink-3 text-xl" data-enter="fade" style={enterOrder(2)}>
+                    Loading…
+                </p>
+            ) : !char || !entry ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-ink-2">
+                    <p className="text-xl text-ink">This link has no kanji to present.</p>
+                    <Link href="/teach" className="text-ink underline underline-offset-2">Build a set</Link>
+                </div>
+            ) : (
+                // Keyed by the kanji: each slide is new, and plays its entrance (slideIn).
+                <div
+                    key={char}
+                    className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center content-center gap-[3vh] md:gap-[4vw] px-[5vw] py-[2vh]"
+                >
+                    {/* Clicking the kanji draws the next stroke; keyboard users press Space. */}
+                    <div
+                        onClick={() => dispatch({ type: "advance", total, count })}
+                        className="justify-self-center cursor-pointer select-none"
+                        data-enter="drift"
+                        style={slideIn(0, dir)}
+                    >
+                        {glyph ? (
+                            <StrokeGlyph
+                                key={char}
+                                strokes={glyph.strokes}
+                                drawn={state.drawn}
+                                plain={state.quiz === "asking"}
+                                highlight={highlight}
+                                label={state.quiz === "off" ? `${char}, ${state.drawn} of ${glyph.strokes.length} strokes drawn` : char}
+                                className="w-[min(78vw,40vh)] md:w-[min(42vw,70vh)] aspect-square"
+                            />
+                        ) : (
+                            <p lang="ja" className="font-jp font-extrabold leading-none text-c text-[min(60vw,32vh)] md:text-[min(36vw,58vh)]">
+                                {char}
+                            </p>
+                        )}
+                    </div>
+
+                    {state.quiz === "off" ? (
+                        // Keyed panels: turning the quiz on or off swaps them, and the new one plays its entrance.
+                        <div key="strokes" className="flex flex-col gap-[2.2vh] min-w-0 text-center md:text-left">
+                            <p className="font-disp font-bold leading-[1.02] text-[clamp(2.25rem,5.4vw,6.5rem)] break-words" data-enter="drift" style={slideIn(1, dir)}>
+                                {meaningLabel(entry.m)}
+                            </p>
+                            <p lang="ja" className="font-jp font-semibold text-[clamp(1.6rem,3.4vw,4rem)] leading-tight" data-enter="drift" style={slideIn(2, dir)}>
+                                {projectorReadings(entry)}
+                            </p>
+                            {radical && <RadicalLine radical={radical} enter={slideIn(3, dir)} />}
+                            {total !== null && total > 0 && (
+                                <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]" data-enter="fade" style={enterOrder(4)}>
+                                    {state.drawn === 0 ? `${total} strokes · Space draws the first` : `Stroke ${state.drawn} of ${total}`}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div key="quiz" className="flex flex-col gap-[2.4vh] min-w-0">
+                            <p className="text-ink-3 text-[clamp(1rem,1.6vw,1.6rem)]" data-enter="fade">
+                                Question {state.index + 1} of {count} · show of hands
+                            </p>
+                            <p className="font-disp font-bold leading-none text-[clamp(2rem,4.2vw,5rem)]" data-enter="drift" style={slideIn(1, dir)}>
+                                What does it mean?
+                            </p>
+                            <ol
+                                className="grid grid-cols-1 lg:grid-cols-2 gap-[1.4vh] lg:gap-[1.2vw]"
+                                data-enter-group=""
+                                style={{ "--rise": "14px", "--delay": "110ms" } as React.CSSProperties}
+                            >
+                                {options.map((option, i) => {
+                                    const correct = option === answer;
+                                    const revealed = state.quiz === "revealed";
+                                    return (
+                                        <li
+                                            key={option}
+                                            className={cn(
+                                                "px-[1.4vw] py-[1.4vh] min-h-[7vh] flex items-center rounded-xl border border-line-2 text-[clamp(1.15rem,2.2vw,2.6rem)] leading-tight transition-[opacity,color,border-color] duration-300",
+                                                revealed && correct && "border-c text-c",
+                                                revealed && !correct && "opacity-40",
+                                            )}
+                                        >
+                                            <span className="font-bold mr-[.6em]">{LETTERS[i]}</span>
+                                            <span className="min-w-0 break-words">{option}</span>
+                                            {revealed && correct && <span className="sr-only"> (correct)</span>}
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                            {state.quiz === "revealed" ? (
+                                <div className="flex flex-col gap-[1vh]" data-enter="" style={enterOrder(0, 0, { "--rise": "12px" } as React.CSSProperties)}>
+                                    <p lang="ja" className="font-jp font-semibold text-[clamp(1.4rem,2.6vw,3rem)]">{projectorReadings(entry)}</p>
+                                    {radical && <RadicalLine radical={radical} />}
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        dispatch({ type: "reveal" });
+                                        refocus(e);
+                                    }}
+                                    aria-keyshortcuts="R"
+                                    data-enter=""
+                                    style={enterOrder(0, 360, { "--rise": "10px" } as React.CSSProperties)}
+                                    className="self-start inline-flex items-center h-[clamp(3rem,6vh,4.5rem)] px-[clamp(1.25rem,2vw,2.5rem)] rounded-full bg-ink text-bg font-bold text-[clamp(1.1rem,1.8vw,2rem)] hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                                >
+                                    Reveal
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <footer className="flex items-center gap-3 px-[3vw] pb-[2.5vh] text-ink-3 text-[clamp(.9rem,1.25vw,1.3rem)]" data-enter="fade" style={enterOrder(2)}>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        dispatch({ type: "go", delta: -1, count });
+                        refocus(e);
+                    }}
+                    disabled={state.index === 0}
+                    aria-label="Previous kanji"
+                    aria-keyshortcuts="ArrowLeft"
+                    className={cn(CONTROL, "px-3 disabled:opacity-40")}
+                >
+                    <ChevronLeft size={20} aria-hidden />
+                </button>
+                <p className="flex-1 min-w-0 text-center md:text-left">
+                    {position && (
+                        <span className="text-ink-2 font-medium">
+                            <Settle value={position}>{position}</Settle>
+                        </span>
+                    )}
+                    <span className="hidden md:inline">
+                        {" "}· Space: {state.quiz === "off" ? "next stroke" : state.quiz === "asking" ? "reveal" : "next question"} · → next kanji · Q:{" "}
+                        {state.quiz === "off" ? "quiz the class" : "back to strokes"} · Esc: {state.quiz === "off" ? "exit" : "close quiz"}
+                    </span>
+                </p>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        dispatch({ type: "advance", total, count });
+                        refocus(e);
+                    }}
+                    disabled={count === 0}
+                    className={cn(CONTROL, "md:hidden disabled:opacity-40")}
+                >
+                    {state.quiz === "asking" ? "Reveal" : "Next stroke"}
+                </button>
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        dispatch({ type: "go", delta: 1, count });
+                        refocus(e);
+                    }}
+                    disabled={state.index >= count - 1}
+                    aria-label="Next kanji"
+                    aria-keyshortcuts="ArrowRight"
+                    className={cn(CONTROL, "px-3 disabled:opacity-40")}
+                >
+                    <ChevronRight size={20} aria-hidden />
+                </button>
+            </footer>
+
+            <p aria-live="polite" className="sr-only">{status}</p>
+        </div>
+    );
+}
+
+function RadicalLine({ radical, enter }: { radical: TeachRadical; enter?: React.CSSProperties }) {
+    return (
+        <p className="text-ink-2 text-[clamp(1.1rem,1.9vw,2.2rem)]" data-enter={enter ? "drift" : undefined} style={enter}>
+            Radical{" "}
+            <span lang="ja" className="font-jp font-extrabold text-c text-[1.3em] leading-none">
+                {radical.char}
+            </span>{" "}
+            {radical.meaning}
+        </p>
+    );
+}

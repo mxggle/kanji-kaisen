@@ -1,6 +1,6 @@
 {
   "name": "kanji-kaisen",
-  "version": "1.1.0",
+  "version": "2.3.0",
   "private": false,
   "author": "Harry Sui <muggle6594@gmail.com>",
   "license": "MIT",
@@ -9,6 +9,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "data:stories": "node scripts/compile-stories.js",
+    "data:sources": "node scripts/fetch-data-sources.mjs",
+    "data:layers": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-data-layers.mjs",
+    "data:atlas": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-kanji-atlas.mjs",
+    "data:ancient": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/fetch-ancient-forms.mjs",
+    "data:etymology": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/fetch-etymology.mjs",
+    "data:xiaoxue": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/fetch-xiaoxue-forms.mjs",
     "test": "node --experimental-strip-types --test \"lib/**/*.test.mjs\" \"components/**/*.test.mjs\""
   },
   "dependencies": {

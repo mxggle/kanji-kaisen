@@ -1,37 +1,37 @@
 ---
 key: "gen"
-char: "元"
+char: "言"
 name: "Gen"
-meaning: "origin, beginning"
-category: "States & Attributes"
+meaning: "words, to say"
+category: "Communication & Thought"
 ---
 
 ## Origin
 
-The gen radical is a combination of a "person" (人) and a horizontal line above the head (二). In its earliest form, it was meant to point specifically to the "top" of a person's head—the most important part of the body, the source of thought and life.
+The full, standing form of the "words" radical (言, 7 strokes). Ancient forms show a mouth (口) at the bottom with something rising out of it—often read as the voice or the tongue at work. When this element is squeezed onto the left side of a kanji it becomes gonben (訁); here it keeps its whole shape and usually stands alone or sits at the bottom.
 
 ## Story
 
-Everything starts at the top! This radical points to the head, the source, and the very beginning of all things. When you see it, think of foundations, primary causes, and the "original" state of the world. It is the radical of the "first" and the "essential," capturing the moment before everything else follows.
+Speak up! Picture a mouth with words stacking up above it, ready to be heard. In its full form this radical carries the weight of spoken words—warnings, promises, and declarations. When you see the complete 言 holding up the bottom of a kanji, think of words that are meant to be taken seriously.
 
 ## Position
 
-Usually appears as a standalone kanji or at the bottom/center of a character.
+Standalone kanji, or at the bottom of the character in its full form (as in 警 and 誓). On the left side it is written as gonben (訁).
 
 ## Transforms Meaning
 
-Indicates beginning, origin, the human head, foundations, or something of primary importance.
+Indicates speaking, words, language, and acts done with words, such as warning, vowing, or declaring.
 
 ## Example Kanji
 
-### 元 (origin / source / foundation)
+### 言 (say / word)
 
-The base kanji for the start of things, the original state, and the unit of currency (Yen) which is the foundation of value.
+The base kanji for speech: a mouth (口) with the lines of the voice rising above it. Read いう (to say) and こと (word), as in 言葉 (ことば, words).
 
-### 冠 (crown / best / cap)
+### 警 (warn / admonish)
 
-Canopy (冖) + source/head (元) + hand/measure (寸). A ritual head-covering (crown) placed upon the "top" (origin) of an important leader.
+Respect/caution (敬) + words (言). Words spoken so that people stay alert and careful—a warning, as in 警察 (police) and 警告 (warning).
 
-### 頑 (stubborn / sturdy)
+### 誓 (vow / swear)
 
-Origin/head (元) + head/page (頁). A person who has an "original" head that simply won't budge—the very definition of being stubborn.
+Break off/decide (折) + words (言). Words that "cut off" every other choice—a solemn vow or oath.

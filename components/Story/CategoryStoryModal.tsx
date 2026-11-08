@@ -1,9 +1,11 @@
 "use client";
 
-import { X, BookOpen, Sparkles, Lightbulb, ArrowRight } from "lucide-react";
+import { X } from "lucide-react";
 import { getCategoryStory, getAllRadicalStories } from "@/lib/story-loader";
 import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useEffect } from "react";
+import { CategoryStoryContent } from "@/components/Atlas/category/CategoryStoryContent";
+import { useDialogMotion } from "./useDialogMotion";
 
 interface CategoryStoryModalProps {
     category: string;
@@ -28,6 +30,8 @@ const THEME_ICONS: Record<string, string> = {
 export function CategoryStoryModal({ category, onClose, themeClass }: CategoryStoryModalProps) {
     const story = getCategoryStory(category);
     const icon = THEME_ICONS[category] || "📚";
+    // Opens with the dialog pattern; every way out plays the exit first.
+    const { backdrop, panel, close } = useDialogMotion<HTMLDivElement, HTMLDivElement>(onClose);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -58,12 +62,13 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
+                ref={backdrop}
                 className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                onClick={onClose}
+                onClick={close}
             />
 
             {/* Modal Content */}
-            <div className={`
+            <div ref={panel} className={`
                 relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
                 bg-zinc-900/95 rounded-3xl border ${themeClass.split(' ')[1]}
                 shadow-2xl custom-scrollbar
@@ -92,8 +97,8 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                             </div>
                         </div>
                         <button
-                            onClick={onClose}
-                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                            onClick={close}
+                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-[background-color,transform] duration-(--dur-micro) active:scale-[.97]"
                         >
                             <X size={20} className="text-white/60" />
                         </button>
@@ -102,72 +107,7 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
 
                 {/* Body */}
                 <div className="p-6 pt-2 space-y-8">
-                    {/* Description */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-3">
-                            <BookOpen size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">About This Category</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.description}
-                        </p>
-                    </section>
-
-                    {/* Why It Matters */}
-                    <section className={`
-                        p-5 rounded-2xl border
-                        bg-gradient-to-br from-white/5 to-transparent
-                        ${themeClass.split(' ')[1]}
-                    `}>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">Why This Matters</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.whyItMatters}
-                        </p>
-                    </section>
-
-                    {/* Common Patterns */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <ArrowRight size={18} className={colorClass} />
-                            <h3 className="text-lg font-semibold text-white">Common Patterns</h3>
-                        </div>
-                        <div className="space-y-3">
-                            {story.commonPatterns.map((pattern, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-start gap-3 p-3 rounded-xl bg-white/5"
-                                >
-                                    <div className={`
-                                        w-6 h-6 rounded-full flex items-center justify-center
-                                        ${bgColorClass} text-white text-xs font-bold
-                                        flex-shrink-0 mt-0.5
-                                    `}>
-                                        {index + 1}
-                                    </div>
-                                    <p className="text-white/70 text-sm leading-relaxed">
-                                        {pattern}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Learning Tip */}
-                    <section className={`
-                        p-5 rounded-2xl
-                        bg-amber-500/10 border border-amber-500/30
-                    `}>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Lightbulb size={18} className="text-amber-400" />
-                            <h3 className="text-lg font-semibold text-amber-400">Learning Tip</h3>
-                        </div>
-                        <p className="text-white/70 leading-relaxed">
-                            {story.learningTip}
-                        </p>
-                    </section>
+                    <CategoryStoryContent story={story} themeClass={themeClass} />
 
                     {/* Featured Radicals */}
                     {categoryRadicals.length > 0 && (
@@ -199,11 +139,11 @@ export function CategoryStoryModal({ category, onClose, themeClass }: CategorySt
                 {/* Footer */}
                 <div className="sticky bottom-0 p-4 bg-gradient-to-t from-zinc-900 to-transparent">
                     <button
-                        onClick={onClose}
+                        onClick={close}
                         className={`
                             w-full py-3 rounded-xl font-medium
                             ${bgColorClass} text-white
-                            hover:opacity-90 transition-opacity
+                            hover:opacity-90 transition-[opacity,transform] duration-(--dur-micro) active:scale-[.97]
                         `}
                     >
                         Start Learning

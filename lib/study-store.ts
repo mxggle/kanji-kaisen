@@ -1,0 +1,61 @@
+import { useSyncExternalStore } from 'react';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import {
+    restoreEntry,
+    sanitizeEntries,
+    saveKanji,
+    setStatus,
+    toggleSaved,
+    unsaveKanji,
+    type StudyEntries,
+    type StudyEntry,
+    type StudyStatus,
+} from './study-list';
+
+// Saved kanji for the atlas study layer. Local only (not synced to Supabase).
+export interface StudyState {
+    entries: StudyEntries;
+
+    save: (char: string) => void;
+    unsave: (char: string) => void;
+    toggle: (char: string) => void;
+    setStatus: (char: string, status: StudyStatus) => void;
+    restore: (char: string, entry: StudyEntry) => void;
+    clear: () => void;
+}
+
+export const useStudyStore = create<StudyState>()(
+    persist(
+        (set) => ({
+            entries: {},
+
+            save: (char) => set((state) => ({ entries: saveKanji(state.entries, char) })),
+            unsave: (char) => set((state) => ({ entries: unsaveKanji(state.entries, char) })),
+            toggle: (char) => set((state) => ({ entries: toggleSaved(state.entries, char) })),
+            setStatus: (char, status) => set((state) => ({ entries: setStatus(state.entries, char, status) })),
+            restore: (char, entry) => set((state) => ({ entries: restoreEntry(state.entries, char, entry) })),
+            clear: () => set({ entries: {} }),
+        }),
+        {
+            name: 'kanji-study-list',
+            version: 1,
+            partialize: (state) => ({ entries: state.entries }),
+            merge: (persisted, current) => ({
+                ...current,
+                entries: sanitizeEntries((persisted as Partial<StudyState> | undefined)?.entries),
+            }),
+        }
+    )
+);
+
+// `persist` is missing when the browser blocks storage (createJSONStorage
+// can't reach localStorage); the store then works in memory and counts as hydrated.
+const noop = () => {};
+const subscribeHydration = (onChange: () => void) => useStudyStore.persist?.onFinishHydration(onChange) ?? noop;
+const isHydrated = () => useStudyStore.persist?.hasHydrated() ?? true;
+
+/** False during SSR and the first client render, so saved state never causes a hydration mismatch. */
+export function useStudyStoreHydrated(): boolean {
+    return useSyncExternalStore(subscribeHydration, isHydrated, () => false);
+}

@@ -1,0 +1,129 @@
+/*
+ * Home choreography that the four hooks can't express on their own: what
+ * happens inside a section once MotionRoot reveals it (data-shown="", not
+ * "instant"). Spec: docs/design/motion.md. Tokens from app/motion.css; no
+ * colours here, only opacity, transform and blur on small things.
+ *
+ * Every animation is fill-mode backwards, like the hooks: it holds its first
+ * frame through the delay, then hands the element back to its own styles.
+ */
+
+/* ---------- PartsMethod: the method, demonstrated ---------- */
+
+/*
+ * The family list ([data-reveal] on the <ul>). In order: the row frames rise,
+ * the shared sound part 青 is pressed into every row like one seal, then row
+ * by row the meaning part (and its "+") joins it and the kanji they make
+ * soaks in. Each row sets --row (0, 1, 2…).
+ */
+.family[data-shown=""] > li {
+  animation: kk-home-rise 480ms var(--ease-out) backwards;
+  animation-delay: calc(var(--row, 0) * 60ms);
+  --rise: 12px;
+}
+
+.family[data-shown=""] .sound {
+  animation: kk-home-press 460ms var(--ease-stamp) backwards;
+  animation-delay: calc(220ms + var(--row, 0) * 80ms);
+}
+
+.family[data-shown=""] .meaning,
+.family[data-shown=""] .meaning + * {
+  animation: kk-home-drift 460ms var(--ease-out) backwards;
+  animation-delay: calc(640ms + var(--row, 0) * 130ms);
+}
+
+.family[data-shown=""] .equals {
+  animation: kk-home-fade 320ms var(--ease-out) backwards;
+  animation-delay: calc(740ms + var(--row, 0) * 130ms);
+}
+
+.family[data-shown=""] .result {
+  animation: kk-home-ink 640ms var(--ease-ink) backwards;
+  animation-delay: calc(780ms + var(--row, 0) * 130ms);
+}
+
+/* ---------- OtherWaysIn: what each way holds, after its card ---------- */
+
+/* Seals are pressed one after another; chips settle in a quick run. */
+.ways > [data-shown=""] .seals > * {
+  animation: kk-home-press 420ms var(--ease-stamp) backwards;
+  animation-delay: calc(200ms + var(--n, 0) * 45ms);
+}
+
+.ways > [data-shown=""] .chips > * {
+  animation: kk-home-rise 420ms var(--ease-out) backwards;
+  animation-delay: calc(180ms + var(--n, 0) * 35ms);
+  --rise: 6px;
+}
+
+.seals > :nth-child(2),
+.chips > :nth-child(2) { --n: 1; }
+.seals > :nth-child(3),
+.chips > :nth-child(3) { --n: 2; }
+.seals > :nth-child(4),
+.chips > :nth-child(4) { --n: 3; }
+.seals > :nth-child(5),
+.chips > :nth-child(5) { --n: 4; }
+.seals > :nth-child(6),
+.chips > :nth-child(6) { --n: 5; }
+.seals > :nth-child(7),
+.chips > :nth-child(7) { --n: 6; }
+.seals > :nth-child(n + 8),
+.chips > :nth-child(n + 8) { --n: 7; }
+
+/* ---------- Keyframes ---------- */
+
+@keyframes kk-home-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise, 12px), 0);
+  }
+}
+
+/* A seal pressed: a gentler stamp for small parts and seals. */
+@keyframes kk-home-press {
+  0% {
+    opacity: 0;
+    transform: scale(1.14) rotate(-4deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(.98) rotate(0deg);
+  }
+}
+
+@keyframes kk-home-drift {
+  from {
+    opacity: 0;
+    transform: translate3d(-14px, 0, 0);
+  }
+}
+
+@keyframes kk-home-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The kanji soaks in: ink spreading into paper. */
+@keyframes kk-home-ink {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .family > li,
+  .family .sound,
+  .family .meaning,
+  .family .meaning + *,
+  .family .equals,
+  .family .result,
+  .seals > *,
+  .chips > * {
+    animation: none !important;
+  }
+}

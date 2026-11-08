@@ -8,7 +8,7 @@ category: "Textiles, Plants & Food"
 
 ## Origin
 
-Shows two tufts of grass or small plants sprouting from the ground. It is the simplified crown form of the kanji for grass (草).
+Shows two tufts of grass or small plants sprouting from the ground. It is the simplified crown form of 艸, the old character for grass (now written 草).
 
 ## Story
 

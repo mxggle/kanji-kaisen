@@ -8,7 +8,7 @@ category: "Human Body & People"
 
 ## Origin
 
-The oogai radical is a pictograph of a human head, specifically showing the face, eyes, and the crown of the head. It originally represented a person's countenance or the physical head, eventually evolving to mean a "page" because pages in a book were seen as the "heads" or "faces" of the scroll.
+The oogai radical is a pictograph of a human head, specifically showing the face, eyes, and the crown of the head. It originally represented a person's countenance or the physical head; its later meaning of "page" is a sound borrowing (it was used in place of 葉, "leaf"), not a change in what the picture shows.
 
 ## Story
 

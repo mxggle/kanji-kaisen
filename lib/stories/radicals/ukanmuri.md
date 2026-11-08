@@ -34,4 +34,4 @@ Roof (宀) + woman + tree (木). Originally suggested a "desk" (tree) inside a "
 
 ### 宅 (home / residence)
 
-Roof (宀) + movement/bottom. The place where you come to rest at the end of your journey—your private "home" or residence.
+Roof (宀) + a sprouting plant (乇, which also gives the sound "taku"). The place where you come to rest at the end of your journey—your private "home" or residence.

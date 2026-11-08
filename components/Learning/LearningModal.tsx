@@ -4,9 +4,10 @@ import { CHECKPOINTS } from "@/lib/checkpoints";
 import { useProgressStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/settings-store";
 import { KANJI_DATA } from "@/lib/data";
-import { X, Heart, MessageSquare } from "lucide-react";
+import { X, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from "framer-motion";
+import { DUR, EASE } from "@/components/Motion/tokens";
 import { trackEvent } from "@/lib/analytics";
 import { isHandwritingSkipped } from "@/lib/handwriting-preferences";
 
@@ -27,7 +28,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     const checkpoint = CHECKPOINTS.find(c => c.id === checkpointId);
 
     // Store
-    const { hearts, loseHeart, completeCheckpoint } = useProgressStore();
+    const { completeCheckpoint } = useProgressStore();
     const {
         skipHandwritingGlobally,
         skipHandwritingTodayDate,
@@ -39,9 +40,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     const [phase, setPhase] = useState<Phase>("info");
     const [isCompleted, setIsCompleted] = useState(false);
     const hasTrackedOpen = useRef(false);
-    const hasTrackedOutOfHearts = useRef(false);
     const trackedPhaseViews = useRef(new Set<string>());
-    const previousHearts = useRef(hearts);
 
     // Derived
     const currentChar = checkpoint?.kanji[currentIndex];
@@ -70,9 +69,8 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
             checkpoint_title: checkpoint.title,
             category: checkpoint.category,
             kanji_count: checkpoint.kanji.length,
-            hearts,
         });
-    }, [checkpoint, hearts]);
+    }, [checkpoint]);
 
     useEffect(() => {
         if (!checkpoint || !currentChar) return;
@@ -88,7 +86,6 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
             kanji: currentChar,
             kanji_index: currentIndex + 1,
             phase,
-            hearts,
         });
 
         if (phase === "quiz") {
@@ -120,34 +117,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                 kanji_index: currentIndex + 1,
             });
         }
-    }, [checkpoint, currentChar, currentIndex, phase, hearts]);
-
-    useEffect(() => {
-        if (!checkpoint) return;
-
-        if (hearts < previousHearts.current) {
-            trackEvent("heart_lost", {
-                checkpoint_id: checkpoint.id,
-                checkpoint_title: checkpoint.title,
-                category: checkpoint.category,
-                kanji: currentChar,
-                hearts_remaining: hearts,
-            });
-        }
-
-        previousHearts.current = hearts;
-    }, [checkpoint, currentChar, hearts]);
-
-    useEffect(() => {
-        if (!checkpoint || hearts > 0 || hasTrackedOutOfHearts.current) return;
-
-        hasTrackedOutOfHearts.current = true;
-        trackEvent("out_of_hearts", {
-            checkpoint_id: checkpoint.id,
-            checkpoint_title: checkpoint.title,
-            category: checkpoint.category,
-        });
-    }, [checkpoint, hearts]);
+    }, [checkpoint, currentChar, currentIndex, phase]);
 
     // Handlers
     const handleNextPhase = () => {
@@ -194,16 +164,9 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                 checkpoint_title: checkpoint.title,
                 category: checkpoint.category,
                 kanji_count: checkpoint.kanji.length,
-                hearts_remaining: hearts,
             });
             setIsCompleted(true);
         }
-    };
-
-    const handleChallengeFail = () => {
-        loseHeart();
-        // If hearts 0, probably should show Game Over, but store handles the number.
-        // We might want to shake or show visual feedback.
     };
 
     const handlePhaseChange = (newPhase: Phase) => {
@@ -216,19 +179,29 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
         handleChallengeSuccess();
     };
 
-    if (!checkpoint || !currentChar || !currentData) return null;
-
-    if (hearts <= 0) {
+    // Never return null here: the body scroll lock above is already active,
+    // so a blank render would leave the page frozen with no way out.
+    if (!checkpoint || !currentChar || !currentData) {
+        const canSkip = Boolean(checkpoint && currentChar);
         return (
             <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl text-center max-w-sm w-full">
-                    <Heart size={48} className="mx-auto text-zinc-700 mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Out of Hearts!</h2>
-                    <p className="text-zinc-400 mb-6">Rest up and try again tomorrow.</p>
+                    <h2 className="text-2xl font-bold mb-2">
+                        {canSkip ? "Kanji data missing" : "Checkpoint not found"}
+                    </h2>
+                    <p className="text-zinc-400 mb-6">
+                        {canSkip
+                            ? `We don't have study data for ${currentChar} yet. You can skip it and keep going.`
+                            : "This checkpoint doesn't exist anymore."}
+                    </p>
+                    {canSkip && (
+                        <button onClick={handleChallengeSuccess} className="w-full mb-3 py-3 bg-[var(--classic-ok)] text-black font-bold rounded-lg hover:opacity-90">
+                            Skip this kanji
+                        </button>
+                    )}
                     <button onClick={onClose} className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-zinc-200">
                         Close
                     </button>
-                    {/* Dev backdoor to restore hearts? Or use store action elsewhere */}
                 </div>
             </div>
         );
@@ -237,11 +210,11 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
     if (isCompleted) {
         return (
             <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-zinc-900 border border-[var(--n5)] p-8 rounded-2xl text-center max-w-sm w-full animate-in zoom-in-50 duration-300">
+                <div className="bg-zinc-900 border border-[var(--classic-ok)] p-8 rounded-2xl text-center max-w-sm w-full animate-in zoom-in-50 duration-300">
                     <div className="text-6xl mb-4">🎉</div>
-                    <h2 className="text-2xl font-bold mb-2 text-[var(--n5)]">Checkpoint Mastered!</h2>
+                    <h2 className="text-2xl font-bold mb-2 text-[var(--classic-ok)]">Checkpoint Mastered!</h2>
                     <p className="text-zinc-400 mb-6">You&apos;ve learned {checkpoint.kanji.length} new kanji.</p>
-                    <button onClick={onClose} className="w-full py-3 bg-[var(--n5)] text-black font-bold rounded-lg hover:opacity-90">
+                    <button onClick={onClose} className="w-full py-3 bg-[var(--classic-ok)] text-black font-bold rounded-lg hover:opacity-90">
                         Continue Path
                     </button>
                 </div>
@@ -282,7 +255,7 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                         {checkpoint.kanji.map((_, idx) => (
                             <div
                                 key={idx}
-                                className={`h-1.5 w-4 rounded-full transition-colors ${idx < currentIndex ? "bg-[var(--n5)]" :
+                                className={`h-1.5 w-4 rounded-full transition-colors ${idx < currentIndex ? "bg-[var(--classic-ok)]" :
                                     idx === currentIndex ? "bg-white" : "bg-zinc-800"
                                     }`}
                             />
@@ -290,10 +263,8 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-rose-500 font-bold">
-                    <Heart fill="currentColor" size={20} />
-                    <span>{hearts}</span>
-                </div>
+                {/* Spacer keeps the progress indicator centred. */}
+                <div className="w-[76px]" aria-hidden />
             </div>
 
             {/* Content Area */}
@@ -305,13 +276,15 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                     skipHandwriting={shouldSkipHandwriting}
                 />
 
+                {/* Lean framer (LazyMotion + m); with reduced motion only the fade stays. */}
+                <LazyMotion features={domAnimation}>
+                <MotionConfig reducedMotion="user">
                 <AnimatePresence mode="wait">
-                    <motion.div
+                    <m.div
                         key={`${currentIndex}-${phase}`}
                         initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
+                        animate={{ opacity: 1, x: 0, transition: { duration: DUR.ui + 0.06, ease: EASE.out } }}
+                        exit={{ opacity: 0, x: -20, transition: { duration: DUR.ui / 2 + 0.03, ease: EASE.in } }}
                         className="w-full min-h-full flex items-start justify-center py-4"
                     >
                         {phase === "info" && (
@@ -321,7 +294,6 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                             <PhaseQuiz
                                 data={currentData}
                                 onNext={handleNextPhase}
-                                onFail={handleChallengeFail}
                                 checkpointId={checkpoint.id}
                                 checkpointTitle={checkpoint.title}
                                 category={checkpoint.category}
@@ -344,15 +316,16 @@ export function LearningModal({ checkpointId, onClose }: LearningModalProps) {
                             <PhaseChallenge
                                 data={currentData}
                                 onSuccess={handleChallengeSuccess}
-                                onFail={handleChallengeFail}
                                 checkpointId={checkpoint.id}
                                 checkpointTitle={checkpoint.title}
                                 category={checkpoint.category}
                                 kanjiIndex={currentIndex + 1}
                             />
                         )}
-                    </motion.div>
+                    </m.div>
                 </AnimatePresence>
+                </MotionConfig>
+                </LazyMotion>
             </div>
 
             {/* Bottom Form/Feedback Link */}
