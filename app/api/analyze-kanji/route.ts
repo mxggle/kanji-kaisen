@@ -1,18 +1,38 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { MAX_BODY_BYTES, isSameOriginRequest, parseAnalyzeBody } from "@/lib/analyze-guard";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(request: NextRequest) {
-    try {
-        const { imageData, expectedKanji } = await request.json();
+    // Only the handwriting canvas on this site may spend a Gemini call.
+    if (!isSameOriginRequest(request.headers, request.headers.get("host") ?? "")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const declared = Number(request.headers.get("content-length"));
+    if (declared > MAX_BODY_BYTES) {
+        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
 
-        if (!imageData || !expectedKanji) {
+    try {
+        const raw = await request.text();
+        if (raw.length > MAX_BODY_BYTES) {
+            return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        }
+        let body: unknown;
+        try {
+            body = JSON.parse(raw);
+        } catch {
+            body = null;
+        }
+        const input = parseAnalyzeBody(body);
+        if (!input) {
             return NextResponse.json(
-                { error: "Missing imageData or expectedKanji" },
+                { error: "Expected one kanji and a PNG data URL" },
                 { status: 400 }
             );
         }
+        const { base64Data, expectedKanji } = input;
 
         if (!process.env.GEMINI_API_KEY) {
             return NextResponse.json(
@@ -29,9 +49,6 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
-
-        // Remove data URL prefix to get base64 string
-        const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
 
         const model = genAI.getGenerativeModel({
             model: process.env.GEMINI_MODEL || "gemini-2.5-flash"

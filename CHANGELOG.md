@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security
+- `/api/analyze-kanji` (the handwriting check that calls Gemini with the site's key) now refuses requests that don't come from the site's own pages (403), bodies over about 200 KB (413), and anything but one kanji plus a PNG data URL (400), before it spends a Gemini call. The kanji was pasted into the prompt as sent, so any text could ride along. The checks live in `lib/analyze-guard.ts` with tests. A Vercel Firewall rule also caps the endpoint at 10 requests per minute per IP.
+
 ## [2.3.0] - 2026-11-08
 
 Motion and a calmer palette, the last pass on One Atlas. 1.1.0 was the last release on `main`, so 2.0.0 to 2.3.0 ship together.
